@@ -360,7 +360,7 @@ class InstallTests(unittest.TestCase):
     def test_default_installs_both_hosts_with_existing_engines(self):
         fake_bin = self.root / "fake-bin"
         fake_bin.mkdir()
-        versions = {"mmdc": "12.0.0", "plantuml": "PlantUML version 1.2026.8", "drawio": "32.4.1",
+        versions = {"mmdc": "12.0.0", "plantuml": "PlantUML version 1.2026.9", "drawio": "32.5.5",
                     "archify": "", "dot": "dot - graphviz version 14.0.0", "java": 'openjdk version "21.0.10"'}
         for name, version in versions.items():
             binary = fake_bin / name
@@ -368,7 +368,7 @@ class InstallTests(unittest.TestCase):
                               f"print({version!r})\n"
                               "if '-o' in sys.argv: Path(sys.argv[sys.argv.index('-o')+1]).write_text('<svg/>')\n")
             binary.chmod(0o755)
-        (self.root / "package.json").write_text(json.dumps({"name": "archify", "version": "3.1.0"}))
+        (self.root / "package.json").write_text(json.dumps({"name": "archify", "version": "3.2.0"}))
         (fake_bin / "visual-check.mjs").write_text("export function findChrome(){return '/fake/chrome'}")
         for engine, binary in (("MERMAID", "mmdc"), ("PLANTUML", "plantuml"), ("DRAWIO", "drawio"), ("ARCHIFY", "archify")):
             self.environment[f"{engine}_OFFICIAL_CLI"] = str(fake_bin / binary)
