@@ -1,12 +1,15 @@
 """Resolve official renderers installed on PATH or by this skill group."""
 
 import os
+import re
 import shutil
+import subprocess
 from pathlib import Path
 
 
 ENGINE_BINARIES = {"mermaid": "mmdc", "plantuml": "plantuml",
                    "drawio": "drawio", "archify": "archify"}
+NODE_VERSION = "24.22.0"
 
 
 def renderer_home():
@@ -30,6 +33,21 @@ def find_engine(engine, explicit=None):
 
 def prepare_runtime():
     """Let managed Node power its renderers without changing the user's shell PATH."""
-    node_bin = renderer_home() / "runtime" / "node-v22.13.1" / "bin"
-    if (node_bin / "node").is_file():
-        os.environ["PATH"] = str(node_bin) + os.pathsep + os.environ.get("PATH", "")
+    runtime_version = NODE_VERSION
+    node_bin = renderer_home() / "runtime" / f"node-v{runtime_version}" / "bin"
+    if not (node_bin / "node").is_file():
+        # Keep existing installations usable until their dependency update installs the new pin.
+        runtime_version = "22.13.1"
+        node_bin = renderer_home() / "runtime" / f"node-v{runtime_version}" / "bin"
+    if not (node_bin / "node").is_file():
+        return
+    current = shutil.which("node")
+    if current:
+        try:
+            result = subprocess.run([current, "--version"], capture_output=True, text=True, timeout=20)
+            version = re.fullmatch(r"v?(\d+)\.(\d+)\.(\d+)", result.stdout.strip())
+            if result.returncode == 0 and version and tuple(map(int, version.groups())) >= tuple(map(int, runtime_version.split("."))):
+                return
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+    os.environ["PATH"] = str(node_bin) + os.pathsep + os.environ.get("PATH", "")

@@ -1,8 +1,10 @@
 # Official native diagram authoring
 
-Use this path for a diagram type outside [typed IR v2](diagram-view-ir.md). Choose the view from the question, follow that engine's current [Mermaid](https://mermaid.js.org/intro/syntax-reference.html), [PlantUML](https://plantuml.com/), [draw.io](https://www.drawio.com/docs/diagram-types/), or [Archify](https://github.com/tt-a1i/archify/blob/1c2b42d660e4a7571813fb43839c79e3e9ca7720/archify/schemas/README.md) syntax/schema, and write its editable native file. The official engine's actual parser and exporter determine whether the requested type and output are supported by the installed version. draw.io is an open shape language; its gallery is guidance, not an exhaustive type enum.
+Use this path for a diagram type outside [typed IR v2](diagram-view-ir.md). Choose the view from the question, follow that engine's current [Mermaid](https://mermaid.js.org/intro/syntax-reference.html), [PlantUML](https://plantuml.com/), [draw.io](https://www.drawio.com/docs/diagram-types/), or [Archify](https://github.com/tt-a1i/archify/blob/208acba8d412335185b2056fedf54b3405df43fb/archify/schemas/README.md) syntax/schema, and write its editable native file. The official engine's actual parser and exporter determine whether the requested type and output are supported by the installed version. draw.io is an open shape language; its gallery is guidance, not an exhaustive type enum.
 
-## Archify 3.1.0 native types
+## Archify 3.2.0 native types
+
+The new upstream `explainer` page mode has a separate Markdown authoring contract; it is not a diagram JSON type accepted by this native diagram channel.
 
 All ten typed modes are accepted: `architecture`, `workflow`, `sequence`, `dataflow`, `lifecycle`, `erd`, `tree`, `class`, `timeline`, and `waterfall`. Set `schema_version: 1`, the exact `diagram_type`, `meta.title`, and a portable relative `meta.output` ending in `.html`. Use the corresponding installed official schema and examples; schema and relationship validation remain the official CLI's responsibility. This path does not add an IR v2 converter or imply exchange-format conformance.
 

@@ -32,11 +32,16 @@ class RendererHealthTests(unittest.TestCase):
         return path
 
     def test_pins_match_current_stable_releases_and_official_digests(self):
-        self.assertEqual(setup.DRAWIO_VERSION, "32.4.1")
-        self.assertEqual(setup.DRAWIO_DEB_SHA256, "f4455b3bba3d3b539c3cd069218fc64f0462b1b01610fe8d11acc3ca8566f32b")
-        self.assertEqual(setup.DRAWIO_DMG_SHA256, "1e18db784d138cf0383ba66f662f5ace87e5b9415058075b50ce1b9560f68172")
-        self.assertEqual(setup.ARCHIFY_VERSION, "3.1.0")
-        self.assertEqual(setup.ARCHIFY_COMMIT, "1c2b42d660e4a7571813fb43839c79e3e9ca7720")
+        self.assertEqual(setup.MERMAID_VERSION, "12.0.0")
+        self.assertEqual(setup.PLANTUML_VERSION, "1.2026.9")
+        self.assertEqual(setup.PLANTUML_SHA256, "aa4a1d06f8911c4b842beff4828dd955be431692b631a312d04c0e9fab9581de")
+        self.assertEqual(setup.DRAWIO_VERSION, "32.5.5")
+        self.assertEqual(setup.DRAWIO_DEB_SHA256, "0ca81780c79d3e5b9f459390173823697f80048d0f7f1e26c3be5077f5c3f611")
+        self.assertEqual(setup.DRAWIO_DMG_SHA256, "3de40f85ecae238dd668ab01e227c6497046df4e46cceb47fbf926e850f4eca8")
+        self.assertEqual(setup.ARCHIFY_VERSION, "3.2.0")
+        self.assertEqual(setup.ARCHIFY_COMMIT, "208acba8d412335185b2056fedf54b3405df43fb")
+        self.assertEqual(setup.ARCHIFY_SHA256, "70e210265c59f24dcbdf2a502ff671104b5454e7ee7d3554aecd86bad32384f5")
+        self.assertEqual(setup.NODE_VERSION, "24.22.0")
 
     def test_native_cli_versions_are_parsed_without_picking_up_runtime_versions(self):
         for engine, output, expected in (
@@ -70,10 +75,10 @@ class RendererHealthTests(unittest.TestCase):
 
     def test_update_preserves_equal_and_newer_effective_versions(self):
         for engine, versions in (
-            ("drawio", ((32, 4, 1), (33, 0, 0))),
-            ("archify", ((3, 1, 0), (4, 0, 0))),
+            ("drawio", ((32, 5, 5), (33, 0, 0))),
+            ("archify", ((3, 2, 0), (4, 0, 0))),
             ("mermaid", ((12, 0, 0), (13, 0, 0))),
-            ("plantuml", ((1, 2026, 8), (1, 2027, 1))),
+            ("plantuml", ((1, 2026, 9), (1, 2027, 1))),
         ):
             for version in versions:
                 with self.subTest(engine=engine, version=version), \
@@ -116,7 +121,7 @@ class RendererHealthTests(unittest.TestCase):
 
     def test_verified_archify_release_archive_publishes_executable(self):
         def download(url, destination):
-            self.assertIn("v3.1.0/archify.zip", url)
+            self.assertIn("v3.2.0/archify.zip", url)
             with zipfile.ZipFile(destination, "w") as archive:
                 archive.writestr("archify/bin/archify.mjs", "#!/usr/bin/env node\n")
         with patch.object(self.installer, "_ensure_node"), \
@@ -173,13 +178,13 @@ class RendererHealthTests(unittest.TestCase):
         with patch("install_renderers.find_engine", return_value="/existing/drawio"), \
              patch.object(self.installer, "version", return_value=(29, 3, 6)), \
              patch.object(self.installer, "ensure") as install:
-            with self.assertRaisesRegex(RuntimeError, "29.3.6.*32.4.1|32.4.1.*29.3.6"):
+            with self.assertRaisesRegex(RuntimeError, "29.3.6.*32.5.5|32.5.5.*29.3.6"):
                 self.installer.doctor("drawio")
         install.assert_not_called()
 
     def test_doctor_reports_missing_graphviz_with_installed_plantuml(self):
         with patch("install_renderers.find_engine", return_value="/existing/plantuml"), \
-             patch.object(self.installer, "version", return_value=(1, 2026, 8)), \
+             patch.object(self.installer, "version", return_value=(1, 2026, 9)), \
              patch("install_renderers.shutil.which", side_effect=lambda name, **kwargs: "/java" if name == "java" else None), \
              patch.object(self.installer, "_run", return_value='openjdk version "21.0.10"'), \
              patch.object(self.installer, "_ensure_graphviz") as install:
@@ -200,7 +205,7 @@ class RendererHealthTests(unittest.TestCase):
 
     def test_doctor_rejects_java8_before_graphviz_probe(self):
         with patch("install_renderers.find_engine", return_value="/plantuml"), \
-             patch.object(self.installer, "version", return_value=(1, 2026, 8)), \
+             patch.object(self.installer, "version", return_value=(1, 2026, 9)), \
              patch("install_renderers.shutil.which", return_value="/java"), \
              patch.object(self.installer, "_run", return_value='java version "1.8.0_442"') as run:
             with self.assertRaisesRegex(RuntimeError, "Java 11"):
@@ -228,7 +233,7 @@ class RendererHealthTests(unittest.TestCase):
 
     def test_archify_doctor_reports_unusable_browser(self):
         with patch("install_renderers.find_engine", return_value="/archify/bin/archify.mjs"), \
-             patch.object(self.installer, "version", return_value=(3, 1, 0)), \
+             patch.object(self.installer, "version", return_value=(3, 2, 0)), \
              patch("install_renderers.shutil.which", return_value="/node"), \
              patch.object(self.installer, "_run", side_effect=["v22.13.0", "OK", RuntimeError("Chrome/Chromium is missing")]):
             with self.assertRaisesRegex(RuntimeError, "Chrome"):

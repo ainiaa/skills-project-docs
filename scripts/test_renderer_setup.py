@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from engine_paths import find_engine
+from engine_paths import find_engine, prepare_runtime
 from install_renderers import DRAWIO_DEB_SHA256, DRAWIO_VERSION, MERMAID_VERSION, PLANTUML_VERSION, RendererInstaller, main
 from python_runtime import require_python
 
@@ -23,6 +23,49 @@ class PythonRuntimeTests(unittest.TestCase):
 
 
 class EnginePathTests(unittest.TestCase):
+    def test_managed_node_fallback_uses_current_pin_without_downgrading_path(self):
+        for current, use_managed in ((None, True), ("v22.13.1", True),
+                                     ("v24.22.0", False), ("v25.9.0", False)):
+            with self.subTest(current=current), tempfile.TemporaryDirectory() as directory:
+                home = Path(directory)
+                node_bin = home / "runtime/node-v24.22.0/bin"
+                node_bin.mkdir(parents=True)
+                (node_bin / "node").write_text("node")
+                with patch.dict(os.environ, UNDERSTAND_RENDERER_HOME=str(home), PATH="/existing"), \
+                     patch("engine_paths.shutil.which", return_value="/existing/node" if current else None), \
+                     patch("subprocess.run", return_value=subprocess.CompletedProcess([], 0, current or "", "")):
+                    prepare_runtime()
+                    expected = str(node_bin) + os.pathsep + "/existing" if use_managed else "/existing"
+                    self.assertEqual(os.environ["PATH"], expected)
+
+    def test_legacy_managed_node_remains_usable_before_dependency_update(self):
+        with tempfile.TemporaryDirectory() as directory:
+            node_bin = Path(directory) / "runtime/node-v22.13.1/bin"
+            node_bin.mkdir(parents=True)
+            (node_bin / "node").write_text("node")
+            with patch.dict(os.environ, UNDERSTAND_RENDERER_HOME=directory, PATH="/existing"), \
+                 patch("engine_paths.shutil.which", return_value=None):
+                prepare_runtime()
+                self.assertEqual(os.environ["PATH"], str(node_bin) + os.pathsep + "/existing")
+
+    def test_missing_managed_runtime_keeps_existing_path(self):
+        with tempfile.TemporaryDirectory() as directory, \
+             patch.dict(os.environ, UNDERSTAND_RENDERER_HOME=directory, PATH="/existing"):
+            prepare_runtime()
+            self.assertEqual(os.environ["PATH"], "/existing")
+
+    def test_failed_node_probe_uses_available_managed_runtime(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            node_bin = home / "runtime/node-v24.22.0/bin"
+            node_bin.mkdir(parents=True)
+            (node_bin / "node").write_text("node")
+            with patch.dict(os.environ, UNDERSTAND_RENDERER_HOME=str(home), PATH="/existing"), \
+                 patch("engine_paths.shutil.which", return_value="/existing/node"), \
+                 patch("subprocess.run", side_effect=subprocess.TimeoutExpired("node", 20)):
+                prepare_runtime()
+                self.assertEqual(os.environ["PATH"], str(node_bin) + os.pathsep + "/existing")
+
     def test_environment_cli_precedes_managed_engine(self):
         with tempfile.TemporaryDirectory() as directory:
             home = Path(directory)

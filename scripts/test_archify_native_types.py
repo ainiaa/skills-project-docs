@@ -1,4 +1,4 @@
-"""Archify 3.1 native types: dispatch, source coverage and official delivery."""
+"""Archify native types: dispatch, source coverage and official delivery."""
 
 import copy
 import json

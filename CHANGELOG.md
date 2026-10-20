@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-10-20
+
+- 绘图依赖基线更新为 PlantUML 1.2026.9、draw.io Desktop 32.5.5、Archify 3.2.0，更新官方发行包 SHA-256 与 Archify 提交锚点；Mermaid CLI 继续使用最新稳定版 12.0.0。保持版本识别、显式 CLI 覆盖及防降级保护。
+- 缺失 Node.js 时的受管回退版本更新为 24.22.0 LTS；安装与运行时共用版本常量，避免路径漂移，保留 PATH 中同版或更高稳定版本。补齐缺失、旧版、同版、高版、旧安装迁移与探测超时回归测试。
+- 核对 Archify 3.2.0 的独立 `explainer` 文档模式与现有十种原生图型边界；更新 Skill、安装说明和引擎能力基线。
+
 ## [0.6.0] - 2026-10-16
 
 - 原生通道复审：非法 `diagram_type`、证据版本、引用和来源类型返回校验错误；拒绝用布尔值或浮点数冒充证据版本。Archify 官方交付失败时清理未验证 HTML；显式配置官方 CLI 时，缺失示例将导致验收失败，不再静默跳过。补齐 workflow／lifecycle `mainPath` 和 workflow `semanticChecks` 的逐项证据清点；失败回执缺少错误详情时返回可读的交付失败信息。
@@ -79,7 +85,8 @@
 - 修复 macOS 符号链接环境下 tree-sitter 回退路径未 resolve 导致 narrowed scan 静默失效的问题；`--no-codegraph` 的优先级高于测试钩子环境变量。
 - 文档同步：SKILL.md 与 README 增补发现引擎章节、降级规则与可选依赖安装方式。
 
-[Unreleased]: https://github.com/ainiaa/skills-project-docs/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/ainiaa/skills-project-docs/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/ainiaa/skills-project-docs/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/ainiaa/skills-project-docs/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/ainiaa/skills-project-docs/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/ainiaa/skills-project-docs/compare/v0.4.1...v0.5.0
