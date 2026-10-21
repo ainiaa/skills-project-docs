@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-10-21
+
+- `project-docs-overview` 接入 Archify 3.2.0 `explainer` 一页说明：结论与问题面板、原生图、步骤、图表、固定提交代码引用、四种样式及局部面板更新。补齐统一入口、独立写作与交付规范、可编辑示例和官方 CLI 回归，并将验收接入 CI；保留默认 Markdown 与十种 typed 图的边界。
+
 ## [0.6.1] - 2026-10-20
 
 - 绘图依赖基线更新为 PlantUML 1.2026.9、draw.io Desktop 32.5.5、Archify 3.2.0，更新官方发行包 SHA-256 与 Archify 提交锚点；Mermaid CLI 继续使用最新稳定版 12.0.0。保持版本识别、显式 CLI 覆盖及防降级保护。
@@ -85,7 +89,8 @@
 - 修复 macOS 符号链接环境下 tree-sitter 回退路径未 resolve 导致 narrowed scan 静默失效的问题；`--no-codegraph` 的优先级高于测试钩子环境变量。
 - 文档同步：SKILL.md 与 README 增补发现引擎章节、降级规则与可选依赖安装方式。
 
-[Unreleased]: https://github.com/ainiaa/skills-project-docs/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/ainiaa/skills-project-docs/compare/v0.6.2...HEAD
+[0.6.2]: https://github.com/ainiaa/skills-project-docs/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/ainiaa/skills-project-docs/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/ainiaa/skills-project-docs/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/ainiaa/skills-project-docs/compare/v0.5.0...v0.5.1

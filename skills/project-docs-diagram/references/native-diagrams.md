@@ -5,6 +5,9 @@ Use this path for a diagram type outside [typed IR v2](diagram-view-ir.md). Choo
 ## Archify 3.2.0 native types
 
 The new upstream `explainer` page mode has a separate Markdown authoring contract; it is not a diagram JSON type accepted by this native diagram channel.
+For a one-page project explanation, route to
+[Project Docs Overview](../../project-docs-overview/references/explainer.md),
+which uses official `finalize explainer` on `.archify.md` drafts.
 
 All ten typed modes are accepted: `architecture`, `workflow`, `sequence`, `dataflow`, `lifecycle`, `erd`, `tree`, `class`, `timeline`, and `waterfall`. Set `schema_version: 1`, the exact `diagram_type`, `meta.title`, and a portable relative `meta.output` ending in `.html`. Use the corresponding installed official schema and examples; schema and relationship validation remain the official CLI's responsibility. This path does not add an IR v2 converter or imply exchange-format conformance.
 

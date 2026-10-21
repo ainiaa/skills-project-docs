@@ -25,6 +25,11 @@ jobs:
         env:
           ARCHIFY_OFFICIAL_CLI: ${{ github.workspace }}/.renderers/managed/bin/archify
         run: python3 -m unittest discover -s scripts -p 'test_*native*.py'
+      - name: Run official explainer authoring, evidence, patch and browser export tests
+        env:
+          ARCHIFY_EXPLAINER_BROWSER_TEST: '1'
+          ARCHIFY_OFFICIAL_CLI: ${{ github.workspace }}/.renderers/managed/bin/archify
+        run: python3 -m unittest discover -s scripts -p 'test_archify_explainer.py'
     env:
       UNDERSTAND_RENDERER_HOME: ${{ github.workspace }}/.renderers/managed
 
