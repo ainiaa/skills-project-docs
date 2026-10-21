@@ -1,11 +1,15 @@
 ---
 name: project-docs-overview
-description: 从仓库代码、测试和已有资料生成可追溯的项目介绍、功能说明、架构总览或开发者上手手册 Markdown；适用于理解业务能力、系统现状、关键规则与端到端链路。
+description: 从仓库代码、测试和已有资料生成可追溯的项目介绍、功能说明、架构总览或开发者上手手册，按需交付 Archify explainer 交互 HTML；适用于理解业务能力、系统现状、关键规则与端到端链路。
 ---
 
 # Project Docs Overview
 
 写给需要理解项目或功能的人，而不是把类名和接口列表改写成段落。介绍业务目标与功能时使用 [项目总览模板](assets/project-overview.md)；介绍某项功能或改造时使用 [功能说明模板](assets/feature-description.md)；评估系统当前架构时使用 [架构总览模板](assets/architecture-overview.md)；为新开发者提供安装、运行、测试和排障说明时使用 [开发者上手手册模板](assets/developer-guide.md)。保留所选模板中全部二级章节及顺序，章节内可增加三级标题。资料不足时写明「待确认」或「暂无已知项」，删除空表格和模板提示。用户明确指定其他结构时按其要求。默认交付一份 Markdown；只有用户要求时才发布到飞书或修改目标项目的文档。明确要求按 PDLC 阶段产出时，使用对应 PDLC Skill 及其模板和状态流程。
+
+## 一页说明与交互 HTML
+
+用户明确要求“一页说明”“做成页面”“explainer”或交互 HTML 时，读取 [explainer 写作与交付规范](references/explainer.md)，按 Archify 3.2.0 的独立 Markdown 契约交付草稿、交互 HTML 与官方回执。继续遵循下方取证和业务核对要求；此模式使用结论与问题面板，不套用固定 Markdown 模板，也不运行 `validate_project_doc.py`。仅画图仍交由 `project-docs-diagram`。未指定页面交付时沿用默认 Markdown。
 
 ## 取证
 

@@ -17,6 +17,12 @@
 4. 文字源文件由引擎成功解析，只证明其官方语法成立；证据清单验证只证明引用和图中原文字段存在。从代码推断的关系仍须人工复核。draw.io 的自由形状没有有限的“官方全部图型”测试矩阵。
 5. [C4 官方](https://c4model.com/diagrams)除系统上下文、容器、组件外，还有代码层以及系统全景、动态和部署辅助图；[Mermaid C4](https://mermaid.js.org/syntax/c4)的实验性语法也列出 Dynamic 与 Deployment。当前分型 IR 尚未覆盖这些视图，不能把“三层 C4 已支持”写成“全部 C4 图已支持”。
 
+## 独立文档模式：explainer
+
+Archify 3.2.0 的 `explainer` 已接入 `project-docs-overview`，由统一入口按“一页说明／项目介绍交互 HTML”需求路由。使用独立 `.archify.md` 草稿和官方 `finalize explainer`，支持结论、问题面板、原生图、步骤、表格、图表、固定 Git 提交的代码引用与 `patch explainer` 局部更新；保留官方回执。它不增加 typed 图型或 IR v2 转换器，也不使用 `validate_project_doc.py` 的固定模板检查。
+
+官方 finalize 默认不启动浏览器，需 `--browser-check` 才有浏览器验收。页面长图 PNG/WebP/JPG 与打印 PDF 独立于图 Viewer 的 SVG/WebM 导出；浏览器兼容性及实际 MIME 必须核实。[独立规范与可执行示例](../skills/project-docs-overview/references/explainer.md)随 Skill 安装，不依赖独立 Archify Skill。`test_archify_explainer.py` 验证示例交付、四种样式、来源固定、局部更新和失败保护；设置 `ARCHIFY_EXPLAINER_BROWSER_TEST=1` 后还验证官方浏览器检查、390px／1440px 布局和四种格式的真实导出。2026-10-20 本机启用浏览器后的 9 项专项测试全部通过；另用真实仓库生成 HTML、检查桌面／手机截图和长图，并确认四引擎 doctor 及三个修改的 Skill 元数据校验通过。CI 的 Archify 作业已启用这组测试，远端结果需以实际运行记录为准。
+
 ## 已实现的补缺与剩余边界
 
 2026-10-20 在 macOS arm64 将依赖升级为上述基线，并显式指定四个实际 CLI 执行完整回归：447 项测试，439 项通过、8 项可选环境跳过。十种 Archify 原生图型与五种图型的六格式导出通过；另外对新版 draw.io、PlantUML 的 PNG／SVG／PDF 和 Archify 树图 PNG 作实际导出并打开图片检查，未见缺字、重叠或连线异常。四引擎 doctor 与 Skill 元数据校验通过。上述为本机验收记录；远端 CI 结果以发布提交的 GitHub Actions 记录为准，Linux 与未启用的宿主验收不包含在本机结论中。

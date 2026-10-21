@@ -7,6 +7,8 @@ description: Create source-backed technical diagrams from a repository, or valid
 
 Produce auditable diagrams from repository evidence. A short request such as “根据代码生成架构图” is sufficient; infer scope, view, engine, and export without requiring a reference image or a detailed prompt. The agent interprets architecture and business meaning; scripts validate source anchors and supported diagram semantics. Keep generated files outside the analyzed repository unless the user asks to commit them. Read [the diagram standard](../../docs/DIAGRAM_STANDARD.md) when selecting a profile. The draw.io landscape theme and GitHub template decision are documented in [the template research](../../docs/ARCHITECTURE_TEMPLATE_RESEARCH.md).
 
+Archify `explainer` 是独立的一页文档模式；用户要求项目说明页面时读取 [project-docs-overview](../project-docs-overview/SKILL.md)，不将它作为 typed JSON 图型传入本 Skill 的原生脚本。
+
 ## Workflow
 
 1. Resolve this skill's real directory. The CLI is `../../scripts/generate_architecture.py` relative to that directory. Run `python3 <cli> context --source <repo> --output <workdir>/context.json`. For a relevant symbol discovered in the first pass, repeat `--focus <qualified-method>` to include its CodeGraph callees. Do not create a CodeGraph index on the user's behalf.

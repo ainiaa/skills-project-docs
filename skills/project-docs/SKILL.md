@@ -13,7 +13,9 @@ description: 项目文档 Skill 集合的统一入口；当用户点名 project-
 |---|---|---|
 | Spring MVC、Feign 或 FastAPI 接口文档 | [project-docs-api](../project-docs-api/SKILL.md) | API Markdown、Postman Collection、cURL 示例 |
 | 架构图、流程图、泳道图、时序图、ERD，或处理 Mermaid、PlantUML、draw.io、Archify 图源 | [project-docs-diagram](../project-docs-diagram/SKILL.md) | 可编辑图源、按需导出文件及验证回执 |
-| 项目介绍、功能说明、架构总览文档或开发者上手手册 | [project-docs-overview](../project-docs-overview/SKILL.md) | 按对应模板生成、带来源的 Markdown |
+| 项目介绍、功能说明、架构总览文档或开发者上手手册 | [project-docs-overview](../project-docs-overview/SKILL.md) | 按对应模板生成、带来源的 Markdown；按需交付 explainer 交互 HTML |
+
+“一页项目说明”“explainer”或项目介绍交互 HTML 选择 `project-docs-overview` 的一页说明模式；它可嵌入原生图，但不作为第十一种图型交给图形脚本。
 
 用户已明确交付物时直接选择，无需再询问入口名称。仅要求画图时读取绘图能力；“架构总览文档”由文档能力组织正文，并读取绘图能力完成必需的系统全景图和核心流程图。保留用户指定的图型、引擎和导出格式。
 

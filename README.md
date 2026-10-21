@@ -2,7 +2,7 @@
 
 面向 Codex、Claude Code、ZCode、DeepSeek Harness（DSH）、Gemini CLI、Grok Build、pi 和 OpenCode 的项目文档 Skill 集合。`project-docs` 是统一入口，根据需求选择或组合三个专用能力：`project-docs-api` 生成接口文档，`project-docs-diagram` 生成和校验技术图，`project-docs-overview` 生成项目介绍、功能说明与开发者上手手册。所有宿主共用同一份仓库与渲染引擎安装。
 
-当前版本：[0.6.1](https://github.com/ainiaa/skills-project-docs/releases/tag/v0.6.1)。改动记录见[变更日志](CHANGELOG.md)。
+当前版本：[0.6.2](https://github.com/ainiaa/skills-project-docs/releases/tag/v0.6.2)。改动记录见[变更日志](CHANGELOG.md)。
 
 ## 快速开始
 
@@ -30,6 +30,7 @@
    Codex：使用 $project-docs-diagram 根据这个项目的代码生成 draw.io 架构图，并导出 PNG。
    Codex：使用 $project-docs-overview 根据代码和现有需求资料写项目介绍及主要功能说明。
    Codex：使用 $project-docs-overview 为新开发者写项目上手手册。
+   Codex：使用 $project-docs-overview 把项目用途、核心流程和边界做成 explainer 一页说明。
    Claude Code：/project-docs 介绍这个项目，附上系统架构图和核心流程图。
    Claude Code：/project-docs-api 为这个 Spring Controller 生成 API 文档。
    Claude Code：/project-docs-diagram 根据这个项目的代码生成 draw.io 架构图，并导出 PNG。
@@ -45,7 +46,7 @@
 | 统一选择入口，或组合交付说明文档、技术图和接口文档 | [`project-docs`](skills/project-docs/SKILL.md) | 按需求组合下列产物 |
 | 从 Spring MVC、Feign 或 FastAPI 源码生成接口文档 | [`project-docs-api`](skills/project-docs-api/SKILL.md) | Markdown、Postman Collection、cURL 示例 |
 | 根据仓库证据绘制架构、流程、时序、ERD 等技术图 | [`project-docs-diagram`](skills/project-docs-diagram/SKILL.md) | 可编辑图源、按需导出的图片或 PDF、验证回执 |
-| 根据源码与需求资料介绍项目、评估架构、描述功能或引导新开发者 | [`project-docs-overview`](skills/project-docs-overview/SKILL.md) | 带来源的项目总览、架构总览、功能说明或上手手册 Markdown |
+| 根据源码与需求资料介绍项目、评估架构、描述功能或引导新开发者 | [`project-docs-overview`](skills/project-docs-overview/SKILL.md) | 带来源的项目总览、架构总览、功能说明或上手手册 Markdown；按需交付 explainer HTML |
 
 ## 为什么会有它
 
@@ -78,7 +79,7 @@ Project Docs API 将 API Savior IDEA 插件的 RESTful 文档风格带到 Codex 
 | [draw.io](https://www.drawio.com/docs/diagram-types/) | C4、UML 多种结构／行为图、流程／泳道、BPMN、ER、云与网络架构等；形状和模板可自由组合，没有封闭的图型全集 | 架构总览、C4 上下文／容器／组件、基础 UML 时序、BPMN **可视子集**、ERD | 编写可编辑 `.drawio`，经 draw.io Desktop CLI 验证和导出；BPMN 可视图不等于可执行 BPMN XML |
 | [Archify](https://github.com/tt-a1i/archify/blob/208acba8d412335185b2056fedf54b3405df43fb/archify/schemas/README.md) | 3.2.0 的十种 typed 图：architecture、workflow、sequence、dataflow、lifecycle、erd、tree、class、timeline、waterfall | 暂无 IR v2 转换器；旧 IR v1 可转换为 architecture | 编写十种官方 typed JSON，经 Archify CLI 交付为交互 HTML，再按需导出 |
 
-按官网目录细分，Mermaid 还包括用户旅程、饼图、象限、需求、用例、Git 图、时间线、ZenUML、Sankey、XY、Block、Packet、看板、Architecture、Radar、Event Modeling、Treemap、Venn、Ishikawa、Wardley、Cynefin、TreeView 等；完整且可能变化的清单以[官方语法目录](https://mermaid.js.org/intro/syntax-reference.html)为准。PlantUML 的 UML 图还包括对象图，其非 UML 图包括 EBNF、正则、网络图、Salt 界面图、ArchiMate、SDL、Ditaa、Chronology、WBS、IE／Chen ER 和图表等，详见[官方图型目录](https://plantuml.com/)。draw.io 是自由形状编辑器，除了上表还可绘制思维导图、甘特、看板、组织图、机架图等；其[官方示例目录](https://www.drawio.com/docs/diagram-types/)是示例集合，并非受限的类型清单。Archify 3.2.0 的十种 typed 图均已接入原生通道，包括 ERD、树、类图、时间线与耗时瀑布图；IR v2 转换器仍仅覆盖已有 profile。 3.2.0 新增的 `explainer` 是独立的一页文档模式，不属于这十种图型，本集合当前不将它作为原生图形输入。
+按官网目录细分，Mermaid 还包括用户旅程、饼图、象限、需求、用例、Git 图、时间线、ZenUML、Sankey、XY、Block、Packet、看板、Architecture、Radar、Event Modeling、Treemap、Venn、Ishikawa、Wardley、Cynefin、TreeView 等；完整且可能变化的清单以[官方语法目录](https://mermaid.js.org/intro/syntax-reference.html)为准。PlantUML 的 UML 图还包括对象图，其非 UML 图包括 EBNF、正则、网络图、Salt 界面图、ArchiMate、SDL、Ditaa、Chronology、WBS、IE／Chen ER 和图表等，详见[官方图型目录](https://plantuml.com/)。draw.io 是自由形状编辑器，除了上表还可绘制思维导图、甘特、看板、组织图、机架图等；其[官方示例目录](https://www.drawio.com/docs/diagram-types/)是示例集合，并非受限的类型清单。Archify 3.2.0 的十种 typed 图均已接入原生通道，包括 ERD、树、类图、时间线与耗时瀑布图；IR v2 转换器仍仅覆盖已有 profile。 3.2.0 新增的 `explainer` 已通过 `project-docs-overview` 接入，作为独立的一页文档模式；它不属于这十种图型，不传给原生图形脚本。
 
 因此，“支持某种图”有两种用法：上表 IR v2 列可从本项目分型 IR 确定性转换；其他官方图型由 Skill 根据需求和证据编写原生图源，再用官方引擎验收。后者不是每种图都有独立的自动转换器。[完整差异与边界](docs/RENDERER_CAPABILITY_AUDIT.md)列出更多图型。
 
@@ -90,6 +91,12 @@ Project Docs API 将 API Savior IDEA 插件的 RESTful 文档风格带到 Codex 
 | Archify | typed JSON、交互 HTML | SVG、PNG、JPG、WebP、WebM、PDF |
 
 HTML 是 Archify 的交互展示文件；其余三种引擎的 HTML 不是本项目当前的导出选项。PNG、JPG、PDF 等格式由所选引擎分别导出，不会先统一转成 SVG 再冒充目标格式。不支持的引擎与格式组合会报错。
+
+### 一页说明（Archify explainer）
+
+需要快速理解或分享项目时，可以要求“把项目用途、核心流程和边界做成一页说明”。`project-docs-overview` 会先核对代码与需求，再生成结论先行的交互 HTML：面板中可包含原生图、步骤、对比表、任务清单、图表与固定 Git 提交的代码引用。读者可切换四种样式和明暗主题，打开图的完整 Viewer。
+
+交付保留可编辑的 `.archify.md`、相邻资源、HTML 和官方回执；[写作与命令规范](skills/project-docs-overview/references/explainer.md)及[可执行结构示例](skills/project-docs-overview/assets/project-explainer.archify.md)可供参考。官方 `finalize explainer` 默认检查文档与成品，不启动浏览器；可加 `--browser-check`，视觉与业务判断仍须另行核对。页面菜单支持 PNG/WebP/JPG 长图及打印 PDF；整页不走图形通道的 SVG/WebM 导出。未要求页面时仍生成原有 Markdown 文档。
 
 ## 安装与升级
 
