@@ -29,7 +29,7 @@ if cli:
         if len(lines) == 2 and lines[0] == '#!/bin/sh':
             words = shlex.split(lines[1])
             if len(words) >= 4 and words[0] == 'exec' and words[-1] == '$@':
-                paths.extend(str(Path(word).parent) for word in words[2:-1] if Path(word).suffix in ('.js', '.mjs', '.cjs') and Path(word).is_absolute())
+                paths.extend(str(Path(word).resolve().parent) for index, word in enumerate(words[1:-1]) if Path(word).is_absolute() and (index == 0 or Path(word).suffix in ('.js', '.mjs', '.cjs')))
                 for flag in ('-p', '--puppeteerConfigFile'):
                     if flag in words:
                         config = str((path.parent / words[words.index(flag)+1]).resolve())

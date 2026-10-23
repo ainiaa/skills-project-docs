@@ -41,6 +41,18 @@ test('external wrapper discovers quoted module and browser configuration paths',
   assert.equal(JSON.parse(result.stdout).options.executablePath, f.chrome);
 });
 
+test('CI wrapper resolves its executable symlink to the installed Mermaid modules', t => {
+  const f = fixture(t), wrapper = join(f.root, 'mmdc-ci'), config = join(f.root, 'browser.json');
+  mkdirSync(join(f.root, 'bin'));
+  const executable = join(f.root, 'bin/mmdc');
+  symlinkSync(f.cli, executable);
+  writeFileSync(config, JSON.stringify({ executablePath: f.chrome }));
+  writeFileSync(wrapper, `#!/bin/sh\nexec '${executable}' --puppeteerConfigFile '${config}' "$@"\n`, { mode: 0o755 });
+  const result = f.run({ MERMAID_OFFICIAL_CLI: wrapper, PUPPETEER_EXECUTABLE_PATH: '' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(JSON.parse(result.stdout).options.executablePath, f.chrome);
+});
+
 test('explicit modules and browser take precedence; bad configuration never falls back', t => {
   const f = fixture(t);
   const empty = join(f.modules, 'empty');
