@@ -1,0 +1,41 @@
+@startuml
+skinparam defaultFontName "PingFang SC"
+title 退款业务时序 · flow-2 · 模拟设定\nFR-002～FR-005 / AC-002、AC-004～AC-009、AC-012
+actor 客服
+participant "工作台\n（角色/状态检查）" as UI
+participant "共享模拟对象\n（内存，不是真实服务/数据库）" as Data
+actor 审批人
+客服 -> UI : 创建有效申请（FR-002）
+UI -> Data : 生成稳定申请 ID，保留补充说明（AC-012）
+alt 金额低于模拟阈值
+  UI -> Data : 自动审批，状态=退款处理中
+else 达到模拟阈值
+  UI -> Data : 状态=待审批，加入审批待办
+  UI --> 客服 : 显示待审批，并非退款成功
+  审批人 -> UI : 从待办打开同一 ID（FR-003）
+  alt 审批通过
+    UI -> Data : 状态=退款处理中，移出待办
+  else 填写原因后拒绝
+    UI -> Data : 状态=已拒绝，记录原因
+    break 拒绝终态
+      UI --> 审批人 : 禁止再次审批或执行
+    end
+  end
+end
+note over UI,Data : 审批通过尚非退款成功；FR-004 使用显式模拟控制
+审批人 -> UI : 对处理中申请模拟执行失败
+UI -> Data : 状态=执行失败，追加失败记录
+UI --> 审批人 : 显示失败原因与重试入口
+opt 审批人选择模拟重试
+  审批人 -> UI : 重试（AC-008）
+  UI -> Data : 回到退款处理中，追加重试记录
+  审批人 -> UI : 模拟执行成功
+  UI -> Data : 状态=退款成功，追加成功记录
+  UI --> 审批人 : 成功终态，禁止重复执行
+end
+客服 -> UI : 返回列表/详情查询同一 ID（FR-005）
+UI -> Data : 读取共享状态及操作记录
+Data --> UI : 当前状态、同一对象及有序记录
+UI --> 客服 : 与审批待办一致的处理结果
+note over 客服,审批人 : 业务时序仅解释模拟状态与交接；真实异步回调、超时及支付方案未定义，须由研发核实。
+@enduml

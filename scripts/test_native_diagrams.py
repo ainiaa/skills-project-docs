@@ -419,8 +419,8 @@ class NativeDiagramTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("<svg", (self.output / "diagram.plantuml.svg").read_text())
 
-    @unittest.skipUnless(os.environ.get("DRAWIO_OFFICIAL_CLI") or shutil.which("drawio"),
-                         "official draw.io CLI unavailable")
+    @unittest.skipUnless(os.environ.get("PROJECT_DOCS_DESKTOP_TESTS") == "1" and (os.environ.get("DRAWIO_OFFICIAL_CLI") or shutil.which("drawio")),
+                         "desktop acceptance requires PROJECT_DOCS_DESKTOP_TESTS=1 and draw.io")
     def test_official_drawio_freeform_diagram_native_export(self):
         source = self.root / "freeform.drawio"
         source.write_text('<mxfile><diagram id="one" name="One"><mxGraphModel><root>'

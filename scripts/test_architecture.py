@@ -524,9 +524,9 @@ class ArchitectureTests(unittest.TestCase):
         self.assertNotEqual(missing_archify.returncode, 0)
         self.assertFalse((self.root / "output" / "architecture.archify.png").exists())
 
-    @unittest.skipUnless(all(os.environ.get(name) for name in
+    @unittest.skipUnless(os.environ.get("PROJECT_DOCS_DESKTOP_TESTS") == "1" and all(os.environ.get(name) for name in
                              ("MERMAID_OFFICIAL_CLI", "PLANTUML_OFFICIAL_CLI", "DRAWIO_OFFICIAL_CLI")),
-                         "official Mermaid, PlantUML, and draw.io CLIs are not configured")
+                         "desktop acceptance requires PROJECT_DOCS_DESKTOP_TESTS=1 and configured CLIs")
     def test_official_diagram_engines_accept_generated_outputs(self):
         (self.root / "tables.sql").write_text("CREATE TABLE orders\n", encoding="utf-8")
         self.ir["domains"][0]["name"] = "A & B"

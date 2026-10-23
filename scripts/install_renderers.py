@@ -195,8 +195,11 @@ class RendererInstaller:
         if len(words) < 3 or words[0] != "exec" or words[-1] != "$@":
             return False
         if name == "plantuml":
-            return (len(words) == 5 and words[2] == "-jar" and Path(words[3]).name == "plantuml.jar"
-                    and Path(words[3]).resolve().is_relative_to(managed))
+            command = words[1:-1]
+            if len(command) == 4 and command[1] == "-Djava.awt.headless=true":
+                command.pop(1)
+            return (len(command) == 3 and command[1] == "-jar" and Path(command[2]).name == "plantuml.jar"
+                    and Path(command[2]).resolve().is_relative_to(managed))
         if name == "drawio":
             command = words[1:-1]
             if len(command) == 3 and Path(command[0]).name == "xvfb-run" and command[1] == "-a":
@@ -344,7 +347,7 @@ class RendererInstaller:
                     raise RuntimeError("PlantUML JAR checksum does not match the pinned release")
                 destination.mkdir(parents=True, exist_ok=True)
                 shutil.move(str(downloaded), str(jar))
-        return self._publish_wrapper("plantuml", f"{shlex.quote(str(java))} -jar {shlex.quote(str(jar))}")
+        return self._publish_wrapper("plantuml", f"{shlex.quote(str(java))} -Djava.awt.headless=true -jar {shlex.quote(str(jar))}")
 
     def _find_drawio_app(self):
         managed = self.home / "drawio" / DRAWIO_VERSION / "draw.io.app"
@@ -447,6 +450,17 @@ class RendererInstaller:
         if update and (target.exists() or target.is_symlink()) and not self._owned_target(ENGINE_BINARIES[engine], target):
             raise RuntimeError(f"refusing to replace existing renderer path: {target}")
         existing = find_engine(engine)
+        if (engine == "plantuml" and not configured and existing and Path(existing) == target
+                and not target.is_symlink() and self._owned_target("plantuml", target)):
+            command = shlex.split(target.read_text(encoding="utf-8").splitlines()[1])[1:-1]
+            if command[1] == "-jar":
+                # Repair legacy launchers before probing, including equal or newer JAR versions.
+                command.insert(1, "-Djava.awt.headless=true")
+                self.updating = True
+                try:
+                    self._publish_wrapper("plantuml", shlex.join(command))
+                finally:
+                    self.updating = update
         if update and configured and not existing:
             raise RuntimeError(f"configured {engine} CLI is unavailable: {configured}")
         if existing and (not update or configured or

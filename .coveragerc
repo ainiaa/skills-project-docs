@@ -1,0 +1,11 @@
+[run]
+patch = subprocess
+include =
+    */scripts/validate_product_doc.py
+    */scripts/product_dependencies.py
+    */scripts/product_bundle.py
+    */scripts/product_behavior_eval.py
+
+[report]
+fail_under = 90
+show_missing = True

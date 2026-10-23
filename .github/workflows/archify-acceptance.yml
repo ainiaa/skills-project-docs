@@ -47,6 +47,8 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      - name: Install the pinned product Markdown parser for full regression
+        run: python3 -m pip install -r scripts/requirements-product.txt
       - name: Install pinned official renderers through the skill installer
         run: |
           python3 scripts/install_renderers.py --engine mermaid --engine plantuml --engine drawio
@@ -62,3 +64,4 @@ jobs:
         run: python3 -m unittest discover -s scripts -p 'test_*.py'
     env:
       UNDERSTAND_RENDERER_HOME: ${{ github.workspace }}/.renderers/managed
+      PROJECT_DOCS_DESKTOP_TESTS: '1'

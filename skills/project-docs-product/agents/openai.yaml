@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Docs Product"
+  short_description: "Clarify product needs, write PRDs and clickable HTML prototypes"
+  default_prompt: "Use $project-docs-product to clarify these business requirements and deliver a reviewable PRD with an interactive HTML prototype when requested."

@@ -8,7 +8,7 @@ const load = (name) => import(pathToFileURL(require.resolve(name)).href);
 const { Context } = await load("@deepseek-ai/cordis");
 const { default: Skills } = await load("@deepseek-ai/dsh-skill");
 const Filesystem = await load("@deepseek-ai/dsh-skill-filesystem");
-const names = ["project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview"];
+const names = ["project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product"];
 const ctx = new Context();
 try {
   await ctx.plugin(Skills);

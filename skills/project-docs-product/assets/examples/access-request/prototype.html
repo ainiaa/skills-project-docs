@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="product-version" content="demo-1"><title>资源权限申请 · 交互原型</title>
+<style>
+:root{font:16px/1.6 system-ui,sans-serif;color:#18302e;background:#f2f5f3;accent-color:#176b59}*{box-sizing:border-box}body{max-width:1100px;margin:auto;padding:24px}h1,h2,p{margin:0 0 16px}h1{font-size:28px}h2{font-size:21px}header,.toolbar,nav,.actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap}header{justify-content:space-between;margin-bottom:24px}.panel{background:white;border:1px solid #d5e0dc;border-radius:12px;padding:24px;margin:16px 0}button,input,select,textarea{font:inherit}button,select{padding:9px 14px;border:1px solid #b1c9c0;border-radius:7px;background:white;color:#18302e}button{cursor:pointer}button.primary,nav button[aria-pressed=true]{background:#176b59;color:white}button:disabled{opacity:.45;cursor:default}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #b86c13;outline-offset:3px}label{display:block}input,textarea{width:100%;padding:10px;border:1px solid #90aaa0;border-radius:6px;margin:6px 0 16px}textarea{min-height:100px;resize:vertical}small,.muted{color:#526e64}small{display:block}.error{color:#9d291b;min-height:1.6em}.badge{font-weight:700;color:#176b59}ul{padding-left:20px}#records{list-style:none;padding:0}#records li{display:flex;gap:12px;align-items:center;justify-content:space-between;border-top:1px solid #e0e8e4;padding:16px 0}#records li div{min-width:0}#records li button{flex-shrink:0}#records li span{display:block}.wrap,dd,li{overflow-wrap:anywhere}dl{display:grid;grid-template-columns:100px minmax(0,1fr);gap:10px}dd{margin:0;white-space:pre-wrap}dt{color:#526e64}dialog{width:min(560px,calc(100% - 32px));max-height:90vh;overflow:auto;border:1px solid #b1c9c0;border-radius:12px;padding:24px}dialog::backdrop{background:#18302e70}#simulate{border-top:1px solid #d5e0dc;margin-top:20px;padding-top:16px}[hidden]{display:none!important}@media(max-width:600px){body{padding:16px}.panel{padding:16px}header{gap:8px}h1{font-size:24px}nav button{flex:1;padding:9px 8px}dl{grid-template-columns:76px minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<header><div><small>交互原型 · 模拟数据 · demo-1</small><h1>资源权限申请</h1><p class="muted">申请、审批、开通和结果跟踪</p></div><a href="prd.md">查看需求与待决规则</a></header>
+<div class="toolbar"><label for="role">模拟角色</label><select id="role"><option value="employee">员工 · 申请人</option><option value="manager">直属主管</option><option value="admin">资源管理员</option><option value="other">其他员工</option></select><button id="new-request" class="primary" data-requirement="FR-001">创建申请</button></div>
+<p class="muted">先以员工创建，再切换主管审批、管理员执行。执行受理后还需模拟外部结果。刷新会清空数据。</p>
+<nav aria-label="申请视图"><button data-view="mine" aria-pressed="true">我的申请</button><button data-view="tasks" aria-pressed="false">待我处理</button><button data-view="results" aria-pressed="false">结果跟踪</button></nav>
+<main>
+<section id="list-view" class="panel" data-page="list" data-requirement="FR-006" data-scenario="AC-015"><h2 id="list-title" tabindex="-1">我的申请</h2><p id="empty" class="muted">暂无申请。员工可从创建入口开始。</p><ul id="records"></ul></section>
+<section id="detail-view" class="panel" data-page="detail" data-requirement="FR-002 FR-003 FR-004 FR-005 FR-006" hidden>
+<button id="back">← 返回列表</button><h2 style="margin-top:16px">申请 <span id="request-id"></span> · <span id="status" class="badge" role="status" tabindex="-1"></span></h2>
+<dl><dt>资源标识</dt><dd id="saved-resource"></dd><dt>申请理由</dt><dd id="saved-reason"></dd><dt>当前结果</dt><dd id="outcome"></dd></dl>
+<div id="employee-actions" class="actions"><button id="withdraw" data-scenario="AC-007 AC-008">撤回申请</button></div>
+<div id="manager-actions"><label for="rejection">拒绝原因</label><textarea id="rejection" aria-describedby="action-error"></textarea><div class="actions"><button id="approve" class="primary" data-scenario="AC-004 AC-006 AC-012">批准申请</button><button id="reject" data-scenario="AC-005">拒绝申请</button></div></div>
+<div id="admin-actions" class="actions"><button id="execute" class="primary" data-scenario="AC-009 AC-011 AC-013 AC-014">提交开通</button><button id="retry" data-scenario="AC-010">重试开通</button></div>
+<p id="action-error" class="error" role="alert"></p>
+<h2>操作记录</h2><ol id="history"></ol>
+<details id="simulate"><summary>模拟请求与外部结果</summary><p class="muted">只改变本地演示，不调用外部平台。超时、旧尝试迟到和冲突结果尚未定义。</p><label><input type="checkbox" id="fail-action" style="width:auto">下次合法操作模拟请求失败（一次）</label><p>模拟执行受理次数：<strong id="external-count">0</strong>，不代表真实外部执行次数。</p><div class="actions"><button id="external-success">模拟外部成功</button><button id="external-failure">模拟外部失败</button></div></details>
+</section>
+</main>
+<p id="message" role="status"></p><button id="reset">重置演示数据</button><small>角色切换不是真实登录；本原型不证明生产权限、并发或外部幂等。所有业务规则仍待确认。</small>
+<dialog id="create-dialog" data-page="create" data-requirement="FR-001" aria-labelledby="create-title"><h2 id="create-title">创建权限申请</h2><form id="create-form" novalidate><label for="resource">资源标识</label><input id="resource" required aria-describedby="create-error"><label for="reason">申请理由</label><textarea id="reason" required aria-describedby="create-error"></textarea><label><input type="checkbox" id="fail-create" style="width:auto">本次模拟创建失败</label><p id="create-error" class="error" role="alert"></p><div class="actions"><button id="cancel-create" type="button">取消</button><button id="submit-request" class="primary" data-scenario="AC-001 AC-002 AC-003">提交申请</button></div></form></dialog>
+<script>
+'use strict';
+const $ = selector => document.querySelector(selector);
+const labels = {pending:'待审批',ready:'待开通',processing:'开通中',failed:'开通失败',opened:'已开通',rejected:'已拒绝',withdrawn:'已撤回'};
+const actors = {employee:'员工',manager:'直属主管',admin:'资源管理员',other:'其他员工'};
+let requests = [], nextId = 1, selected = null, role = 'employee', view = 'mine';
+const current = () => requests.find(item => item.id === selected);
+const visible = item => role !== 'other' && (view !== 'mine' || role === 'employee') && (view !== 'tasks' || (role === 'manager' && item.state === 'pending') || (role === 'admin' && ['ready','failed'].includes(item.state)));
+function openRecord(id) {
+  selected = id; $('#rejection').value = ''; $('#fail-action').checked = false; $('#action-error').textContent = '';
+  render(); $('#back').focus();
+}
+function render() {
+  $('#new-request').disabled = role !== 'employee';
+  $('#list-title').textContent = {mine:'我的申请',tasks:'待我处理',results:'结果跟踪'}[view];
+  document.querySelectorAll('[data-view]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.view === view)));
+  const rows = requests.filter(visible);
+  $('#records').replaceChildren();
+  for (const item of rows) {
+    const li = document.createElement('li'), info = document.createElement('div'), title = document.createElement('strong'), status = document.createElement('span'), button = document.createElement('button');
+    title.textContent = item.id + ' · ' + item.resource; status.textContent = labels[item.state];
+    info.append(title, status); button.textContent = '查看详情'; button.dataset.open = item.id;
+    button.addEventListener('click', () => openRecord(item.id));
+    li.append(info, button); $('#records').append(li);
+  }
+  $('#empty').hidden = rows.length > 0;
+  const item = current();
+  // Other employees have no access to this scenario's applicant; switching back preserves the selected object.
+  const detail = Boolean(item) && role !== 'other';
+  $('#detail-view').hidden = !detail; $('#list-view').hidden = detail;
+  if (!detail) return;
+  $('#request-id').textContent = item.id; $('#status').textContent = labels[item.state];
+  $('#saved-resource').textContent = item.resource; $('#saved-reason').textContent = item.reason;
+  $('#outcome').textContent = item.outcome || ({pending:'等待直属主管审批',ready:'等待资源管理员提交',processing:'等待外部结果；尚未开通',opened:'外部成功，已开通',withdrawn:'申请人已撤回'}[item.state] || '');
+  $('#employee-actions').hidden = role !== 'employee'; $('#withdraw').disabled = item.state !== 'pending';
+  $('#manager-actions').hidden = role !== 'manager';
+  for (const id of ['approve','reject','rejection']) $('#'+id).disabled = item.state !== 'pending';
+  $('#admin-actions').hidden = role !== 'admin'; $('#execute').disabled = item.state !== 'ready'; $('#retry').disabled = item.state !== 'failed';
+  for (const id of ['external-success','external-failure']) $('#'+id).disabled = role !== 'admin' || item.state !== 'processing';
+  $('#external-count').textContent = String(item.accepted);
+  $('#history').replaceChildren(...item.history.map(text => { const li = document.createElement('li'); li.textContent = text; return li; }));
+}
+function perform(action) {
+  const item = current(); $('#action-error').textContent = '';
+  const transitions = {approve:['manager','pending','ready'],reject:['manager','pending','rejected'],withdraw:['employee','pending','withdrawn'],execute:['admin','ready','processing'],retry:['admin','failed','processing'],success:['admin','processing','opened'],failure:['admin','processing','failed']};
+  const rule = transitions[action];
+  if (!item || !rule || role !== rule[0]) { $('#action-error').textContent = '当前角色无权限执行此操作。'; return; }
+  if (item.state === 'opened' && action === 'success') return;
+  if (item.state !== rule[1]) { $('#action-error').textContent = '当前状态不可操作，未重复提交。'; return; }
+  const rejection = $('#rejection').value.trim();
+  if (action === 'reject' && !rejection) { $('#action-error').textContent = '请填写拒绝原因。'; $('#rejection').focus(); return; }
+  if (!['success','failure'].includes(action) && $('#fail-action').checked) { $('#fail-action').checked = false; $('#action-error').textContent = '模拟请求失败，状态保持不变，可重试。'; return; }
+  item.state = rule[2];
+  if (action === 'execute' || action === 'retry') item.accepted++;
+  item.outcome = action === 'reject' ? rejection : action === 'failure' ? '模拟外部失败：资源暂不可用，可由管理员重试。' : '';
+  item.history.push(actors[role] + ' · ' + labels[item.state] + (item.outcome ? ' · ' + item.outcome : ''));
+  render(); $('#status').focus();
+}
+$('#role').addEventListener('change', event => { role = event.target.value; $('#action-error').textContent = ''; $('#fail-action').checked = false; render(); });
+document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => { view = button.dataset.view; selected = null; render(); }));
+$('#back').addEventListener('click', () => { selected = null; render(); $('#list-title').focus(); });
+$('#new-request').addEventListener('click', () => { if (role !== 'employee') return; $('#create-form').reset(); $('#create-error').textContent = ''; $('#create-dialog').showModal(); $('#resource').focus(); });
+$('#cancel-create').addEventListener('click', () => $('#create-dialog').close());
+$('#create-form').addEventListener('submit', event => {
+  event.preventDefault();
+  if (role !== 'employee') { $('#create-error').textContent = '仅申请人可创建。'; return; }
+  const resource = $('#resource').value.trim(), reason = $('#reason').value.trim();
+  if (!resource || !reason) { $('#create-error').textContent = !resource ? '资源标识必填。' : '申请理由必填。'; $(!resource ? '#resource' : '#reason').focus(); return; }
+  if ($('#fail-create').checked) { $('#fail-create').checked = false; $('#create-error').textContent = '模拟创建失败，输入已保留，可重试。'; return; }
+  const item = {id:'AR-'+String(nextId++).padStart(3,'0'),resource,reason,state:'pending',outcome:'',accepted:0,history:['员工 · 创建申请，待审批']};
+  requests.unshift(item); $('#create-dialog').close(); openRecord(item.id);
+});
+for (const [id, action] of Object.entries({approve:'approve',reject:'reject',withdraw:'withdraw',execute:'execute',retry:'retry','external-success':'success','external-failure':'failure'})) $('#'+id).addEventListener('click', () => perform(action));
+$('#reset').addEventListener('click', () => {
+  if (!confirm('清空所有内存模拟申请及处理记录？')) return;
+  requests = []; nextId = 1; selected = null; role = 'employee'; view = 'mine'; $('#role').value = role; $('#fail-action').checked = false; $('#action-error').textContent = ''; $('#message').textContent = '已清空演示数据。'; render(); $('#new-request').focus();
+});
+render();
+</script>
+</body>
+</html>

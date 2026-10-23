@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 REPOSITORY = Path(__file__).resolve().parents[1]
-NAMES = {"project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview"}
+NAMES = {"project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product"}
 
 
 class NativeHostTests(unittest.TestCase):

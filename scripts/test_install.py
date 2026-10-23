@@ -14,6 +14,24 @@ API_SKILL = REPOSITORY / "skills" / "project-docs-api"
 
 
 class InstallTests(unittest.TestCase):
+    def test_product_skill_lifecycle_and_conflict_are_atomic(self):
+        product = self.codex_home / "skills" / "project-docs-product"
+        product.mkdir(parents=True)
+        sentinel = product / "keep.txt"
+        sentinel.write_text("keep")
+        self.assertNotEqual(self.run_installer().returncode, 0)
+        self.assertEqual(sentinel.read_text(), "keep")
+        self.assertFalse(self.target.exists())
+        sentinel.unlink()
+        product.rmdir()
+        result = self.run_installer()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue(product.is_symlink())
+        self.assertEqual(product.resolve(), REPOSITORY / "skills/project-docs-product")
+        self.assertEqual(self.run_installer("--doctor").returncode, 0)
+        self.assertEqual(self.run_installer("--uninstall").returncode, 0)
+        self.assertFalse(product.exists())
+
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory(prefix="api docs install ")
         self.addCleanup(self.temporary.cleanup)
@@ -197,7 +215,7 @@ class InstallTests(unittest.TestCase):
         for target in legacy:
             self.assertFalse(target.is_symlink(), target)
         for home in (self.codex_home, self.claude_home):
-            for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview"):
+            for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product"):
                 installed = home / "skills" / name
                 self.assertEqual(installed.resolve(), REPOSITORY / "skills" / name)
                 self.assertIn(f"name: {name}\n", (installed / "SKILL.md").read_text())
@@ -448,7 +466,7 @@ class InstallTests(unittest.TestCase):
         self.assertFalse(self.target.exists())
 
     def test_new_hosts_install_update_doctor_and_uninstall_in_isolation(self):
-        names = ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview")
+        names = ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product")
         for host, directory in self.host_directories().items():
             if host in ("codex", "claude"):
                 continue
@@ -485,7 +503,7 @@ class InstallTests(unittest.TestCase):
             result = self.run_installer(action, "--host", "all", "--no-engines", isolated=False)
             self.assertEqual(result.returncode, 0, result.stderr)
             for directory in self.host_directories().values():
-                for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview"):
+                for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product"):
                     self.assertEqual((directory / name).resolve(), REPOSITORY / "skills" / name)
             self.assertFalse(any(target.is_symlink() for target in legacy))
         result = self.run_installer("--uninstall", "--host", "all", isolated=False)
