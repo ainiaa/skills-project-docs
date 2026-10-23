@@ -8,9 +8,9 @@ jobs:
   product:
     runs-on: ubuntu-24.04
     env:
-      UNDERSTAND_RENDERER_HOME: ${{ runner.temp }}/product-renderers
-      MERMAID_OFFICIAL_CLI: ${{ runner.temp }}/product-renderers/bin/mmdc
-      PRODUCT_SCREENSHOT_DIR: ${{ runner.temp }}/product-screenshots
+      UNDERSTAND_RENDERER_HOME: ${{ github.workspace }}/.renderers/product
+      MERMAID_OFFICIAL_CLI: ${{ github.workspace }}/.renderers/product/bin/mmdc
+      PRODUCT_SCREENSHOT_DIR: ${{ github.workspace }}/.product-screenshots
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -49,6 +49,6 @@ jobs:
         with:
           name: product-prototype-screenshots
           path: |
-            ${{ runner.temp }}/product-screenshots
+            ${{ env.PRODUCT_SCREENSHOT_DIR }}
             skills/project-docs-product/assets/examples/access-request/evidence
           if-no-files-found: ignore

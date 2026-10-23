@@ -52,6 +52,11 @@ class ProductWorkflowTests(unittest.TestCase):
         self.assertLess(workflow.index('run: python3 scripts/install_renderers.py --engine mermaid'),
                         workflow.index("python3 -m unittest discover -s scripts -p 'test_product*.py'"))
 
+    def test_product_job_env_uses_contexts_available_before_runner_assignment(self):
+        workflow = (ROOT / '.github/workflows/product-acceptance.yml').read_text()
+        environment = workflow.split('    env:', 1)[1].split('    steps:', 1)[0]
+        self.assertNotRegex(environment, r'\$\{\{\s*runner\.')
+
     def test_full_renderer_ci_installs_product_parser_before_discovery(self):
         workflow = (ROOT / '.github/workflows/archify-acceptance.yml').read_text()
         job = workflow.split('\n  diagram-renderers:\n', 1)[1]
@@ -67,7 +72,7 @@ class ProductWorkflowTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             def configured(name):
                 value = re.search(rf'(?m)^    +{name}: (.+)$', workflow)[1]
-                return value.replace('${{ runner.temp }}', directory)
+                return value.replace('${{ github.workspace }}', directory).replace('${{ runner.temp }}', directory)
             runtime = Path(directory) / 'mock-mmdc'
             runtime.write_text('#!/bin/sh\nexit 0\n')
             runtime.chmod(0o755)
