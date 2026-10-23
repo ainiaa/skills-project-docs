@@ -20,9 +20,10 @@ OPENCODE_SKILLS_DIR="${HOME}/.config/opencode/skills"
 if [[ "${XDG_CONFIG_HOME:-}" == /* ]]; then OPENCODE_SKILLS_DIR="$XDG_CONFIG_HOME/opencode/skills"; fi
 PYTHON_BIN="${UNDERSTAND_PYTHON:-python3}"
 RENDERER_HOME="${UNDERSTAND_RENDERER_HOME:-${HOME}/.local/share/understand-skills/renderers}"
-SKILL_NAMES=(project-docs project-docs-api project-docs-diagram project-docs-overview)
+SKILL_NAMES=(project-docs project-docs-api project-docs-diagram project-docs-overview project-docs-product)
 SOURCES=("$SOURCE_DIR/skills/project-docs" "$SOURCE_DIR/skills/project-docs-api"
-         "$SOURCE_DIR/skills/project-docs-diagram" "$SOURCE_DIR/skills/project-docs-overview")
+         "$SOURCE_DIR/skills/project-docs-diagram" "$SOURCE_DIR/skills/project-docs-overview"
+         "$SOURCE_DIR/skills/project-docs-product")
 OLD_NAMES=(api-savior-docs understand-api-docs understand-api-arch understand-docs understand-arch understand-project)
 OLD_SOURCES=("$SOURCE_DIR" "$SOURCE_DIR" "$SOURCE_DIR/skills/understand-api-arch"
              "$SOURCE_DIR" "$SOURCE_DIR/skills/understand-arch" "$SOURCE_DIR/skills/understand-project")
@@ -48,7 +49,7 @@ HOST: codex, claude, zcode, dsh, gemini, grok, pi, opencode, both, all.
 both (default) selects Codex and Claude Code; all selects all eight hosts.
 grok targets xAI Grok Build; pi targets the pi coding agent.
 
-Default: install the unified entry and three specialist skills for Codex and Claude Code, and install all missing
+Default: install the unified entry and four specialist skills for Codex and Claude Code, and install all missing
 Mermaid, PlantUML, draw.io, and Archify renderers. --engine installs/checks only
 the named renderer; --no-engines installs/checks only the skill links.
 Uninstall removes this checkout's skill links, never shared renderer programs.
@@ -56,6 +57,8 @@ Uninstall removes this checkout's skill links, never shared renderer programs.
 and renderer minimum versions, preserving equal/newer stable versions.
 --update-deps skips the Git update. --doctor checks versions and runtime dependencies
 without installing or upgrading them.
+Product upstream skills are installed independently; use scripts/product_dependencies.py
+with explicit --skill-root paths to inspect them. This installer never modifies them.
 EOF
 }
 
@@ -145,6 +148,10 @@ if [[ "$ACTION" == install ]]; then
         ! -f "${SOURCES[3]}/assets/feature-description.md" ||
         ! -f "${SOURCES[3]}/assets/developer-guide.md" ||
         ! -f "${SOURCES[3]}/assets/architecture-overview.md" ||
+        ! -f "${SOURCES[4]}/assets/prd-template.md" ||
+        ! -f "${SOURCES[4]}/assets/prototype.html" ||
+        ! -f "$SOURCE_DIR/scripts/validate_product_doc.py" ||
+        ! -f "$SOURCE_DIR/scripts/product_dependencies.py" ||
         ! -f "$SOURCE_DIR/scripts/validate_project_doc.py" ||
         ! -f "$SOURCE_DIR/scripts/project_doc_context.py" ||
         ! -f "$SOURCE_DIR/scripts/project_doc_impact.py" ||
@@ -231,6 +238,7 @@ case "$ACTION" in
     ;;
   doctor)
     status="$renderer_status"
+    echo "Product upstream skills: not checked here; inspect actual host-visible paths with scripts/product_dependencies.py --skill-root <path>"
     version="$(head -1 "$SOURCE_DIR/VERSION" 2>/dev/null || true)"
     if [[ -z "$version" ]]; then
       echo "Missing or empty collection VERSION: $SOURCE_DIR/VERSION" >&2

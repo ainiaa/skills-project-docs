@@ -3,3 +3,11 @@ __pycache__/
 .zcode/
 *.iml
 .idea/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+skills/project-docs-product/assets/examples/access-request/evidence/
+
+# Local code indexes are not distributable skill assets.
+.codegraph/

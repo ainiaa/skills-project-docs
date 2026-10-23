@@ -560,16 +560,21 @@ class DiagramProfilesTest(unittest.TestCase):
                                 "--ir", str(ir_path)], capture_output=True, text=True)
         self.assertEqual(valid.returncode, 0, valid.stdout + valid.stderr)
         out = self.root / "output"
+        engine = self.root / "fixture-engine"
+        engine.write_text(f"#!{sys.executable}\nimport sys\nfrom pathlib import Path\n"
+                          "args=sys.argv[1:]\nflag='--output' if '--output' in args else '-o'\n"
+                          "Path(args[args.index(flag)+1]).write_text('<svg xmlns=\"http://www.w3.org/2000/svg\"/>')\n")
+        engine.chmod(0o755)
         render = subprocess.run([*base, "render", "--source", str(self.root),
                                  "--ir", str(ir_path), "--output", str(out),
-                                 "--format", "drawio"], capture_output=True, text=True)
+                                 "--format", "drawio", "--drawio-cli", str(engine)], capture_output=True, text=True)
         self.assertEqual(render.returncode, 0, render.stdout + render.stderr)
         self.assertEqual(json.loads(render.stdout)["visualReview"], "required")
         self.assertTrue((out / "architecture.drawio").is_file())
         self.assertIn("Demo architecture", (out / "architecture.drawio").read_text())
         mermaid = subprocess.run([*base, "render", "--source", str(self.root),
                                   "--ir", str(ir_path), "--output", str(out),
-                                  "--format", "mermaid"], capture_output=True, text=True)
+                                  "--format", "mermaid", "--mermaid-cli", str(engine)], capture_output=True, text=True)
         self.assertEqual(mermaid.returncode, 0, mermaid.stdout + mermaid.stderr)
         self.assertTrue(any("experimental" in warning for warning in
                             json.loads(mermaid.stdout).get("warnings", [])))
@@ -623,11 +628,11 @@ class DiagramProfilesTest(unittest.TestCase):
         self.assertNotEqual(missing.returncode, 0)
         self.assertIn("detailView", missing.stdout + missing.stderr)
 
-    @unittest.skipUnless(all(os.environ.get(name) or shutil.which(binary) for name, binary in
+    @unittest.skipUnless(os.environ.get("PROJECT_DOCS_DESKTOP_TESTS") == "1" and all(os.environ.get(name) or shutil.which(binary) for name, binary in
                              (("DRAWIO_OFFICIAL_CLI", "drawio"),
                               ("MERMAID_OFFICIAL_CLI", "mmdc"),
                               ("PLANTUML_OFFICIAL_CLI", "plantuml"))),
-                         "official diagram CLIs are unavailable")
+                         "desktop acceptance requires PROJECT_DOCS_DESKTOP_TESTS=1 and official CLIs")
     def test_supported_profiles_parse_in_official_engines(self):
         cases = [
             (self.view("architecture-landscape", [

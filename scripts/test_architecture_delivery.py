@@ -1,6 +1,7 @@
 """Regression tests for strict architecture inventory and bundle delivery."""
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -259,7 +260,8 @@ class ArchitectureDeliveryTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "matched no source files"):
             discover_candidates(self.root, ["missing-module"])
 
-    @unittest.skipUnless(shutil.which("drawio"), "official draw.io CLI is unavailable")
+    @unittest.skipUnless(os.environ.get("PROJECT_DOCS_DESKTOP_TESTS") == "1" and shutil.which("drawio"),
+                         "desktop acceptance requires PROJECT_DOCS_DESKTOP_TESTS=1 and draw.io")
     def test_deliver_renders_overview_and_every_detail(self):
         _, _, path = self._fixture()
         output = self.root / "bundle"
@@ -279,8 +281,8 @@ class ArchitectureDeliveryTest(unittest.TestCase):
         self.assertTrue((output / "cache-detail.json").is_file())
         self.assertTrue((output / "candidates.json").is_file())
 
-    @unittest.skipUnless(shutil.which("drawio") and shutil.which("false"),
-                         "official draw.io CLI or false command is unavailable")
+    @unittest.skipUnless(os.environ.get("PROJECT_DOCS_DESKTOP_TESTS") == "1" and shutil.which("drawio") and shutil.which("false"),
+                         "desktop acceptance requires PROJECT_DOCS_DESKTOP_TESTS=1, draw.io and false")
     def test_failed_replacement_preserves_last_complete_bundle(self):
         _, _, path = self._fixture()
         output = self.root / "bundle"

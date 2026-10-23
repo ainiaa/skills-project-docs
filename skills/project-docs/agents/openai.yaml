@@ -1,4 +1,4 @@
 interface:
   display_name: "Project Docs"
-  short_description: "Route project documentation and diagram requests"
-  default_prompt: "Use $project-docs to create the requested project documentation and technical diagrams from repository evidence."
+  short_description: "Route PRDs, HTML prototypes, project docs and diagrams"
+  default_prompt: "Use $project-docs to deliver the requested PRD, interactive HTML prototype, project documentation or technical diagrams from the available business and repository evidence."

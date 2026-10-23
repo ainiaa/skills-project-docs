@@ -1,5 +1,6 @@
 import os
 import io
+import json
 import shlex
 import subprocess
 import sys
@@ -259,6 +260,62 @@ class RendererInstallerTests(unittest.TestCase):
                 installer.ensure("plantuml", update=True)
         self.assertIn(str(desired), active.read_text())
         self.assertEqual(old_jar.read_bytes(), b"old")
+
+    def test_plantuml_wrapper_runs_headless_and_preserves_arguments_and_exit_status(self):
+        installer = RendererInstaller(self.home)
+        java = self.home / "java runtime"
+        java.write_text(f"#!{sys.executable}\nimport json, sys\nprint(json.dumps(sys.argv[1:]))\nsys.exit(7 if '--fail' in sys.argv else 0)\n")
+        java.chmod(0o755)
+        jar = self.home / "plantuml" / PLANTUML_VERSION / "plantuml.jar"
+        jar.parent.mkdir(parents=True)
+        jar.write_bytes(b"jar")
+        with patch.object(installer, "_ensure_java", return_value=java):
+            wrapper = installer._install_plantuml()
+        for extra, status in ((["diagram with spaces.puml"], 0), (["--fail"], 7)):
+            with self.subTest(extra=extra):
+                result = subprocess.run([str(wrapper), *extra], capture_output=True, text=True)
+                self.assertEqual(result.returncode, status)
+                self.assertEqual(json.loads(result.stdout),
+                                 ["-Djava.awt.headless=true", "-jar", str(jar), *extra])
+        self.assertTrue(installer._owned_target("plantuml", wrapper))
+
+    def test_existing_managed_plantuml_repairs_headless_without_reinstall_or_downgrade(self):
+        for update in (False, True):
+            for version in (PLANTUML_VERSION, "1.2027.1"):
+                with self.subTest(update=update, version=version), tempfile.TemporaryDirectory() as directory:
+                    installer = RendererInstaller(Path(directory))
+                    jar = installer.home / "plantuml" / version / "plantuml.jar"
+                    jar.parent.mkdir(parents=True)
+                    jar.write_bytes(b"keep existing jar")
+                    wrapper = installer._publish_wrapper("plantuml", f"'/java runtime' -jar {shlex.quote(str(jar))}")
+                    def probe(*_):
+                        self.assertIn("-Djava.awt.headless=true", wrapper.read_text())
+                        return tuple(map(int, version.split('.')))
+                    with patch("install_renderers.find_engine", return_value=str(wrapper)), \
+                         patch.object(installer, "version", side_effect=probe), \
+                         patch.object(installer, "_install_plantuml") as install:
+                        self.assertEqual(installer.ensure("plantuml", update=update), str(wrapper))
+                        first = wrapper.read_bytes()
+                        installer.ensure("plantuml", update=update)
+                    self.assertEqual(wrapper.read_bytes(), first)
+                    command = shlex.split(wrapper.read_text().splitlines()[1])
+                    self.assertEqual(command, ["exec", "/java runtime", "-Djava.awt.headless=true", "-jar", str(jar), "$@"])
+                    self.assertEqual(jar.read_bytes(), b"keep existing jar")
+                    install.assert_not_called()
+
+    def test_plantuml_repair_preserves_explicit_override_and_custom_jvm_options(self):
+        installer = RendererInstaller(self.home)
+        jar = self.home / "plantuml" / PLANTUML_VERSION / "plantuml.jar"
+        for options, override in (("", True), ("-Xmx512m", False), ("-Djava.awt.headless=false", False)):
+            with self.subTest(options=options, override=override):
+                wrapper = self.home / "bin" / "plantuml"
+                wrapper.parent.mkdir(exist_ok=True)
+                wrapper.write_text(f'#!/bin/sh\nexec /java {options} -jar {shlex.quote(str(jar))} "$@"\n')
+                original = wrapper.read_bytes()
+                with patch.dict(os.environ, PLANTUML_OFFICIAL_CLI=str(wrapper) if override else ""), \
+                     patch("install_renderers.find_engine", return_value=str(wrapper)):
+                    self.assertEqual(installer.ensure("plantuml"), str(wrapper))
+                self.assertEqual(wrapper.read_bytes(), original)
 
     def test_update_refuses_to_replace_custom_managed_directory_entry(self):
         installer = RendererInstaller(self.home)

@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="product-version" content="flow-2">
+<title>退款工作台 · 完整流程原型</title>
+<style>
+:root{--ink:#203138;--muted:#5d6b67;--paper:#f5f5ef;--white:#fff;--line:#dde3dd;--green:#176657;--mint:#e9f3ed;--nav:#1c302e;--orange:#9c5a16;--red:#a34336;--radius:14px;font-family:"PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--paper);font-size:14px}
+*{box-sizing:border-box}body{margin:0}button,input,select,textarea{font:inherit}button,a,input,select,textarea,summary{-webkit-tap-highlight-color:transparent}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.45}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #be8d3a;outline-offset:3px}button{border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 15px;border-radius:8px;line-height:1.4}button:hover:not(:disabled){border-color:var(--green);background:#f1f7f2}button.primary{color:white;background:var(--green);border-color:var(--green)}button.primary:hover:not(:disabled){background:#124c42}button.danger{color:var(--red)}a{color:var(--green)}[hidden]{display:none!important}.app{display:grid;grid-template-columns:224px minmax(0,1fr);min-height:100vh}.sidebar{background:var(--nav);color:#dce6df;padding:32px 20px;display:flex;flex-direction:column;gap:34px}.brand{display:flex;gap:12px;align-items:center;font-size:20px;letter-spacing:.03em;font-weight:650}.brand-mark{display:grid;place-items:center;width:36px;height:36px;border:1px solid #87a998;color:#eff5e9;border-radius:10px;font-family:Georgia,serif;font-size:25px}.brand small{display:block;font-size:10px;letter-spacing:.16em;color:#9fb7aa;margin-top:5px;font-weight:400}.workspace{font-size:11px;letter-spacing:.12em;color:#91a99f;margin:0 10px 12px}.nav{display:grid;gap:8px}.nav button{display:flex;justify-content:space-between;align-items:center;text-align:left;border:0;color:#d0ddd5;background:transparent;padding:13px 14px}.nav button.active{background:#334c44;color:#fff}.nav button:hover:not(:disabled){background:#29463d}.nav button span:last-child{font-variant-numeric:tabular-nums;font-size:12px}.side-note{margin-top:auto;padding:18px 12px 0;border-top:1px solid #3c5149;font-size:12px;color:#b3c4b7;line-height:1.9}.side-note strong{color:#e0eadd;font-weight:500}.main{padding:27px 42px 42px;min-width:0;max-width:1700px;width:100%;margin:auto}.topbar{display:flex;justify-content:space-between;align-items:center;gap:20px;padding-bottom:23px;border-bottom:1px solid var(--line)}.eyebrow{font-size:11px;letter-spacing:.12em;color:var(--muted);margin:0 0 10px}.topbar h1{font-size:28px;letter-spacing:.03em;margin:0;font-weight:650}.top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}.role-field{font-size:11px;color:var(--muted)}.role-field select{display:block;min-width:124px;margin-top:5px;border:1px solid var(--line);border-radius:7px;background:white;color:var(--ink);padding:8px 10px}.notice{margin:20px 0;color:#78623e;background:#f5eddd;border:1px solid #e8dcc3;border-radius:9px;padding:12px 15px;font-size:12px;line-height:1.8}.notice a{margin-left:10px}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:23px 0}.stat{border:1px solid var(--line);background:#fff;padding:20px 22px;border-radius:var(--radius)}.stat-label{color:var(--muted);font-size:12px;display:flex;justify-content:space-between}.stat-value{font:36px Georgia,serif;margin-top:12px;color:var(--ink);font-variant-numeric:tabular-nums}.stat-value small{font:11px "PingFang SC",sans-serif;color:var(--muted);margin-left:7px}.dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-top:4px;background:#90a99a}.dot.pending{background:#c49449}.dot.processing{background:#579aaf}.dot.refunded{background:#538b67}.panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-top:19px}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:21px 24px;border-bottom:1px solid var(--line)}h2{font-size:17px;margin:0;font-weight:600}h3{font-size:14px;margin:0 0 12px}.subtle{font-size:12px;color:var(--muted);line-height:1.8}.flow-strip{display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:12px;padding:18px 22px;border:1px solid var(--line);border-radius:10px;background:#edf1e8;margin-top:21px}.flow-strip b{font-weight:500;color:var(--green)}.flow-strip .arrow{color:#a0ad9b}.flow-strip small{margin-left:auto;color:var(--muted)}.filters{display:flex;gap:12px;padding:18px 24px;align-items:center}.filters input{max-width:340px;flex:1;min-width:0}.field{display:grid;align-content:start;gap:7px;margin-bottom:17px}.field label{font-size:12px;color:#53645e}.field input,.field textarea,.filters input,.filters select{border:1px solid #cfd8d0;border-radius:7px;background:#fff;padding:10px 12px;color:var(--ink);min-width:0;max-width:100%}.field textarea{resize:vertical;min-height:85px}.field small{color:var(--muted);font-size:11px;line-height:1.7}.table-wrap{overflow:auto;width:100%}table{border-collapse:collapse;text-align:left;width:100%;white-space:nowrap}th{padding:12px 24px;background:#fafbf8;color:#5e6e64;font-size:11px;letter-spacing:.04em;font-weight:500;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}td{padding:21px 24px;border-bottom:1px solid #edf0e9;font-size:12px}tbody tr:last-child td{border-bottom:0}td .secondary-text{display:block;color:var(--muted);font-size:11px;margin-top:7px}td.amount{font:17px Georgia,serif;font-variant-numeric:tabular-nums}td button{padding:6px 11px;font-size:11px;color:var(--green);border-color:#d6e1d8}.badge{display:inline-flex;align-items:center;gap:6px;border-radius:5px;padding:6px 9px;font-size:11px;white-space:nowrap;background:#edf0ec;color:#57645a}.badge:before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}.badge.pending{background:#fbf0dd;color:#825615}.badge.processing{background:#eaf2f8;color:#356b88}.badge.refunded{background:#e9f3eb;color:#32724d}.badge.failed{background:#fae8e3;color:#9b4934}.badge.rejected{background:#f0edef;color:#79626b}.panel-foot{padding:14px 24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:11px}.empty{padding:50px 20px;text-align:center;color:var(--muted);line-height:2.5}.below{display:flex;gap:20px;justify-content:space-between;flex-wrap:wrap;padding:18px 2px;color:var(--muted);font-size:11px}.below button{font-size:11px;padding:7px 10px;background:transparent}.back{margin-top:22px;padding-left:0;border:0;background:transparent;color:var(--green);font-size:12px}.detail-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,1fr);gap:22px}.detail-grid .panel{margin-top:14px}.detail-body{padding:25px}.detail-id{font-size:12px;color:var(--muted);letter-spacing:.07em}.detail-amount{font:42px Georgia,serif;margin:15px 0 22px;letter-spacing:-.02em}.detail-amount small{font:12px "PingFang SC",sans-serif;color:var(--muted);margin-right:10px}.facts{display:grid;grid-template-columns:110px minmax(0,1fr);gap:15px;font-size:12px;line-height:1.8}.facts dt{color:var(--muted)}.facts dd{margin:0;overflow-wrap:anywhere}.actions-panel{padding:22px 24px;border-top:1px solid var(--line)}.actions-panel:first-child{border-top:0}.buttons{display:flex;gap:9px;flex-wrap:wrap}.reason-field{margin-top:17px}.error{color:var(--red);font-size:12px;line-height:1.7;min-height:20px;margin:8px 0}.status-text{margin:12px 0;font-size:13px;line-height:1.9;color:#52665b}.history{padding:22px 24px}.history summary{cursor:pointer;font-weight:600;font-size:14px}.history ol{padding:6px 0 0 15px;margin:18px 0 0;border-left:1px solid #cad9cc;list-style:none}.history li{padding:0 0 22px 13px;font-size:12px;line-height:1.8;position:relative}.history li:before{content:"";width:7px;height:7px;background:#7a9a83;border:3px solid #fff;box-sizing:content-box;border-radius:50%;position:absolute;left:-22px;top:4px}.history time{font-size:10px;color:var(--muted);display:block}.history .actor{color:var(--muted);margin-left:7px}.stepper{display:flex;gap:8px;align-items:center;padding:20px 24px;background:#fafbf7;font-size:11px;color:#647267}.stepper span{flex:1;line-height:1.7}.stepper .done{color:var(--green)}.stepper .current{font-weight:600;color:var(--ink)}dialog{border:1px solid var(--line);border-radius:16px;max-width:560px;width:calc(100vw - 32px);padding:0;color:var(--ink);box-shadow:0 24px 90px #142a2a33}dialog::backdrop{background:#15272680;backdrop-filter:blur(3px)}.modal-head{padding:25px 28px 18px;border-bottom:1px solid var(--line)}.modal-head h2{font-size:21px;margin-bottom:8px}.modal-body{padding:24px 28px}.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}.modal-actions{display:flex;justify-content:flex-end;gap:10px;padding-top:10px}.role-warning{background:#f2f5ef;padding:10px 12px;border-radius:6px;font-size:11px;color:var(--muted);line-height:1.7}.toast{color:var(--green);font-size:12px;min-height:18px;margin:12px 0 0}.footer-version{font-family:Georgia,serif;color:#8aa795;font-size:12px;letter-spacing:.1em}.count-pill{white-space:nowrap;flex-shrink:0;background:#edf3ec;color:#536c5b;border-radius:5px;padding:5px 8px;font-size:11px}.detail-notice{margin-top:12px;color:var(--muted);font-size:11px;line-height:1.8}
+@media(max-width:1100px){.main{padding:24px}.detail-grid{grid-template-columns:1fr}.sidebar{padding:26px 14px}.app{grid-template-columns:190px minmax(0,1fr)}td,th{padding-left:18px;padding-right:18px}.topbar{align-items:flex-start}.top-actions{max-width:310px}.stat{padding:16px}.flow-strip small{margin-left:0}}
+@media(max-width:700px){.app{grid-template-columns:minmax(0,1fr)}.sidebar{padding:15px 18px;gap:14px}.brand{font-size:17px}.brand small,.workspace,.side-note{display:none}.brand-mark{width:30px;height:30px;font-size:21px}.nav{display:flex;gap:8px}.nav button{padding:9px 12px;gap:15px;flex:1}.main{padding:20px 16px 28px}.topbar{display:block}.topbar h1{font-size:25px}.top-actions{max-width:none;justify-content:flex-start;margin-top:18px;gap:8px}.role-field{margin-right:auto}.role-field select{min-width:108px}.top-actions button{font-size:11px;padding:9px 11px}.notice{font-size:11px}.stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0}.stat{padding:15px}.stat-value{font-size:30px}.flow-strip{gap:9px;padding:13px;font-size:11px}.flow-strip small{width:100%}.panel-head{padding:18px}.filters{padding:14px;gap:8px;flex-wrap:wrap}.filters input{min-width:180px;max-width:none}.filters select{flex:1}td,th{padding-left:16px;padding-right:16px}.panel-foot{padding:13px 16px;line-height:1.7}.detail-body,.actions-panel,.history{padding:20px}.detail-grid{gap:0;grid-template-columns:minmax(0,1fr)}.facts{grid-template-columns:80px minmax(0,1fr)}.detail-amount{font-size:35px}.stepper{padding:17px}.form-row{grid-template-columns:1fr;gap:0}.modal-head,.modal-body{padding:20px}.below{gap:8px}.footer-version{display:none}}
+@media(max-width:700px){.table-wrap{overflow:visible}table,tbody{display:block;white-space:normal}thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}tbody tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:18px 16px;border-bottom:1px solid var(--line)}tbody tr:last-child{border-bottom:0}td{padding:0;border:0;overflow-wrap:anywhere;min-width:0}td:nth-child(1){grid-column:1;grid-row:1}td:nth-child(2),td:nth-child(3),td:nth-child(4),td:nth-child(5){grid-column:1}td:nth-child(2)::before{content:"客户 / 企业名称 · ";color:var(--muted)}td:nth-child(3)::before{content:"金额 · ";font:12px "PingFang SC",sans-serif;color:var(--muted)}td:nth-child(5){color:var(--muted)}td:nth-child(5) .secondary-text{display:inline;margin-left:8px}td:nth-child(6){grid-column:2;grid-row:1 / span 2;align-self:start}td button{min-height:44px;padding:10px 12px}td.empty{grid-column:1 / -1}}
+@media(prefers-reduced-motion:no-preference){.panel{animation:appear .2s ease-out}@keyframes appear{from{opacity:.6;transform:translateY(3px)}to{opacity:1;transform:none}}}
+.change-note{display:none;font-size:12px;line-height:1.8;margin:8px 0;color:#46544c;overflow-wrap:anywhere}.review [data-change]{outline:2px dashed #80612b;outline-offset:3px}.review .change-note{display:block}.review-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.review [data-change="added"]{outline-color:#176657}.field .change-note{font-size:12px;color:#46544c}.facts .change-note{grid-column:1 / -1}.review .change-note a{font-weight:600}
+.review .mobile-change-note{display:none}
+.journey-guide{border:1px solid var(--line);border-radius:9px;padding:10px 14px;margin:14px 0;font-size:12px;line-height:1.8;background:#fff}.journey-guide summary{cursor:pointer;color:var(--green);font-weight:600}.journey-guide .buttons{margin:10px 0}.journey-guide button{font-size:12px;padding:7px 10px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:10px 0}.stat{padding:8px 6px}.stat-label{font-size:11px;min-height:32px}.stat-label .dot{display:none}.stat-value{font-size:23px;margin-top:3px}.stat-value small{margin-left:3px}.topbar{padding-bottom:16px}.notice{margin:12px 0;padding:8px 10px}.flow-strip{margin-top:12px;padding:9px 12px;gap:6px}.journey-guide{margin:10px 0;padding:7px 10px}.panel-head{padding:14px}.panel-head .subtle{display:none}}
+@media(max-width:700px){.review .mobile-change-note{display:block;margin:16px;padding:10px;line-height:1.8}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar" aria-label="工作区导航">
+  <div class="brand"><span class="brand-mark" aria-hidden="true">R</span><div>退款工作台<small>REFUND OPERATIONS</small></div></div>
+  <div><p class="workspace">业务工作区 / DEMO</p><nav class="nav"><button type="button" data-view="requests" class="active">申请列表 <span id="nav-total">3</span></button><button type="button" data-view="approvals" disabled>审批待办 <span id="nav-pending">1</span></button></nav></div>
+  <div class="side-note"><strong>把一笔申请走到底</strong><br>创建、审批、执行、处理结果<br>所有视图共享同一份模拟数据。<br><br><span class="footer-version">FLOW — 02</span></div>
+</aside>
+<main class="main">
+  <header class="topbar"><div><p class="eyebrow">售后管理 / 模拟评审工作区</p><h1 id="page-title" tabindex="-1">申请列表</h1></div><div class="top-actions">
+    <label class="role-field" data-requirement="FR-003">当前模拟角色<select id="role-select" data-scenario="AC-006"><option value="support">客服</option><option value="approver">审批人</option></select></label>
+    <button id="review-mode" data-review-toggle type="button" aria-pressed="false">显示变更标注</button><button id="settings-button" type="button" data-requirement="FR-006">演示设置</button>
+    <button id="create-request" type="button" class="primary" data-requirement="FR-002">＋ 创建申请</button>
+  </div></header>
+  <p class="notice" id="prototype-notice">交互原型 · 模拟数据 · flow-2。角色、审批及执行均为演示，不连接真实订单或支付。刷新会清除本次变更。<a href="prd.md">查看 PRD 与流程覆盖表 ↗</a></p>
+  <details id="journey-guide" class="journey-guide" data-requirement="FR-001" data-scenario="AC-013"><summary>场景引导：选择一条路线开始</summary><div class="buttons"><button type="button" data-guide="auto">自动审批到成功</button><button type="button" data-guide="reject">人工拒绝</button><button type="button" data-guide="retry">失败后重试</button></div><p id="guide-instructions" role="status">选择路线查看角色、起点和结束结果。引导只导航，不自动创建或处理申请。</p><div class="buttons"><button type="button" id="guide-start" disabled>前往场景起点</button><button type="button" id="guide-exit">退出引导</button></div></details>
+  <section class="stats" aria-label="共享申请指标" data-requirement="FR-005">
+    <div class="stat"><div class="stat-label">全部申请 <i class="dot" aria-hidden="true"></i></div><div class="stat-value"><span id="metric-total">3</span><small>笔</small></div></div>
+    <div class="stat"><div class="stat-label">等待人工审批 <i class="dot pending" aria-hidden="true"></i></div><div class="stat-value"><span id="metric-pending">1</span><small>笔</small></div></div>
+    <div class="stat"><div class="stat-label">退款处理中 <i class="dot processing" aria-hidden="true"></i></div><div class="stat-value"><span id="metric-processing">1</span><small>笔</small></div></div>
+    <div class="stat"><div class="stat-label">退款成功 <i class="dot refunded" aria-hidden="true"></i></div><div class="stat-value"><span id="metric-refunded">1</span><small>笔</small></div></div>
+  </section>
+  <section id="requests-view" data-page="requests" data-requirement="FR-001">
+    <div class="flow-strip"><b>本期完整流程</b><span>申请</span><span class="arrow">→</span><span>审批</span><span class="arrow">→</span><span>退款执行</span><span class="arrow">→</span><span>结果与记录</span><small id="threshold-hint">达到 ¥500.00 进入人工审批</small></div>
+    <section class="panel"><div class="panel-head"><div><h2>退款申请</h2><p class="subtle" style="margin:6px 0 0">从一笔申请开始，追踪每一次处理与角色交接。</p></div><span class="count-pill" id="visible-count">3 笔申请</span></div>
+      <div class="filters"><label class="subtle" for="search">查找</label><input id="search" type="search" placeholder="搜索申请号、订单号或客户" data-scenario="AC-001"><label class="subtle" for="status-filter">状态</label><select id="status-filter"><option value="all">全部状态</option><option value="pending">待审批</option><option value="processing">退款处理中</option><option value="refunded">退款成功</option><option value="failed">执行失败</option><option value="rejected">已拒绝</option></select></div>
+      <p class="change-note mobile-change-note" data-change="modified" data-change-note="客户改名为客户 / 企业名称，原40码元校验和数据保持不变" data-requirement="FR-001" data-scenario="AC-001">修改：客户 → 客户 / 企业名称；原数据和40码元校验不变。<a href="prd.md#fr-001-申请列表与详情入口">FR-001 / AC-001</a></p><div class="table-wrap"><table id="request-table"><caption hidden>退款申请及其共享状态</caption><thead><tr><th scope="col">申请 / 订单</th><th scope="col" data-change="modified" data-change-note="客户改名为客户 / 企业名称，原40码元校验和数据保持不变" data-requirement="FR-001" data-scenario="AC-001">客户 / 企业名称<small class="change-note">修改：客户 → 客户 / 企业名称；校验不变。<a href="prd.md#fr-001-申请列表与详情入口">FR-001 / AC-001</a></small></th><th scope="col">退款金额</th><th scope="col">当前状态</th><th scope="col">更新时间</th><th scope="col">操作</th></tr></thead><tbody></tbody></table></div>
+      <div class="panel-foot"><span>模拟工作区 · 数据仅保存在当前页面内存中</span><span>金额单位：人民币元</span></div>
+    </section>
+  </section>
+  <section id="approvals-view" data-page="approvals" hidden data-requirement="FR-003"><section class="panel"><div class="panel-head"><div><h2>等待你的审批</h2><p class="subtle" style="margin:6px 0 0">与客服申请列表使用相同 ID；审批后自动从待办移除。</p></div><span class="count-pill">模拟审批人</span></div><p class="change-note mobile-change-note" data-change="modified" data-change-note="客户改名为客户 / 企业名称，原40码元校验和数据保持不变" data-requirement="FR-001" data-scenario="AC-001">修改：客户 → 客户 / 企业名称；原数据和40码元校验不变。<a href="prd.md#fr-001-申请列表与详情入口">FR-001 / AC-001</a></p><div class="table-wrap"><table id="approval-table"><caption hidden>待人工审批的申请</caption><thead><tr><th scope="col">申请 / 订单</th><th scope="col" data-change="modified" data-change-note="客户改名为客户 / 企业名称，原40码元校验和数据保持不变" data-requirement="FR-001" data-scenario="AC-001">客户 / 企业名称<small class="change-note">修改：客户 → 客户 / 企业名称；校验不变。<a href="prd.md#fr-001-申请列表与详情入口">FR-001 / AC-001</a></small></th><th scope="col">退款金额</th><th scope="col">当前状态</th><th scope="col">更新时间</th><th scope="col">操作</th></tr></thead><tbody></tbody></table></div></section></section>
+  <section id="detail-view" data-page="detail" hidden>
+    <button type="button" id="back-to-list" class="back">← 返回业务列表</button>
+    <div class="detail-grid">
+      <section class="panel"><div class="panel-head"><h2>申请详情</h2><span id="detail-status" tabindex="-1" role="status" aria-live="polite" class="badge"></span></div><div class="detail-body"><div id="detail-id" class="detail-id"></div><div class="detail-amount"><small>申请退款</small><span id="detail-amount"></span></div><dl class="facts"><dt>订单号</dt><dd id="detail-order"></dd><dt data-change="modified" data-change-note="客户改名为客户 / 企业名称，原40码元校验和数据保持不变" data-requirement="FR-002" data-scenario="AC-003">客户 / 企业名称<span class="change-note">修改：客户 → 客户 / 企业名称；校验不变。<a href="prd.md#fr-002-客服创建退款申请">FR-002 / AC-003</a></span></dt><dd id="detail-customer"></dd><dt>申请原因</dt><dd id="detail-reason"></dd><dt data-change="added" data-change-note="新增补充说明；历史缺字段不回填，新记录允许空值" data-requirement="FR-002" data-scenario="AC-012">补充说明<span class="change-note">新增：创建后跨角色保留；历史不回填。<a href="prd.md#fr-002-客服创建退款申请">FR-002 / AC-012</a></span></dt><dd id="detail-note"></dd><dt>当前进展</dt><dd id="detail-progress"></dd></dl><p class="detail-notice">审批通过只表示进入处理中。下方执行结果由模拟控制产生，不代表实际到账。</p></div><div class="stepper" id="stepper" aria-label="当前流程进度"></div><details class="history" id="history-panel" data-requirement="FR-005"><summary id="show-history" data-scenario="AC-009">查看操作记录</summary><ol id="history-list"></ol></details></section>
+      <section class="panel"><div class="actions-panel" id="approval-panel" data-requirement="FR-003"><h2>审批处理</h2><p class="subtle">仅审批人可处理待审批申请。其他角色和状态均不可操作。</p><button type="button" class="primary" id="approve-request" data-scenario="AC-004">审批通过</button><div class="field reason-field"><label for="rejection-reason">拒绝原因</label><textarea id="rejection-reason" placeholder="拒绝时必填，请说明原因" aria-describedby="action-error"></textarea></div><button type="button" class="danger" id="reject-request" data-scenario="AC-005">拒绝申请</button></div>
+      <div class="actions-panel" id="execution-panel" data-requirement="FR-004"><h2>模拟退款执行</h2><p class="subtle">用于评审结果与恢复路径。仅审批人可以模拟处理中的执行结果。</p><div class="buttons"><button type="button" class="primary" id="simulate-success" data-scenario="AC-007">模拟执行成功</button><button type="button" class="danger" id="simulate-failure" data-scenario="AC-008">模拟执行失败</button><button type="button" id="retry-request">模拟重试</button></div><p class="status-text" id="execution-hint"></p></div><div class="actions-panel"><p id="action-error" class="error" role="alert" aria-live="polite"></p><p class="role-warning">这是界面与状态约束演示，不验证真实身份或服务端权限。</p></div></section>
+    </div>
+  </section>
+  <div class="below"><span>完整任务原型 / 申请 ID、状态与记录跨视图联动</span><button type="button" id="reset-demo" data-requirement="FR-006" data-scenario="AC-011">重置演示数据</button></div><p id="toast" class="toast" role="status" aria-live="polite"></p>
+</main>
+</div>
+<dialog id="request-dialog" data-page="create" aria-labelledby="request-dialog-title" data-requirement="FR-002"><div class="modal-head"><div class="review-controls"><h2 id="request-dialog-title">创建退款申请</h2><button id="review-create" data-review-toggle type="button" aria-pressed="false">显示变更标注</button></div><p class="subtle" style="margin:0">填写模拟订单。提交后进入同一笔申请的处理流程。</p></div><form id="create-form" class="modal-body" novalidate><div class="form-row"><div class="field"><label for="order-id">订单号</label><input id="order-id" autocomplete="off" autofocus required></div><div class="field" data-change="modified" data-change-note="客户改名为客户 / 企业名称，原40码元校验和数据保持不变" data-scenario="AC-003"><small class="change-note">修改：客户 → 客户 / 企业名称；原40码元校验不变。<a href="prd.md#fr-002-客服创建退款申请">FR-002 / AC-003</a></small><label for="customer">客户 / 企业名称</label><input id="customer" autocomplete="off" required></div></div><div class="field"><label for="amount">退款金额（元）</label><input id="amount" inputmode="decimal" autocomplete="off" placeholder="例如 200.00" data-scenario="AC-003" required aria-describedby="amount-help create-error"><small id="amount-help">金额大于零，最多两位小数；按创建时的模拟阈值分流。</small></div><div class="field"><label for="request-reason">申请原因</label><textarea id="request-reason" required placeholder="例如：商品退货"></textarea></div><div class="field" data-change="added" data-change-note="新增选填补充说明，最多200个UTF-16码元，随申请跨角色展示" data-scenario="AC-012"><label for="request-note">补充说明（选填）</label><textarea id="request-note" aria-describedby="note-help note-count create-error"></textarea><small id="note-help">去除首尾空白后最多200；普通汉字计1，部分表情（如😀）计2。</small><small id="note-count" role="status" aria-live="polite">已用 0 / 200</small><small class="change-note">新增：选填，不影响审批规则。<a href="prd.md#fr-002-客服创建退款申请">FR-002 / AC-012</a> · <a href="prd.md#src-002-本次实际示例基线及增量设定">查看基线</a></small></div><p id="create-error" class="error" role="alert" aria-live="polite"></p><div class="modal-actions"><button type="button" id="create-cancel">取消</button><button type="submit" class="primary" id="create-submit" data-scenario="AC-002">提交申请</button></div></form></dialog>
+<dialog id="settings-dialog" data-page="settings" aria-labelledby="settings-title" data-requirement="FR-006"><div class="modal-head"><h2 id="settings-title">演示设置</h2><p class="subtle" style="margin:0">这里的参数只用于模拟，不是已确认的生产业务规则。</p></div><form id="settings-form" class="modal-body" novalidate><div class="field"><label for="threshold-value">人工审批阈值（元）</label><input id="threshold-value" inputmode="decimal" aria-describedby="settings-error"><small>达到或超过阈值的申请需人工审批。仅影响新申请，已有状态不变。</small></div><p id="settings-error" class="error" role="alert" aria-live="polite"></p><div class="modal-actions"><button type="button" id="cancel-settings">取消</button><button type="submit" class="primary" id="save-settings" data-scenario="AC-010">保存模拟参数</button></div></form></dialog>
+<script>
+'use strict';
+const $ = selector => document.querySelector(selector);
+const labels = { pending:'待审批', processing:'退款处理中', refunded:'退款成功', rejected:'已拒绝', failed:'执行失败' };
+const roles = { support:'客服', approver:'审批人' };
+const escapeText = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = value => Math.floor(value / 100).toLocaleString('zh-CN') + '.' + String(value % 100).padStart(2,'0');
+const plainMoney = value => Math.floor(value / 100) + '.' + String(value % 100).padStart(2,'0');
+function cents(raw) {
+  const value = raw.trim();
+  if (!/^\d+(?:\.\d{1,2})?$/.test(value)) return null;
+  const [whole, decimal = ''] = value.split('.');
+  const result = BigInt(whole) * 100n + BigInt(decimal.padEnd(2,'0'));
+  return result > 0n && result <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(result) : null;
+}
+function updateNoteCount() {
+  const length = $('#request-note').value.trim().length;
+  $('#note-count').textContent = `已用 ${length} / 200` + (length > 200 ? `，超出 ${length - 200}` : '');
+}
+$('#request-note').addEventListener('input', updateNoteCount);
+function seeds() {
+  return [
+    {id:'RF-001',order:'OD-20261021-081',customer:'陈女士',amount:88000,status:'pending',reason:'商品退货，申请原路退回',history:[{time:'10:20',actor:'客服',text:'创建申请 · ¥880.00'},{time:'10:20',actor:'模拟规则',text:'达到阈值，等待人工审批'}]},
+    {id:'RF-002',order:'OD-20261021-065',customer:'周先生',amount:20000,status:'processing',reason:'订单取消，申请退款',history:[{time:'09:45',actor:'客服',text:'创建申请 · ¥200.00'},{time:'09:45',actor:'模拟规则',text:'自动审批通过，退款处理中'}]},
+    {id:'RF-003',order:'OD-20261020-219',customer:'林女士',amount:36000,status:'refunded',reason:'重复下单，退回一笔订单',history:[{time:'09:10',actor:'客服',text:'创建申请 · ¥360.00'},{time:'09:10',actor:'模拟规则',text:'自动审批通过，退款处理中'},{time:'09:12',actor:'模拟执行',text:'退款成功 · 模拟结果，未执行真实支付'}]}
+  ];
+}
+let requests = seeds();
+let nextId = 4, threshold = 50000, role = 'support', view = 'requests', returnTo = 'requests', selected = null, query = '', filter = 'all';
+let guidedRoute = null;
+const current = () => requests.find(item => item.id === selected);
+function log(item, actor, message) {
+  item.history.push({time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}),actor,text:message});
+}
+function badge(item) { return `<span class="badge ${item.status}">${labels[item.status]}</span>`; }
+function rows(items) {
+  if (!items.length) return '<tr><td colspan="6" class="empty">没有符合条件的申请<br><button type="button" data-clear>清除筛选 / 返回全部申请</button></td></tr>';
+  return items.map(item => `<tr data-request-id="${item.id}"><td><strong>${item.id}</strong><span class="secondary-text">${escapeText(item.order)}</span></td><td>${escapeText(item.customer)}</td><td class="amount">¥${money(item.amount)}</td><td>${badge(item)}</td><td>${escapeText(item.history.at(-1).time)}<span class="secondary-text">模拟记录</span></td><td><button type="button" data-open="${item.id}" aria-label="查看 ${item.id} 详情">查看详情 ↗</button></td></tr>`).join('');
+}
+function renderTables() {
+  const needle = query.toLowerCase();
+  const visible = requests.filter(item => (filter === 'all' || item.status === filter) && [item.id,item.order,item.customer].some(value => value.toLowerCase().includes(needle)));
+  $('#request-table tbody').innerHTML = rows(visible);
+  $('#approval-table tbody').innerHTML = rows(requests.filter(item => item.status === 'pending'));
+  $('#visible-count').textContent = `${visible.length} 笔申请`;
+}
+function renderDetail() {
+  const item = current();
+  if (!item) return;
+  $('#detail-id').textContent = item.id;
+  $('#detail-status').textContent = labels[item.status];
+  $('#detail-status').className = 'badge ' + item.status;
+  $('#detail-amount').textContent = '¥' + money(item.amount);
+  $('#detail-order').textContent = item.order;
+  $('#detail-customer').textContent = item.customer;
+  $('#detail-reason').textContent = item.reason;
+  $('#detail-note').textContent = Object.hasOwn(item, 'note') ? (item.note || '未填写') : '历史申请未提供';
+  const progress = {pending:'等待审批人处理，可切换角色并从审批待办继续。',processing:'审批已通过，等待模拟退款执行结果。',refunded:'模拟退款成功，本申请流程已结束。',rejected:'申请已拒绝，原因保存在操作记录中。',failed:'模拟渠道暂不可用，可重试后再次执行。'};
+  $('#detail-progress').textContent = progress[item.status];
+  $('#execution-hint').textContent = progress[item.status];
+  const canApprove = role === 'approver' && item.status === 'pending';
+  $('#approve-request').disabled = !canApprove;
+  $('#reject-request').disabled = !canApprove;
+  $('#rejection-reason').disabled = !canApprove;
+  $('#simulate-success').disabled = role !== 'approver' || item.status !== 'processing';
+  $('#simulate-failure').disabled = role !== 'approver' || item.status !== 'processing';
+  $('#retry-request').disabled = role !== 'approver' || item.status !== 'failed';
+  const step = item.status === 'pending' ? 1 : ['processing','failed'].includes(item.status) ? 2 : 3;
+  $('#stepper').innerHTML = ['01 创建申请','02 审批处理','03 退款执行','04 结果与记录'].map((label,index) => `<span class="${index < step ? 'done' : index === step ? 'current' : ''}">${label}</span>`).join('');
+  $('#history-list').innerHTML = item.history.map(event => `<li><time>${escapeText(event.time)}<span class="actor">${escapeText(event.actor)}</span></time>${escapeText(event.text)}</li>`).join('');
+}
+function render() {
+  $('#requests-view').hidden = view !== 'requests';
+  $('#approvals-view').hidden = view !== 'approvals';
+  $('#detail-view').hidden = view !== 'detail';
+  $('#page-title').textContent = {requests:'申请列表',approvals:'审批待办',detail:'申请详情'}[view];
+  document.querySelectorAll('[data-view]').forEach(button => {button.classList.toggle('active',button.dataset.view === (view === 'detail' ? returnTo : view));button.disabled = button.dataset.view === 'approvals' && role !== 'approver';});
+  $('#role-select').value = role;
+  $('#create-request').disabled = role !== 'support';
+  $('#metric-total').textContent = requests.length;
+  for (const status of ['pending','processing','refunded']) $('#metric-' + status).textContent = requests.filter(item => item.status === status).length;
+  $('#nav-total').textContent = requests.length;
+  $('#nav-pending').textContent = requests.filter(item => item.status === 'pending').length;
+  $('#threshold-hint').textContent = `达到 ¥${money(threshold)} 进入人工审批`;
+  renderTables(); renderDetail();
+}
+function openRecord(id) {
+  if (!requests.some(item => item.id === id)) return;
+  returnTo = view === 'approvals' ? 'approvals' : 'requests';
+  selected = id; view = 'detail'; $('#history-panel').open = false; $('#action-error').textContent = ''; $('#rejection-reason').value = '';
+  render(); $('#page-title').focus();
+}
+function perform(action) {
+  const item = current();
+  if (!item) return;
+  const error = $('#action-error');
+  if (role !== 'approver') { error.textContent = '请切换为审批人；客服不能执行此操作。'; return; }
+  const from = {approve:'pending',reject:'pending',success:'processing',failure:'processing',retry:'failed'};
+  if (item.status !== from[action]) { error.textContent = '当前状态不能执行此操作，请核对处理进展。'; return; }
+  const reason = $('#rejection-reason').value.trim();
+  if (action === 'reject' && (!reason || reason.length > 200)) {error.textContent = '拒绝原因必填，且不超过 200 字。'; $('#rejection-reason').focus(); return;}
+  const next = {approve:'processing',reject:'rejected',success:'refunded',failure:'failed',retry:'processing'};
+  const messages = {approve:'审批通过，进入退款处理中',reject:'拒绝申请 · '+reason,success:'退款成功 · 模拟结果，未执行真实支付',failure:'执行失败 · 模拟渠道暂不可用，可重试',retry:'模拟重试，回到退款处理中'};
+  item.status = next[action];
+  log(item,['approve','reject'].includes(action) ? '审批人' : '模拟执行',messages[action]);
+  error.textContent = ''; $('#rejection-reason').value = ''; render(); $('#detail-status').focus();
+}
+document.addEventListener('click', event => {
+  const target = event.target.closest('button');
+  if (!target) return;
+  if (target.dataset.open) openRecord(target.dataset.open);
+  if (target.dataset.view) {
+    if (target.dataset.view === 'approvals' && role !== 'approver') return;
+    view = target.dataset.view; selected = null; render(); $('#page-title').focus();
+  }
+  if (target.hasAttribute('data-clear')) {query='';filter='all';$('#search').value='';$('#status-filter').value='all';view='requests';render();}
+});
+$('#search').addEventListener('input', event => {query=event.target.value.trim();renderTables();});
+$('#status-filter').addEventListener('change', event => {filter=event.target.value;renderTables();});
+$('#role-select').addEventListener('change', event => {
+  if (!roles[event.target.value]) return;
+  role = event.target.value;
+  if (role !== 'approver' && view === 'approvals') view='requests';
+  if (role !== 'approver' && returnTo === 'approvals') returnTo='requests';
+  $('#action-error').textContent=''; render();
+});
+$('#back-to-list').addEventListener('click', () => {view=returnTo;selected=null;render();$('#page-title').focus();});
+$('#create-request').addEventListener('click', () => {
+  if (role !== 'support') return;
+  $('#create-form').reset();updateNoteCount();$('#create-error').textContent='';$('#request-dialog').showModal();$('#order-id').focus();
+});
+$('#create-cancel').addEventListener('click', () => $('#request-dialog').close());
+document.querySelectorAll('[data-guide]').forEach(button => button.addEventListener('click', () => {
+  guidedRoute = button.dataset.guide;
+  const instructions = {
+    auto:'客服从创建入口填写低于当前阈值的有效金额 → 处理中；切换审批人 → 模拟执行成功 → 核对退款成功与记录。阈值为0.01元时没有更小的有效金额，请先在演示设置调整阈值。',
+    reject:'审批人从待办打开待审批申请 → 填写拒绝原因 → 拒绝 → 核对已拒绝与操作记录。',
+    retry:'审批人打开处理中申请 → 模拟执行失败 → 模拟重试 → 模拟执行成功 → 核对退款成功和失败/重试记录。已有失败申请可从重试继续。'
+  };
+  $('#guide-instructions').textContent = instructions[guidedRoute];
+  $('#guide-start').disabled = false;
+}));
+$('#guide-start').addEventListener('click', () => {
+  if (!guidedRoute) return;
+  if (guidedRoute === 'auto') {
+    role='support';view='requests';render();$('#create-request').click();return;
+  }
+  const item = requests.find(item => guidedRoute === 'reject' ? item.status === 'pending' : ['processing','failed'].includes(item.status));
+  if (!item) {$('#guide-instructions').textContent='没有适用的申请。请创建对应状态的申请，或确认重置演示数据后再选择路线。';return;}
+  role='approver';view=guidedRoute === 'reject' ? 'approvals' : 'requests';render();openRecord(item.id);
+});
+$('#guide-exit').addEventListener('click', () => {$('#journey-guide').open=false;$('#journey-guide summary').focus();});
+$('#create-form').addEventListener('submit', event => {
+  event.preventDefault();
+  if (role !== 'support') {$('#create-error').textContent='仅客服可以创建申请。';return;}
+  const order=$('#order-id').value.trim(), customer=$('#customer').value.trim(), reason=$('#request-reason').value.trim(), amount=cents($('#amount').value);
+  if (!order || order.length>40 || !customer || customer.length>40 || !reason || reason.length>200) {$('#create-error').textContent='请填写订单号、客户及申请原因；订单/客户不超过 40 字，原因不超过 200 字。';const invalid=!order||order.length>40?'#order-id':!customer||customer.length>40?'#customer':'#request-reason';$(invalid).focus();return;}
+  if (amount === null) {$('#create-error').textContent='金额须大于零，最多两位小数，且换算为分后不超过安全整数。';$('#amount').focus();return;}
+  const note=$('#request-note').value.trim();
+  if (note.length>200) {$('#create-error').textContent=`补充说明上限为200，当前超出 ${note.length-200}，请缩短后保存。`;$('#request-note').focus();return;}
+  const item={id:'RF-'+String(nextId++).padStart(3,'0'),order,customer,reason,note,amount,status:amount>=threshold?'pending':'processing',history:[]};
+  log(item,'客服','创建申请 · ¥'+money(amount));
+  log(item,'模拟规则',amount>=threshold?'达到阈值 ¥'+money(threshold)+'，等待人工审批':'自动审批通过，退款处理中');
+  requests.unshift(item);$('#request-dialog').close();view='requests';openRecord(item.id);
+});
+for (const [id,action] of Object.entries({'approve-request':'approve','reject-request':'reject','simulate-success':'success','simulate-failure':'failure','retry-request':'retry'})) $('#'+id).addEventListener('click',()=>perform(action));
+$('#settings-button').addEventListener('click',()=>{$('#threshold-value').value=plainMoney(threshold);$('#settings-error').textContent='';$('#settings-dialog').showModal();$('#threshold-value').focus();});
+$('#cancel-settings').addEventListener('click',()=>$('#settings-dialog').close());
+$('#settings-form').addEventListener('submit',event=>{event.preventDefault();const value=cents($('#threshold-value').value);if(value===null){$('#settings-error').textContent='阈值须大于零，最多两位小数，且不超过安全整数。';$('#threshold-value').focus();return;}threshold=value;$('#settings-dialog').close();$('#toast').textContent='模拟参数已保存，仅影响之后创建的申请。';render();});
+$('#reset-demo').addEventListener('click',()=>{
+  if (!confirm('重置内存中的演示数据？本次创建和处理记录将丢失，恢复三笔初始模拟申请。')) return;
+  requests=seeds();nextId=4;threshold=50000;role='support';view='requests';returnTo='requests';selected=null;query='';filter='all';$('#search').value='';$('#status-filter').value='all';$('#toast').textContent='已恢复初始模拟数据与默认参数。';render();$('#page-title').focus();
+  guidedRoute=null;$('#journey-guide').open=false;$('#guide-start').disabled=true;$('#guide-instructions').textContent='选择路线查看角色、起点和结束结果。引导只导航，不自动创建或处理申请。';
+});
+document.querySelectorAll('[data-review-toggle]').forEach(button => button.addEventListener('click', () => {
+  const enabled=document.body.classList.toggle('review');
+  document.querySelectorAll('[data-review-toggle]').forEach(toggle => {toggle.setAttribute('aria-pressed',String(enabled));toggle.textContent=enabled?'隐藏变更标注':'显示变更标注';});
+}));
+render();
+</script>
+</body>
+</html>

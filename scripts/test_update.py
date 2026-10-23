@@ -34,7 +34,7 @@ class UpdateTests(unittest.TestCase):
             if source.exists():
                 shutil.copy(source, scripts / name)
         for name in ("generate_api_docs.py", "generate_architecture.py", "validate_project_doc.py",
-                     "project_doc_context.py", "project_doc_impact.py"):
+                     "project_doc_context.py", "project_doc_impact.py", "validate_product_doc.py", "product_dependencies.py"):
             (scripts / name).write_text("")
         (scripts / "install_renderers.py").write_text(
             "import json, os, sys\n"
@@ -83,7 +83,7 @@ class UpdateTests(unittest.TestCase):
         result = self.run_update("--no-engines")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual((self.checkout / "VERSION").read_text(), "0.5.1\n")
-        for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview"):
+        for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product"):
             self.assertEqual((self.root / "codex" / "skills" / name).resolve(), self.checkout / "skills" / name)
         self.assertFalse((self.root / "claude" / "skills").exists())
         self.assertFalse((self.root / "renderers" / "no-auto-install").exists())
@@ -183,7 +183,7 @@ class UpdateTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual((self.checkout / "VERSION").read_text(), "0.5.1\n")
                 directory = self.root / relative
-                for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview"):
+                for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product"):
                     self.assertEqual((directory / name).resolve(), self.checkout / "skills" / name)
                     (directory / name).unlink()
                 self.assertFalse((self.root / "codex" / "skills").exists())

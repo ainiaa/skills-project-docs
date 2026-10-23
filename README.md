@@ -1,12 +1,12 @@
 # Project Docs
 
-面向 Codex、Claude Code、ZCode、DeepSeek Harness（DSH）、Gemini CLI、Grok Build、pi 和 OpenCode 的项目文档 Skill 集合。`project-docs` 是统一入口，根据需求选择或组合三个专用能力：`project-docs-api` 生成接口文档，`project-docs-diagram` 生成和校验技术图，`project-docs-overview` 生成项目介绍、功能说明与开发者上手手册。所有宿主共用同一份仓库与渲染引擎安装。
+面向 Codex、Claude Code、ZCode、DeepSeek Harness（DSH）、Gemini CLI、Grok Build、pi 和 OpenCode 的项目文档 Skill 集合。`project-docs` 是统一入口，根据需求选择或组合四个专用能力：`project-docs-product` 梳理产品需求、编写 PRD 并按需生成可点击 HTML 原型，`project-docs-api` 生成接口文档，`project-docs-diagram` 生成和校验技术图，`project-docs-overview` 生成项目介绍、功能说明与开发者上手手册。所有宿主共用同一份仓库与渲染引擎安装。
 
-当前版本：[0.6.2](https://github.com/ainiaa/skills-project-docs/releases/tag/v0.6.2)。改动记录见[变更日志](CHANGELOG.md)。
+当前版本：[0.7.0](https://github.com/ainiaa/skills-project-docs/releases/tag/v0.7.0)。改动记录见[变更日志](CHANGELOG.md)。
 
 ## 快速开始
 
-1. 克隆仓库，一次安装统一入口、三个专用 Skill 与缺失的绘图引擎：
+1. 克隆仓库，一次安装统一入口、四个专用 Skill 与缺失的绘图引擎：
 
    ```bash
    git clone https://github.com/ainiaa/skills-project-docs.git
@@ -26,12 +26,14 @@
 
    ```text
    Codex：使用 $project-docs 介绍这个项目，附上系统架构图、核心流程图和接口文档。
+   Codex：使用 $project-docs-product 根据会议纪要写 PRD，并按需生成可点击原型。
    Codex：使用 $project-docs-api 为这个 Spring Controller 生成 API 文档。
    Codex：使用 $project-docs-diagram 根据这个项目的代码生成 draw.io 架构图，并导出 PNG。
    Codex：使用 $project-docs-overview 根据代码和现有需求资料写项目介绍及主要功能说明。
    Codex：使用 $project-docs-overview 为新开发者写项目上手手册。
    Codex：使用 $project-docs-overview 把项目用途、核心流程和边界做成 explainer 一页说明。
    Claude Code：/project-docs 介绍这个项目，附上系统架构图和核心流程图。
+   Claude Code：/project-docs-product 修改已有需求，保留来源与编号并补充验收。
    Claude Code：/project-docs-api 为这个 Spring Controller 生成 API 文档。
    Claude Code：/project-docs-diagram 根据这个项目的代码生成 draw.io 架构图，并导出 PNG。
    Claude Code：/project-docs-overview 为退款功能写现状、规则、端到端链路和风险说明。
@@ -44,20 +46,96 @@
 | 需求 | Skill | 主要交付物 |
 |---|---|---|
 | 统一选择入口，或组合交付说明文档、技术图和接口文档 | [`project-docs`](skills/project-docs/SKILL.md) | 按需求组合下列产物 |
+| 从业务资料梳理需求、创建或修改 PRD，并按需交付交互界面原型 | [`project-docs-product`](skills/project-docs-product/SKILL.md) | PRD、可点击 HTML、必要截图及评审记录 |
 | 从 Spring MVC、Feign 或 FastAPI 源码生成接口文档 | [`project-docs-api`](skills/project-docs-api/SKILL.md) | Markdown、Postman Collection、cURL 示例 |
 | 根据仓库证据绘制架构、流程、时序、ERD 等技术图 | [`project-docs-diagram`](skills/project-docs-diagram/SKILL.md) | 可编辑图源、按需导出的图片或 PDF、验证回执 |
 | 根据源码与需求资料介绍项目、评估架构、描述功能或引导新开发者 | [`project-docs-overview`](skills/project-docs-overview/SKILL.md) | 带来源的项目总览、架构总览、功能说明或上手手册 Markdown；按需交付 explainer HTML |
 
 ## 为什么会有它
 
-Project Docs API 将 API Savior IDEA 插件的 RESTful 文档风格带到 Codex 和命令行，从真实路由、DTO 和枚举声明生成文档。Project Docs Diagram 让“根据代码画架构图”成为可检查的工作：先确定图型和范围，再关联源码证据、生成图源、调用实际渲染引擎，并检查成品。Project Docs Overview 将需求口径、实际实现和验证证据组织成面向读者的项目或功能叙述。
+Project Docs Product 将业务资料变成有来源、规则、异常恢复与验收的需求，并通过可点击模拟原型讨论完整用户任务。Project Docs API 将 API Savior IDEA 插件的 RESTful 文档风格带到 Codex 和命令行，从真实路由、DTO 和枚举声明生成文档。Project Docs Diagram 让“根据代码画架构图”成为可检查的工作：先确定图型和范围，再关联源码证据、生成图源、调用实际渲染引擎，并检查成品。Project Docs Overview 将需求口径、实际实现和验证证据组织成面向读者的项目或功能叙述。
 
 集合中的所有能力都会保留源码无法确定的部分，不把推断伪装成已验证事实。图源通过引擎验收，也仍需审阅业务解释和视觉效果。
+
+## 产品需求与可点击原型
+
+`project-docs-product` 将业务资料整理成可评审、可交接的 PRD，并按需交付可点击 HTML 原型。支持四类资料：源码、截图／设计稿、旧文档／纪要／口述，以及没有既有系统的新产品；无源码也能编写完整业务规格，现有实现与兼容性按实际证据说明。
+
+```text
+使用 $project-docs-product 根据这份会议纪要整理退款审批 PRD，列出已明确规则和真正需要决定的问题。
+使用 $project-docs-product 修改这个已有功能的 PRD，在原页面上标出变化，补历史与进行中任务的回归场景。
+使用 $project-docs-product 简短说明这次校验阈值变化，保留必要边界和异常验收，不生成无关章节。
+使用 $project-docs-product 将业务主文与需求／验收追踪拆分，主文必须独立讲清规则与结果。
+使用 $project-docs-product 根据已明确的采购需求生成完整可点击原型，覆盖角色交接、失败恢复与最终结果。
+```
+
+Claude Code 使用 `/project-docs-product`，其他宿主也可直接描述目标，或通过统一入口 `project-docs` 选择能力。
+
+### PRD 与增量需求
+
+- **读者优先。** 默认使用[业务主文模板](skills/project-docs-product/assets/prd-reader-template.md)，先说明谁遇到什么问题、这次改哪里，再展开页面、流程、字段、异常和中文验收。简单文案／阈值需求可单文件短交付；需要拆分时，使用同目录的[追踪模板](skills/project-docs-product/assets/prd-traceability-template.md)，保留来源及 FR/AC 编号，不在附件另写一套规则。
+- **接续已有产品。** 优先复用可信页面布局与组件，在原页面上标增量，核对字段从准备、固定、保存到使用的生命周期，以及历史、在途对象和失败恢复；没有基线时标明目标草图与待核实边界。
+- **决定可追溯。** 来源事实、用户决定、建议和未决分别表达；资料充分直接整理，冲突只阻塞相关部分。保留原编号及有效确认，规则变化后重新核对受影响的主文、追踪、图和验收，不把未回复或局部认可当作全文批准。
+- **按授权交付。** 默认输出到被分析仓库之外。PRD 中必要的页面示意和业务图不等于完整原型；只交付文档不自动开始研发、提交或外发。可选 PDLC 协作缺失不阻塞独立交付。
+
+工作约定见[资料与质量](skills/project-docs-product/references/input-and-quality.md)、[阅读与变更](skills/project-docs-product/references/reading-and-change.md)和[增量设计](skills/project-docs-product/references/brownfield-delivery.md)。
+
+### 可点击原型与实际验收
+
+完整原型先列流程覆盖表，明确角色、入口、页面、状态、交接、结束结果和异常恢复，再用共享模拟数据贯穿用户任务。用户只要求某个弹窗或交互时，按局部范围交付并列出未覆盖部分。HTML 保留可编辑源码及可重置模拟数据，不连接真实业务系统。
+
+提供两套可运行示例：
+
+| 示例 | 模拟任务 |
+|---|---|
+| [退款审批 PRD](skills/project-docs-product/assets/examples/prd.md) · [HTML](skills/project-docs-product/assets/examples/prototype.html) | 创建申请、审批待办、详情、模拟退款成功／失败／重试及操作记录；包含使用／变更标注模式、键盘及窄屏检查 |
+| [资源权限申请 PRD](skills/project-docs-product/assets/examples/access-request/prd.md) · [HTML](skills/project-docs-product/assets/examples/access-request/prototype.html) | 员工撤回、主管审批、管理员执行、异步开通与失败恢复；有独立的旅程测试 |
+
+通用无界面验收入口复用已安装 Mermaid 的 Puppeteer／Chrome，生成当次浏览器回执和截图：
+
+```bash
+node scripts/product_browser.mjs --directory /path/to/delivery --test journey.test.mjs
+# 运行集合自带的权限申请示例
+node scripts/product_browser.mjs --directory skills/project-docs-product/assets/examples/access-request --test journey.test.mjs
+```
+
+特殊安装可显式指定 `MERMAID_OFFICIAL_CLI`、`PRODUCT_BROWSER_MODULES` 和 `PUPPETEER_EXECUTABLE_PATH`；配置错误会报告，不静默回退或自动安装。可选 `bundle.json` 关联 PRD、追踪、原型、图、测试和截图及其哈希；当前追踪与全部历史文件绑定同一浏览器输入快照，输入变化后须重验。格式及使用方式见[原型规范](skills/project-docs-product/references/prototype.md)。
+
+### 结构校验与历史修订
+
+普通使用者由 Skill 调用脚本；需要手动检查时，在运行脚本的 Python 环境安装固定 Markdown 解析依赖：
+
+```bash
+python3 -m pip install -r scripts/requirements-product.txt
+python3 scripts/validate_product_doc.py --file /path/to/delivery/prd.md
+# 主文／追踪拆分
+python3 scripts/validate_product_doc.py --file /path/to/delivery/prd.md --tracking /path/to/delivery/prd-traceability.md
+# 有完整原型时再追加 --prototype /path/to/delivery/prototype.html
+```
+
+历史快照按从旧到新重复传 `--baseline <旧主文> [同版旧追踪]`，不猜配对、不批量改写旧确认。引用交付目录外的源码或资料时，显式追加 `--source-root <来源目录>`，可重复；当前和历史资源均检查实际文件及目录边界，该选项不放宽原型资源或追踪的同目录限制。保留既有 `FR-01`、`AC-01`、`Q1` 等编号及可点击来源，不能为通过检查删链接或改号。
+
+`product_bundle.py --file <bundle.json>` 检查可选索引与证据；纯 PRD 不要求 bundle。bundle 当前追踪使用 `artifacts.tracking: {path,sha256}`；历史条目可为单文件对象或显式主文／追踪双对象数组。
+
+### 上游能力与验证边界
+
+目标不清时按需复用 Superpowers `brainstorming`，业务决定待澄清时使用 Matt Pocock `grilling`，术语由 `domain-modeling` 维护；只加载当前阶段需要的能力，不同时启动两个访谈流程。上游技能独立安装，本安装器不会修改它们。按实际可见目录诊断：
+
+```bash
+python3 scripts/product_dependencies.py --skill-root /path/to/upstream/skills
+```
+
+可重复传目录；可选 PDLC 诊断追加 `--pdlc-root`。依赖内容身份与完整性不证明宿主已加载或模型已遵循流程。来源、安装与适配见[依赖说明](skills/project-docs-product/references/dependencies.md)。
+
+结构检查证明编号、版本、确认记录、文件与资源关联；不证明业务语义、批准真实性或 JavaScript 行为。浏览器旅程、实际审图、模型内容评审及真人确认分别报告，示例与有限试验不能推导任意需求的成功率。
+
+CI 执行确定性与无界面浏览器检查，明确标记模型行为未执行。Skill 改动与发布还须用当前真实报告运行 `python3 scripts/product_behavior_eval.py --report <模型观察报告.json>`；实际成品用 `--artifacts <成品报告.json>` 检查文件身份、冻结输入与修订保留。缺报告返回 `uncovered`，陈旧或失败报告返回 `invalid`；普通测试的跳过不计为这两项通过。成品报告可显式提供同结构的 `prd`、`tracking` 文件引用，仍须独立阅读实际成品核对业务含义。详见[评测约定](skills/project-docs-product/references/evaluation.md)。
 
 ## 能力与边界
 
 | 能力 | 当前实现 |
 |---|---|
+| 产品需求与原型 | 多资料输入 PRD、轻量／拆分交付、既有页面增量与历史回归、共享状态交互原型、结构与浏览器证据；业务语义和人工批准另行核实 |
 | 接口文档输入 | Java Spring MVC Controller、Feign Client；Python FastAPI 路由 |
 | 接口文档内容 | 请求和响应字段、JSON 示例、源码可解析的枚举；未解析类型会明确标出 |
 | 项目、功能与上手说明 | 服务对象、功能地图、业务规则、端到端链路、现状与改动、验证场景和风险；上手手册另含环境、运行、测试与排障入口 |
@@ -104,20 +182,20 @@ HTML 是 Archify 的交互展示文件；其余三种引擎的 HTML 不是本项
 
 原有 `UNDERSTAND_PYTHON`、`UNDERSTAND_RENDERER_HOME`、各引擎 CLI 覆盖变量及共享引擎缓存路径继续有效。兼容脚本 `install-arch.sh` 仍只管理 Codex 的绘图入口，目标名称改为 `project-docs-diagram`；完整集合使用 `install.sh`。
 
-[install.sh](install.sh) 默认把统一入口和三个专用 Skill 软链接到 Codex 的 `~/.codex/skills` 和 Claude Code 的 `~/.claude/skills`，并自动安装当前缺失的四个绘图引擎。两边共用本仓库文件，更新一次即可同步更新。安装前会检查所有目标路径，保留无关目录和软链接；本仓库拥有的旧名称链接会迁移。`--uninstall` 只移除本仓库拥有的 Skill 链接，**不会删除**可被其他项目复用的引擎。[Claude Code 官方文档](https://code.claude.com/docs/en/skills#choose-where-skills-load)确认个人 Skill 目录与软链接可用；这里支持的是本地 Claude Code，会话之外的 Claude 云端环境不读取本机目录。
+[install.sh](install.sh) 默认把统一入口和四个专用 Skill 软链接到 Codex 的 `~/.codex/skills` 和 Claude Code 的 `~/.claude/skills`，并自动安装当前缺失的四个绘图引擎。两边共用本仓库文件，更新一次即可同步更新。安装前会检查所有目标路径，保留无关目录和软链接；本仓库拥有的旧名称链接会迁移。`--uninstall` 只移除本仓库拥有的 Skill 链接，**不会删除**可被其他项目复用的引擎。[Claude Code 官方文档](https://code.claude.com/docs/en/skills#choose-where-skills-load)确认个人 Skill 目录与软链接可用；这里支持的是本地 Claude Code，会话之外的 Claude 云端环境不读取本机目录。
 
 | 安装命令 | 行为 |
 |---|---|
-| `bash install.sh` | Codex、Claude Code 均安装统一入口和三个专用 Skill；补齐全部缺失引擎 |
+| `bash install.sh` | Codex、Claude Code 均安装统一入口和四个专用 Skill；补齐全部缺失引擎 |
 | `bash install.sh --engine drawio` | 两个宿主安装 Skill；只补齐 draw.io。`--engine` 可重复指定 |
 | `bash install.sh --no-engines` | 只安装 Skill，并记录“不要自动安装引擎”的选择 |
 | `bash install.sh --host claude --engine mermaid` | 只为 Claude Code 安装 Skill，只补齐 Mermaid |
-| `bash install.sh --host all` | 为全部八个宿主安装四个 Skill；共用同一套绘图引擎 |
-| `bash install.sh --host opencode --no-engines` | 只为 OpenCode 安装四个 Skill，跳过绘图引擎 |
+| `bash install.sh --host all` | 为全部八个宿主安装五个 Skill；共用同一套绘图引擎 |
+| `bash install.sh --host opencode --no-engines` | 只为 OpenCode 安装五个 Skill，跳过绘图引擎 |
 | `bash install.sh --doctor` | 检查两个宿主的 Skill 链接和四个引擎；可配合 `--host`、`--engine`、`--no-engines` 缩小检查范围 |
-| `bash install.sh --update` | 快进更新当前跟踪分支，重新安装集合与三个子 Skill，并升级低于新版集合最低版本的绘图 CLI |
+| `bash install.sh --update` | 快进更新当前跟踪分支，重新安装集合与四个子 Skill，并升级低于新版集合最低版本的绘图 CLI |
 | `bash install.sh --update-deps` | 不拉取仓库，只同步当前集合声明的绘图 CLI 与 Skill 链接 |
-| `bash install.sh --update --no-engines` | 仅更新集合及三个子 Skill，保留原有引擎自动安装偏好 |
+| `bash install.sh --update --no-engines` | 仅更新集合及四个子 Skill，保留原有引擎自动安装偏好 |
 | `bash install.sh --uninstall --host all` | 从八个宿主移除本仓库拥有的 Skill 链接，保留共享引擎 |
 
 `--host` 接受 `codex`、`claude`、`zcode`、`dsh`、`gemini`、`grok`、`pi`、`opencode`、`both`、`all`。默认及 `both` 仍只管理 Codex、Claude Code；`all` 显式选择全部八个宿主。该选项适用于安装、升级、依赖同步、诊断和卸载；后续管理时使用与安装时相同的宿主选择。普通安装使用 `--no-engines` 后，后续画图时 Skill 也不会擅自补装；再次显式运行带 `--engine` 的安装命令可解除这一选择。已装好的引擎会复用，无需每次重新安装。
@@ -130,7 +208,7 @@ git remote set-url origin https://github.com/ainiaa/skills-project-docs.git
 
 ### 宿主支持
 
-2026-10-15 核对的官方加载规范如下。每个目标目录下软链接四个 Skill 目录，形成 `<skill-name>/SKILL.md` 布局，解析到本仓库的 `skills/`；脚本、引用和模板仍从真实 Skill 目录解析。安装器不依赖宿主 CLI，也不安装或升级宿主软件。
+2026-10-15 核对的官方加载规范如下。每个目标目录下软链接五个 Skill 目录，形成 `<skill-name>/SKILL.md` 布局，解析到本仓库的 `skills/`；脚本、引用和模板仍从真实 Skill 目录解析。安装器不依赖宿主 CLI，也不安装或升级宿主软件。
 
 | 宿主 / `--host` | 本安装器管理的用户级目录 | 官方规范与加载方式 |
 |---|---|---|
@@ -175,7 +253,7 @@ bash install.sh --uninstall --host pi
 
 统一升级使用 `bash install.sh --update --host <宿主>`，也可在当前宿主中说“使用 project-docs 更新本集合及依赖”，由 Skill 显式传入对应 `--host`。升级读取当前 Git 分支的跟踪上游，不自动切换分支；本地有未提交或未跟踪文件、处于 detached HEAD、未配置上游或无法快进时会停止，不自动暂存、重置或覆盖本地改动。仓库更新成功后，用新版安装器同步链接与依赖；若后续依赖步骤失败，会明确返回失败，并输出可直接执行的 `--update-deps` 重试命令，保留原 `--host`、引擎选择和带空格的仓库路径。
 
-三个子 Skill 随同一仓库更新。四个绘图 CLI 以本集合锁定并验收的版本为最低基线，保留下载校验；更新时保留相同或更高的稳定版本，无法识别版本则报错停止，避免覆盖或降级已有工具。新版准备成功后才切换受管入口，旧版本目录保留。macOS 的 draw.io 更新安装在共享管理目录，Linux 使用现有 apt 安装流程，可能需要系统权限。`*_OFFICIAL_CLI` 显式指定的工具保留原路径并提示由外部管理；管理目录中的自定义入口也不会被强行覆盖。PDLC、understand-anything 和 CodeGraph 属于按需使用的外部能力，不作为本集合必装依赖，也不扫描升级用户的其他全局 Skill 或软件。
+四个子 Skill 随同一仓库更新。四个绘图 CLI 以本集合锁定并验收的版本为最低基线，保留下载校验；更新时保留相同或更高的稳定版本，无法识别版本则报错停止，避免覆盖或降级已有工具。新版准备成功后才切换受管入口，旧版本目录保留。macOS 的 draw.io 更新安装在共享管理目录，Linux 使用现有 apt 安装流程，可能需要系统权限。`*_OFFICIAL_CLI` 显式指定的工具保留原路径并提示由外部管理；管理目录中的自定义入口也不会被强行覆盖。PDLC、understand-anything 和 CodeGraph 属于按需使用的外部能力，不作为本集合必装依赖，也不扫描升级用户的其他全局 Skill 或软件。
 
 `--update`、`--update-deps` 均支持 `--engine mermaid` 等选项限定 CLI 范围；这两个命令中的 `--no-engines` 只跳过本次引擎同步，不改变原有自动安装偏好。普通生成任务不会在运行前自动联网升级。
 
@@ -256,6 +334,7 @@ Skill 会读取源码和可用的 CodeGraph 信息，选择合适的图型，生
 ## 文档
 
 - [Project Docs 统一入口](skills/project-docs/SKILL.md)
+- [Project Docs Product Skill](skills/project-docs-product/SKILL.md) · [PRD 模板](skills/project-docs-product/assets/prd-reader-template.md) · [原型规范](skills/project-docs-product/references/prototype.md)
 - [Project Docs API Skill](skills/project-docs-api/SKILL.md) · [API Document IR](references/api-document-ir.md)
 - [Project Docs Diagram Skill](skills/project-docs-diagram/SKILL.md) · [图型与证据规范](docs/DIAGRAM_STANDARD.md)
 - [Project Docs Overview Skill](skills/project-docs-overview/SKILL.md)
@@ -266,7 +345,13 @@ Skill 会读取源码和可用的 CodeGraph 信息，选择合适的图型，生
 
 ```bash
 python3 -m unittest discover -s scripts -p 'test_*.py'
+# 产品 Python 回归与覆盖率（需已有 pytest-cov；只统计四个产品入口，门槛90%）
+python3 -m pytest scripts/test_product_docs.py scripts/test_product_split.py scripts/test_product_dependencies.py scripts/test_product_bundle.py scripts/test_product_behavior_eval.py --cov --cov-fail-under=90
+# 产品运行时及退款真实无界面交互
+node --test scripts/test_product_runtime.mjs scripts/test_product_browser.mjs
 ```
+
+默认回归不启动 draw.io 桌面应用：相关真实验收须显式设置 `PROJECT_DOCS_DESKTOP_TESTS=1`，仅安装软件或配置 `DRAWIO_OFFICIAL_CLI` 不算启用。普通 CLI 回归使用隔离的假引擎。代理不得为了让测试全绿而自行开启桌面验收；本机确需运行时先获得用户明确同意，优先在隔离的无桌面 CI 中验收。CI 的 `diagram-renderers` 作业显式启用，跳过的本机验收不计为通过。
 
 原生宿主验收默认跳过；准备好对应的官方运行时后，显式指定路径再运行：
 

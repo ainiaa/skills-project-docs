@@ -1,0 +1,54 @@
+name: Product deterministic checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  product:
+    runs-on: ubuntu-24.04
+    env:
+      UNDERSTAND_RENDERER_HOME: ${{ runner.temp }}/product-renderers
+      MERMAID_OFFICIAL_CLI: ${{ runner.temp }}/product-renderers/bin/mmdc
+      PRODUCT_SCREENSHOT_DIR: ${{ runner.temp }}/product-screenshots
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install the pinned product Markdown parser
+        run: python3 -m pip install -r scripts/requirements-product.txt
+      - name: Reuse the existing Mermaid browser runtime
+        run: python3 scripts/install_renderers.py --engine mermaid
+      - name: Product contracts, frozen fixtures and installation regressions
+        run: |
+          python3 -m unittest discover -s scripts -p 'test_product*.py'
+          python3 -m unittest discover -s scripts -p test_install.py
+          python3 -m unittest discover -s scripts -p test_update.py
+      - name: Record model behavior verification boundary
+        run: |
+          python3 - <<'PY'
+          import os
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              summary.write('Model behavior and actual authored artifact trials: **not run / uncovered** in deterministic CI. Skill changes and release acceptance require fresh managed model observations and `python3 scripts/product_behavior_eval.py --report <report.json>`.\n')
+          PY
+      - name: Validate the example PRD and interactive prototype
+        run: |
+          python3 scripts/validate_product_doc.py --file skills/project-docs-product/assets/examples/prd.md --prototype skills/project-docs-product/assets/examples/prototype.html
+          python3 scripts/validate_product_doc.py --file skills/project-docs-product/assets/examples/access-request/prd.md --prototype skills/project-docs-product/assets/examples/access-request/prototype.html
+      - name: Run actual browser interactions
+        run: |
+          node --test scripts/test_product_runtime.mjs
+          node --test scripts/test_product_browser.mjs
+          node scripts/product_browser.mjs --directory skills/project-docs-product/assets/examples/access-request --test journey.test.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: product-prototype-screenshots
+          path: |
+            ${{ runner.temp }}/product-screenshots
+            skills/project-docs-product/assets/examples/access-request/evidence
+          if-no-files-found: ignore
