@@ -34,13 +34,16 @@ class ProductBundleTests(unittest.TestCase):
                        "journeys": [{"id": "J1", "requirements": ["FR-001"], "scenarios": ["AC-001", "AC-002", "AC-003"], "test": "journey.test.mjs", "screenshots": ["evidence/shot.png"]}],
                        "browser": "browser.json"}
 
-    def check(self, bundle=None, receipt=None):
+    def check(self, bundle=None, receipt=None, *, require_prototype=False):
         script = ROOT / "scripts/product_bundle.py"
         self.assertTrue(script.is_file(), "bundle checker missing")
         (self.root / "bundle.json").write_text(json.dumps(bundle or self.bundle))
         if (bundle or self.bundle).get("browser") == "browser.json":
             (self.root / "browser.json").write_text(json.dumps(receipt or self.receipt))
-        result = subprocess.run([sys.executable, str(script), "--file", str(self.root / "bundle.json")], capture_output=True, text=True)
+        command = [sys.executable, str(script), "--file", str(self.root / "bundle.json")]
+        if require_prototype:
+            command.append("--require-prototype")
+        result = subprocess.run(command, capture_output=True, text=True)
         self.assertIn(result.returncode, (0, 1), result.stderr)
         report = json.loads(result.stdout)
         self.assertEqual(report["valid"], result.returncode == 0)
@@ -383,6 +386,23 @@ class ProductBundleTests(unittest.TestCase):
         report = self.check(bundle)
         self.assertTrue(report["valid"], report)
         self.assertEqual(report["browserCheck"], "not_requested")
+
+    def test_explicit_prototype_request_rejects_document_only_delivery(self):
+        single = {"schemaVersion": 1, "version": "draft-1",
+                  "artifacts": {"prd": artifact(self.root / "prd.md")}}
+        for split in (False, True):
+            with self.subTest(split=split):
+                bundle = self.split_bundle() if split else single
+                report = self.check(bundle, require_prototype=True)
+                self.assertFalse(report["valid"], report)
+                self.assertIn("原型", " ".join(report["problems"]))
+
+    def test_required_prototype_still_requires_current_browser_evidence(self):
+        self.assertTrue(self.check(require_prototype=True)["valid"])
+        self.assertFalse(self.check(receipt={**self.receipt, "result": "not_run"},
+                                    require_prototype=True)["valid"])
+        (self.root / "prototype.html").unlink()
+        self.assertFalse(self.check(require_prototype=True)["valid"])
 
     def test_malformed_and_symlink_resources_fail_closed(self):
         self.bundle["artifacts"]["tests"] = "wrong"

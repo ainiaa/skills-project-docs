@@ -46,7 +46,7 @@ def checked_artifact(root, item):
     return path
 
 
-def check(bundle_path):
+def check(bundle_path, *, require_prototype=False):
     root = bundle_path.resolve().parent
     bundle = json.loads(bundle_path.read_text(encoding="utf-8"))
     if not isinstance(bundle, dict) or bundle.get("schemaVersion") != 1:
@@ -98,6 +98,8 @@ def check(bundle_path):
         for path, item in zip([source, *exported], [diagram["source"], *exports]):
             diagram_inputs.append({"path": path.relative_to(root).as_posix(), "sha256": item["sha256"]})
     if "prototype" not in artifacts:
+        if require_prototype:
+            raise ValueError("本次要求交付交互原型，但清单缺少 artifacts.prototype")
         problems = validate(document, baselines=baseline_paths, tracking=tracking)
         if problems:
             raise ValueError("；".join(problems))
@@ -182,10 +184,11 @@ def check(bundle_path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--file", type=Path, required=True)
+    parser.add_argument("--require-prototype", action="store_true", help="本次明确要求原型；缺失时失败，不改变纯 PRD 默认行为")
     args = parser.parse_args()
     problems, browser = [], "unverified"
     try:
-        browser = check(args.file)
+        browser = check(args.file, require_prototype=args.require_prototype)
     except (OSError, UnicodeError, ValueError, KeyError, TypeError, AttributeError) as error:
         problems.append(f"交付证据无效：{error}")
     print(json.dumps({"valid": not problems, "problems": problems, "browserCheck": browser,

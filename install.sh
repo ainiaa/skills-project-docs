@@ -57,8 +57,9 @@ Uninstall removes this checkout's skill links, never shared renderer programs.
 and renderer minimum versions, preserving equal/newer stable versions.
 --update-deps skips the Git update. --doctor checks versions and runtime dependencies
 without installing or upgrading them.
-Product upstream skills are installed independently; use scripts/product_dependencies.py
-with explicit --skill-root paths to inspect them. This installer never modifies them.
+Missing Product upstream skills (brainstorming, grilling, domain-modeling) are installed
+from pinned official sources. Existing skills are reused, never overwritten or upgraded.
+Optional skills are not installed. --doctor checks required upstreams without writing.
 EOF
 }
 
@@ -152,6 +153,7 @@ if [[ "$ACTION" == install ]]; then
         ! -f "${SOURCES[4]}/assets/prototype.html" ||
         ! -f "$SOURCE_DIR/scripts/validate_product_doc.py" ||
         ! -f "$SOURCE_DIR/scripts/product_dependencies.py" ||
+        ! -f "$SOURCE_DIR/scripts/install_product_dependencies.py" ||
         ! -f "$SOURCE_DIR/scripts/validate_project_doc.py" ||
         ! -f "$SOURCE_DIR/scripts/project_doc_context.py" ||
         ! -f "$SOURCE_DIR/scripts/project_doc_impact.py" ||
@@ -193,6 +195,11 @@ if [[ "$ACTION" == update ]]; then
   if [[ ${#ENGINES[@]} -gt 0 ]]; then update_args+=("${renderer_args[@]}"); fi
   exec "$PYTHON_BIN" "$SOURCE_DIR/scripts/update_project_docs.py" "${update_args[@]}"
 fi
+dependency_args=()
+for skills_dir in "${SKILLS_DIRS[@]}"; do dependency_args+=(--skill-root "$skills_dir"); done
+if [[ "$ACTION" == install ]]; then
+  "$PYTHON_BIN" "$SOURCE_DIR/scripts/install_product_dependencies.py" --preflight "${dependency_args[@]}"
+fi
 renderer_status=0
 if [[ "$ACTION" != uninstall && "$NO_ENGINES" == false ]]; then
   if [[ "$ACTION" == doctor ]]; then renderer_args+=(--doctor); fi
@@ -216,6 +223,7 @@ case "$ACTION" in
     else
       rm -f "$RENDERER_HOME/no-auto-install"
     fi
+    "$PYTHON_BIN" "$SOURCE_DIR/scripts/install_product_dependencies.py" "${dependency_args[@]}"
     for skills_dir in "${SKILLS_DIRS[@]}"; do
       mkdir -p "$skills_dir"
       for index in "${!SKILL_NAMES[@]}"; do
@@ -238,7 +246,7 @@ case "$ACTION" in
     ;;
   doctor)
     status="$renderer_status"
-    echo "Product upstream skills: not checked here; inspect actual host-visible paths with scripts/product_dependencies.py --skill-root <path>"
+    "$PYTHON_BIN" "$SOURCE_DIR/scripts/install_product_dependencies.py" --check "${dependency_args[@]}" || status=1
     version="$(head -1 "$SOURCE_DIR/VERSION" 2>/dev/null || true)"
     if [[ -z "$version" ]]; then
       echo "Missing or empty collection VERSION: $SOURCE_DIR/VERSION" >&2

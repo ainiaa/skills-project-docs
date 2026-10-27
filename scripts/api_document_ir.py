@@ -1,4 +1,6 @@
 """Language-neutral API documentation intermediate representation."""
+import re
+
 from dataclasses import dataclass, field as dataclass_field, replace
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -300,3 +302,29 @@ def _split_arguments(value: str, separator: str = ",") -> List[str]:
             parts.append(value[start:index].strip())
             start = index + 1
     return parts + [value[start:].strip()]
+
+
+SCALAR_TYPES = {"String", "CharSequence", "char", "Character", "boolean", "Boolean",
+                "byte", "Byte", "short", "Short", "int", "Integer", "long", "Long",
+                "float", "Float", "double", "Double", "BigDecimal", "LocalDate",
+                "LocalDateTime", "Date", "UUID"}
+
+
+def simple_type(type_name: str) -> str:
+    return re.sub(r"[\[\]]", "", type_name.split("<", 1)[0].split(".")[-1]).strip()
+
+
+def _nested_ref(value: TypeRef) -> TypeRef:
+    raw = simple_type(value.name)
+    if raw in {"Map", "dict"} and len(value.arguments) > 1:
+        return value.arguments[1]
+    if raw in {"List", "Set", "Collection", "Iterable", "list", "set", "Optional", "Annotated", "ResponseEntity"} and value.arguments:
+        return value.arguments[0]
+    if raw == "Union":
+        return next((item for item in value.arguments if simple_type(item.name) not in {"None", "NoneType"}), value)
+    return value
+
+
+def _leaf_ref(value: TypeRef) -> TypeRef:
+    nested = _nested_ref(value)
+    return value if nested is value else _leaf_ref(nested)

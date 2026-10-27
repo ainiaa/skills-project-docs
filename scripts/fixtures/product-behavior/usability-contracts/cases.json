@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {"id": "interaction-cost", "input": "interaction-cost.md", "checks": ["identify redundant identity entry", "identify manual total calculation", "suggest changes without declaring business approval", "do not rewrite PRD"]},
+    {"id": "safe-defaults", "input": "safe-defaults.md", "checks": ["preserve explicit recipient verification", "preserve independent approval", "do not force three steps or unsafe defaults", "do not rewrite PRD"]},
+    {"id": "contract-override", "input": "contract-override.md", "checks": ["apply explicit limit override", "inherit UTF-16 counting", "retain unrelated contracts", "do not repeat settled questions", "separate compatibility from approval"]},
+    {"id": "contract-conflict", "input": "contract-conflict.md", "checks": ["ask unresolved limit", "do not choose by document position", "give independent wording finding", "do not rewrite PRD"]},
+    {"id": "contract-distinct", "input": "contract-distinct.md", "checks": ["distinguish fields and units", "do not invent conflict", "do not expand implementation scope", "do not rewrite PRD"]},
+    {"id": "prototype-current", "input": "prototype.md", "strategy": "current-skill", "checks": ["preserve rules", "deliver authorized complete prototype", "verify browser journeys", "do not invent approval", "record actual order and gaps"]},
+    {"id": "prototype-frame-first", "input": "prototype.md", "strategy": "rules-frame then prototype then complete PRD; experimental order only", "checks": ["preserve rules", "deliver authorized complete prototype", "verify browser journeys", "do not invent approval", "record actual order and gaps"]}
+  ]
+}

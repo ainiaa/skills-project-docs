@@ -115,11 +115,11 @@ python3 scripts/validate_product_doc.py --file /path/to/delivery/prd.md --tracki
 
 历史快照按从旧到新重复传 `--baseline <旧主文> [同版旧追踪]`，不猜配对、不批量改写旧确认。引用交付目录外的源码或资料时，显式追加 `--source-root <来源目录>`，可重复；当前和历史资源均检查实际文件及目录边界，该选项不放宽原型资源或追踪的同目录限制。保留既有 `FR-01`、`AC-01`、`Q1` 等编号及可点击来源，不能为通过检查删链接或改号。
 
-`product_bundle.py --file <bundle.json>` 检查可选索引与证据；纯 PRD 不要求 bundle。bundle 当前追踪使用 `artifacts.tracking: {path,sha256}`；历史条目可为单文件对象或显式主文／追踪双对象数组。
+`product_bundle.py --file <bundle.json>` 检查可选索引与证据；本次明确要求原型时追加 `--require-prototype`，缺失原型返回失败；纯 PRD 不要求 bundle，也不传该选项。bundle 当前追踪使用 `artifacts.tracking: {path,sha256}`；历史条目可为单文件对象或显式主文／追踪双对象数组。
 
 ### 上游能力与验证边界
 
-目标不清时按需复用 Superpowers `brainstorming`，业务决定待澄清时使用 Matt Pocock `grilling`，术语由 `domain-modeling` 维护；只加载当前阶段需要的能力，不同时启动两个访谈流程。上游技能独立安装，本安装器不会修改它们。按实际可见目录诊断：
+目标不清时按需复用 Superpowers `brainstorming`，业务决定待澄清时使用 Matt Pocock `grilling`，术语由 `domain-modeling` 维护；只加载当前阶段需要的能力，不同时启动两个访谈流程。安装器会从固定官方提交补齐这三个必要 Skill，已有有效安装直接复用，不覆盖、不自动升级。前端设计、UI/UX、PDLC 等可选 Skill 不默认安装；普通文档生成不触发安装。按实际可见目录单独诊断：
 
 ```bash
 python3 scripts/product_dependencies.py --skill-root /path/to/upstream/skills
@@ -129,7 +129,9 @@ python3 scripts/product_dependencies.py --skill-root /path/to/upstream/skills
 
 结构检查证明编号、版本、确认记录、文件与资源关联；不证明业务语义、批准真实性或 JavaScript 行为。浏览器旅程、实际审图、模型内容评审及真人确认分别报告，示例与有限试验不能推导任意需求的成功率。
 
-CI 执行确定性与无界面浏览器检查，明确标记模型行为未执行。Skill 改动与发布还须用当前真实报告运行 `python3 scripts/product_behavior_eval.py --report <模型观察报告.json>`；实际成品用 `--artifacts <成品报告.json>` 检查文件身份、冻结输入与修订保留。缺报告返回 `uncovered`，陈旧或失败报告返回 `invalid`；普通测试的跳过不计为这两项通过。成品报告可显式提供同结构的 `prd`、`tracking` 文件引用，仍须独立阅读实际成品核对业务含义。详见[评测约定](skills/project-docs-product/references/evaluation.md)。
+CI 执行确定性与无界面浏览器检查，明确标记模型行为未执行。发布前须在报告原执行环境运行 `python3 scripts/product_behavior_eval.py --release --report <模型观察报告.json> --artifacts <成品报告.json>`，要求两类报告同时通过当前身份、冻结输入与修订保留检查，并提供覆盖全部既有规则、引用实际成品的独立内容复核记录。单独结构通过或关键词齐全均不能放行发布。开发中仍可分别使用 `--report` 或 `--artifacts` 定向检查。普通 CI 实际执行 `.coveragerc` 声明的四个 Product 模块 90% 行覆盖率门槛；该数字不代表全仓覆盖率。缺报告返回 `uncovered`，陈旧或失败报告返回 `invalid`；普通测试的跳过不计为这两项通过。成品报告可显式提供同结构的 `prd`、`tracking` 文件引用，仍须独立阅读实际成品核对业务含义。详见[评测约定](skills/project-docs-product/references/evaluation.md)。
+
+补充的[多轮回放与已知反例回归](scripts/fixtures/product-behavior/replay-closure/README.md)保留维修三轮原始输入及独立评审要点。生成者与评审资料分开，按轮释放；这组人工／模型回归不计入标准 13 案例发布门槛。
 
 ## 能力与边界
 
@@ -182,21 +184,25 @@ HTML 是 Archify 的交互展示文件；其余三种引擎的 HTML 不是本项
 
 原有 `UNDERSTAND_PYTHON`、`UNDERSTAND_RENDERER_HOME`、各引擎 CLI 覆盖变量及共享引擎缓存路径继续有效。兼容脚本 `install-arch.sh` 仍只管理 Codex 的绘图入口，目标名称改为 `project-docs-diagram`；完整集合使用 `install.sh`。
 
-[install.sh](install.sh) 默认把统一入口和四个专用 Skill 软链接到 Codex 的 `~/.codex/skills` 和 Claude Code 的 `~/.claude/skills`，并自动安装当前缺失的四个绘图引擎。两边共用本仓库文件，更新一次即可同步更新。安装前会检查所有目标路径，保留无关目录和软链接；本仓库拥有的旧名称链接会迁移。`--uninstall` 只移除本仓库拥有的 Skill 链接，**不会删除**可被其他项目复用的引擎。[Claude Code 官方文档](https://code.claude.com/docs/en/skills#choose-where-skills-load)确认个人 Skill 目录与软链接可用；这里支持的是本地 Claude Code，会话之外的 Claude 云端环境不读取本机目录。
+[install.sh](install.sh) 默认把统一入口和四个专用 Skill 软链接到 Codex 的 `~/.codex/skills` 和 Claude Code 的 `~/.claude/skills`，补齐三个必要第三方 Skill，并自动安装当前缺失的四个绘图引擎。本集合链接共用仓库文件，更新一次即可同步更新。安装前会检查所有目标路径及必要 Skill，保留无关目录和软链接；本仓库拥有的旧名称链接会迁移。`--uninstall` 只移除本仓库拥有的 Skill 链接，**不会删除**第三方 Skill 或共享引擎。[Claude Code 官方文档](https://code.claude.com/docs/en/skills#choose-where-skills-load)确认个人 Skill 目录与软链接可用；这里支持的是本地 Claude Code，会话之外的 Claude 云端环境不读取本机目录。
+
+必要 Skill 先检查目标技能目录；Codex 还检查 `~/.agents/skills` 和其配置中启用的插件缓存，Claude Code 检查已启用、用户级插件的注册位置。不会把任意缓存或其他宿主的 Skill 当成已加载。已有入口/资源不完整、同名路径冲突或可见的多份内容不同时，停止并报告，不猜版本或覆盖。仅缺失项需要 Git 和网络：从[安装脚本声明的官方提交](scripts/install_product_dependencies.py)暂存所需 Skill 目录及许可、校验后安装，并记录 `.project-docs-source.json`。文件就绪不等于宿主已经加载或模型行为已验证。
+
+新下载的依赖完整保存在技能根旁的 `.project-docs-upstreams`，通过不覆盖已有名称的软链接发布；已有安装不会搬迁。依赖下载/校验失败不发布，发布失败清理本轮新增依赖。集合链接阶段若随后失败，则返回失败并保留已就绪的共享依赖，重试直接复用；不为安装器增加跨工具全局事务。
 
 | 安装命令 | 行为 |
 |---|---|
-| `bash install.sh` | Codex、Claude Code 均安装统一入口和四个专用 Skill；补齐全部缺失引擎 |
+| `bash install.sh` | Codex、Claude Code 均安装本集合，补齐三个必要 Skill 和全部缺失引擎 |
 | `bash install.sh --engine drawio` | 两个宿主安装 Skill；只补齐 draw.io。`--engine` 可重复指定 |
-| `bash install.sh --no-engines` | 只安装 Skill，并记录“不要自动安装引擎”的选择 |
+| `bash install.sh --no-engines` | 安装本集合并补齐必要 Skill，记录“不要自动安装引擎”的选择 |
 | `bash install.sh --host claude --engine mermaid` | 只为 Claude Code 安装 Skill，只补齐 Mermaid |
-| `bash install.sh --host all` | 为全部八个宿主安装五个 Skill；共用同一套绘图引擎 |
-| `bash install.sh --host opencode --no-engines` | 只为 OpenCode 安装五个 Skill，跳过绘图引擎 |
-| `bash install.sh --doctor` | 检查两个宿主的 Skill 链接和四个引擎；可配合 `--host`、`--engine`、`--no-engines` 缩小检查范围 |
+| `bash install.sh --host all` | 为全部八个宿主安装本集合并补齐必要 Skill；共用绘图引擎 |
+| `bash install.sh --host opencode --no-engines` | 只为 OpenCode 安装本集合与必要 Skill，跳过绘图引擎 |
+| `bash install.sh --doctor` | 只读检查 Skill 链接、必要第三方 Skill 和引擎；缺失返回非零，不安装 |
 | `bash install.sh --update` | 快进更新当前跟踪分支，重新安装集合与四个子 Skill，并升级低于新版集合最低版本的绘图 CLI |
-| `bash install.sh --update-deps` | 不拉取仓库，只同步当前集合声明的绘图 CLI 与 Skill 链接 |
-| `bash install.sh --update --no-engines` | 仅更新集合及四个子 Skill，保留原有引擎自动安装偏好 |
-| `bash install.sh --uninstall --host all` | 从八个宿主移除本仓库拥有的 Skill 链接，保留共享引擎 |
+| `bash install.sh --update-deps` | 不拉取本集合仓库，同步绘图 CLI/链接并补齐必要 Skill；已有第三方 Skill 不升级 |
+| `bash install.sh --update --no-engines` | 更新本集合并补齐必要 Skill，保留原有引擎自动安装偏好 |
+| `bash install.sh --uninstall --host all` | 移除本集合链接，保留第三方 Skill 和共享引擎 |
 
 `--host` 接受 `codex`、`claude`、`zcode`、`dsh`、`gemini`、`grok`、`pi`、`opencode`、`both`、`all`。默认及 `both` 仍只管理 Codex、Claude Code；`all` 显式选择全部八个宿主。该选项适用于安装、升级、依赖同步、诊断和卸载；后续管理时使用与安装时相同的宿主选择。普通安装使用 `--no-engines` 后，后续画图时 Skill 也不会擅自补装；再次显式运行带 `--engine` 的安装命令可解除这一选择。已装好的引擎会复用，无需每次重新安装。
 
@@ -255,7 +261,7 @@ bash install.sh --uninstall --host pi
 
 四个子 Skill 随同一仓库更新。四个绘图 CLI 以本集合锁定并验收的版本为最低基线，保留下载校验；更新时保留相同或更高的稳定版本，无法识别版本则报错停止，避免覆盖或降级已有工具。新版准备成功后才切换受管入口，旧版本目录保留。macOS 的 draw.io 更新安装在共享管理目录，Linux 使用现有 apt 安装流程，可能需要系统权限。`*_OFFICIAL_CLI` 显式指定的工具保留原路径并提示由外部管理；管理目录中的自定义入口也不会被强行覆盖。PDLC、understand-anything 和 CodeGraph 属于按需使用的外部能力，不作为本集合必装依赖，也不扫描升级用户的其他全局 Skill 或软件。
 
-`--update`、`--update-deps` 均支持 `--engine mermaid` 等选项限定 CLI 范围；这两个命令中的 `--no-engines` 只跳过本次引擎同步，不改变原有自动安装偏好。普通生成任务不会在运行前自动联网升级。
+`--update`、`--update-deps` 均支持 `--engine mermaid` 等选项限定 CLI 范围；这两个命令中的 `--no-engines` 只跳过本次引擎同步，不改变原有自动安装偏好，仍补齐缺失的必要 Skill。已有第三方 Skill 不自动升级，即使其版本不同或未知也不替换；第三方升级另走其上游机制。普通生成任务不会在运行前自动联网升级。
 
 `bash install.sh --doctor` 仅读取状态并使用临时文件检查：报告引擎实际版本及最低版本，核对 Node.js、Java、Graphviz（含 PlantUML `-testdot`）、Chrome/Chromium 和无桌面 Linux 的 Xvfb；Mermaid 还会实际生成临时 SVG 验证浏览器可用。缺失、版本过旧或检查失败均返回非零状态，doctor 不安装或升级依赖。Archify 从实际 CLI 对应的 `package.json` 读取版本，安装使用官方发行 ZIP 并校验 SHA-256。
 

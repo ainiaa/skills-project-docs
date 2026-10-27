@@ -6,6 +6,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from test_install_product_dependencies import isolated_upstreams
 
 
 REPOSITORY = Path(__file__).resolve().parents[1]
@@ -29,6 +30,8 @@ class NativeHostTests(unittest.TestCase):
             "XDG_STATE_HOME": str(self.root / "state"),
             "UNDERSTAND_RENDERER_HOME": str(self.root / "renderers"),
         }
+        _, launcher = isolated_upstreams(self.root)
+        self.environment["UNDERSTAND_PYTHON"] = str(launcher)
 
     def run_command(self, *command, success=True):
         result = subprocess.run(command, cwd=self.work, env=self.environment,

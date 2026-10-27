@@ -7,6 +7,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from test_install_product_dependencies import isolated_upstreams
 
 
 REPOSITORY = Path(__file__).resolve().parents[1]
@@ -29,12 +30,12 @@ class UpdateTests(unittest.TestCase):
         shutil.copytree(REPOSITORY / "skills", self.seed / "skills")
         scripts = self.seed / "scripts"
         scripts.mkdir()
-        for name in ("update_project_docs.py", "python_runtime.py"):
+        for name in ("update_project_docs.py", "python_runtime.py", "product_dependencies.py", "install_product_dependencies.py"):
             source = REPOSITORY / "scripts" / name
             if source.exists():
                 shutil.copy(source, scripts / name)
         for name in ("generate_api_docs.py", "generate_architecture.py", "validate_project_doc.py",
-                     "project_doc_context.py", "project_doc_impact.py", "validate_product_doc.py", "product_dependencies.py"):
+                     "project_doc_context.py", "project_doc_impact.py", "validate_product_doc.py"):
             (scripts / name).write_text("")
         (scripts / "install_renderers.py").write_text(
             "import json, os, sys\n"
@@ -57,6 +58,8 @@ class UpdateTests(unittest.TestCase):
                                 UPDATE_TEST_LOG=str(self.root / "engine-calls.jsonl"))
         for variable in ("DSH_HOME", "PI_CODING_AGENT_DIR", "XDG_CONFIG_HOME", "GEMINI_CLI_HOME", "GROK_HOME"):
             self.environment.pop(variable, None)
+        _, launcher = isolated_upstreams(self.root)
+        self.environment["UNDERSTAND_PYTHON"] = str(launcher)
 
     @staticmethod
     def git(directory, *arguments):
