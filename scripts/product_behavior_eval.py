@@ -81,18 +81,91 @@ def check_observations(report):
             assert set(value["reviewFindings"]) == {"length-conflict", "typo"}, value
 
 
-def check_authored_artifacts(report_path):
-    """Check frozen sample contracts, not product semantics or model authorship."""
+def check_identity(report, report_path):
+    """A gate-only replay keeps the producer identity and original report immutable."""
+    from product_bundle import checked_artifact
+    current = skill_identity()
+    receipt = report.get("revalidation")
+    if receipt is None:
+        if report["skillIdentity"] != current:
+            raise ValueError("Skill 身份已变化，须重新生成或提供门禁复验回执")
+        return
+    if receipt["scope"] != "gate-only" or receipt["validatorIdentity"] != current:
+        raise ValueError("门禁复验范围或当前校验身份无效")
+    source = checked_artifact(report_path.resolve().parent, receipt["sourceReport"])
+    original = json.loads(source.read_text(encoding="utf-8"))
+    if original != {key: value for key, value in report.items() if key not in {"revalidation", "contentReview"}}:
+        raise ValueError("门禁复验不得改写原生成报告或观察")
+    allowed = {"../../scripts/product_behavior_eval.py", "references/evaluation.md"}
+    producer = report["skillIdentity"]
+    if (set(producer) != set(current)
+            or any(producer[key] != value for key, value in current.items() if key not in allowed)):
+        raise ValueError("起稿资源或其他工具变化，不能仅复验门禁")
+
+
+def check_content_review(report, report_path, cases):
+    """Validate an independent judgment's coverage and citations, not infer semantics."""
     from product_bundle import checked_artifact, digest
-    from validate_product_doc import approval_content, document_input, prose, validate
+    from validate_product_doc import prose
+    if "contentReview" not in report:
+        return "not_proven"
+    root = report_path.resolve().parent
+    review = json.loads(checked_artifact(root, report["contentReview"]).read_text(encoding="utf-8"))
+    checked_artifact(root, review["provenance"])
+    rules_path = CASES.with_name("artifact-rules.json")
+    rules = json.loads(rules_path.read_text(encoding="utf-8"))
+    if (review["schemaVersion"] != 1 or not isinstance(review["reviewer"], str) or not review["reviewer"].strip()
+            or review["validatorIdentity"] != skill_identity()
+            or review["casesFingerprint"] != report["casesFingerprint"]
+            or review["baselineFingerprint"] != report["baselineFingerprint"]
+            or review["rulesFingerprint"] != digest(rules_path)
+            or review["artifacts"] != report["artifacts"]):
+        raise ValueError("独立内容复核身份、输入、规则或成品已变化")
+    findings = review["cases"]
+    if (len(findings) != len(cases) or {item["id"] for item in findings} != set(rules)
+            or set(rules) != {case["id"] for case in cases}):
+        raise ValueError("内容复核必须覆盖全部冻结案例且不可重复")
+    for item in report["artifacts"]:
+        result = next(value for value in findings if value["id"] == item["id"])
+        checks = result["checks"]
+        expected = rules[item["id"]]
+        if len(checks) != len(expected) or {check["id"] for check in checks} != set(expected):
+            raise ValueError(f"内容复核缺少规则或存在重复：{item['id']}")
+        document = checked_artifact(root, item["prd"])
+        tracking = checked_artifact(root, item["tracking"]) if "tracking" in item else None
+        # Read each file separately so a citation cannot move from main text into an attachment.
+        texts = {"prd": document.read_text(encoding="utf-8")}
+        if tracking is not None:
+            texts["tracking"] = tracking.read_text(encoding="utf-8")
+        for name, resource in result.get("supporting", {}).items():
+            if name not in {"reply", "baseline"}:
+                raise ValueError("补充证据只能是交付回复或原始基线，不能替换主文/追踪")
+            texts[name] = checked_artifact(root, resource).read_text(encoding="utf-8")
+        for check in checks:
+            if (check["verdict"] != "pass" or not isinstance(check["reason"], str)
+                    or not check["reason"].strip() or not check["evidence"]):
+                raise ValueError(f"业务规则缺失、矛盾或未验证：{item['id']}/{check['id']}")
+            for evidence in check["evidence"]:
+                text = texts[evidence["artifact"]]
+                quote = evidence["quote"]
+                if (not isinstance(quote, str) or not quote.strip() or quote not in text
+                        or not prose(quote)[0].strip() or prose(quote)[0].strip() not in prose(text)[0]):
+                    raise ValueError(f"内容复核引用不在可见正文：{item['id']}/{check['id']}")
+    return "independently_reviewed"
+
+
+def check_authored_artifacts(report_path):
+    """Check file contracts and, when supplied, an independent content review."""
+    from product_bundle import checked_artifact, digest
+    from validate_product_doc import approval_content, document_input, validate
     cases_root = Path(__file__).parent / "fixtures/product-behavior"
     report = json.loads(report_path.read_text(encoding="utf-8"))
     if not isinstance(report, dict) or report.get("schemaVersion") != 1:
         raise ValueError("不支持的成品评测版本")
     if (report.get("casesFingerprint") != digest(cases_root / "artifact-cases.json")
-            or report.get("baselineFingerprint") != digest(cases_root / "revision-baseline.md")
-            or report.get("skillIdentity") != skill_identity()):
+            or report.get("baselineFingerprint") != digest(cases_root / "revision-baseline.md")):
         raise ValueError("成品输入、基线或 Skill 身份已变化")
+    check_identity(report, report_path)
     cases = json.loads((cases_root / "artifact-cases.json").read_text(encoding="utf-8"))
     artifacts = report["artifacts"]
     if len(artifacts) != len(cases) or {item["id"] for item in artifacts} != {case["id"] for case in cases}:
@@ -106,9 +179,6 @@ def check_authored_artifacts(report_path):
         if problems:
             raise ValueError("；".join(problems))
         content, parsed, meaning, _ = document_input(document, tracking)
-        visible = parsed[0] if parsed is not None else prose(content)[0]
-        if any(signal not in visible for signal in case["signals"]):
-            raise ValueError(f"成品缺少冻结输入的可见信号：{case['id']}")
         if baselines:
             old = approval_content(baselines[0].read_text(encoding="utf-8"))
             new = meaning if meaning is not None else approval_content(content)
@@ -119,11 +189,13 @@ def check_authored_artifacts(report_path):
                 if identifier not in new or old[identifier] == new[identifier]:
                     raise ValueError(f"指定需求尚未修订：{identifier}")
 
+    return check_content_review(report, report_path, cases)
+
 
 def check_behavior_report(report_path):
     report = json.loads(report_path.read_text(encoding="utf-8"))
-    if (report["casesFingerprint"] != hashlib.sha256(CASES.read_bytes()).hexdigest()
-            or report["skillIdentity"] != skill_identity()):
+    check_identity(report, report_path)
+    if report["casesFingerprint"] != hashlib.sha256(CASES.read_bytes()).hexdigest():
         raise ValueError("行为样本或 Skill 身份已变化")
     roots = report["skillRoots"]
     if not isinstance(roots, list) or not roots or any(not isinstance(root, str) or not root.strip() for root in roots):
@@ -139,12 +211,13 @@ def check_behavior_report(report_path):
 def evaluate(report=None, artifacts=None):
     missing = "缺少实际成品报告，成品验收未完成" if artifacts is not None else "缺少真实模型观察报告，行为验收未完成"
     status, code, reason = "uncovered", 2, missing
+    semantic = "not_proven"
     if sys.flags.optimize:
         status, code, reason = "invalid", 1, "行为判定不能禁用 Python 断言"
     elif artifacts is not None and artifacts.is_file():
         try:
-            check_authored_artifacts(artifacts)
-            status, code, reason = "pass", 0, "当前成品结构、冻结信号和修订保留通过；语义与浏览器另验"
+            semantic = check_authored_artifacts(artifacts)
+            status, code, reason = "pass", 0, "成品结构、资源及修订保留通过；内容复核单独标示"
         except (OSError, ValueError, KeyError, TypeError) as error:
             status, code, reason = "invalid", 1, str(error)
     elif report is not None and report.is_file():
@@ -153,13 +226,13 @@ def evaluate(report=None, artifacts=None):
             status, code, reason = "pass", 0, "当前冻结样本、Skill 与上游身份匹配"
         except (OSError, ValueError, KeyError, TypeError, AssertionError) as error:
             status, code, reason = "invalid", 1, str(error)
-    return code, {"status": status, "reason": reason, "semanticCheck": "not_proven", "browserCheck": "not_run"}
+    return code, {"status": status, "reason": reason, "semanticCheck": semantic, "browserCheck": "not_run"}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report", type=Path, help="当前真实模型观察报告；不生成或伪造模型观察")
-    parser.add_argument("--artifacts", type=Path, help="实际成品报告；只检查结构、冻结信号和修订保留")
+    parser.add_argument("--artifacts", type=Path, help="实际成品报告；检查结构、修订保留及可选独立内容复核证据")
     parser.add_argument("--release", action="store_true", help="发布检查：行为与实际成品报告须同时通过")
     args = parser.parse_args()
     if args.report and args.artifacts and not args.release:
@@ -167,12 +240,15 @@ def main():
     if args.release:
         behavior_code, behavior = evaluate(report=args.report)
         artifact_code, artifacts = evaluate(artifacts=args.artifacts)
+        if artifact_code == 0 and artifacts["semanticCheck"] != "independently_reviewed":
+            artifact_code = 2
+            artifacts.update(status="uncovered", reason="缺少当前逐规则独立内容复核，不能仅凭结构通过发布")
         if artifact_code == 2 and args.artifacts is None:
             artifacts["reason"] = "缺少实际成品报告，成品验收未完成"
         code = 1 if 1 in (behavior_code, artifact_code) else max(behavior_code, artifact_code)
         result = {"status": {0: "pass", 1: "invalid", 2: "uncovered"}[code],
                   "checks": {"behavior": behavior, "artifacts": artifacts},
-                  "semanticCheck": "not_proven", "browserCheck": "not_run"}
+                  "semanticCheck": artifacts["semanticCheck"], "browserCheck": "not_run"}
     else:
         code, result = evaluate(args.report, args.artifacts)
     print(json.dumps(result, ensure_ascii=False))

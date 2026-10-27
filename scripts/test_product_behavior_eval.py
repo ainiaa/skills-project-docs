@@ -313,8 +313,9 @@ class ProductBehaviorTests(unittest.TestCase):
                     self.assertEqual(code, 2, result)
                     self.assertEqual(result['status'], 'uncovered')
             code, result = self.gate('--release', '--report', str(behavior), '--artifacts', str(artifacts))
-            self.assertEqual(code, 0, result)
-            self.assertEqual(result['status'], 'pass')
+            self.assertEqual(code, 2, result)
+            self.assertEqual(result['status'], 'uncovered')
+            self.assertIn('内容复核', result['checks']['artifacts']['reason'])
             self.assertEqual(set(result['checks']), {'behavior', 'artifacts'})
             self.assertEqual(result['semanticCheck'], 'not_proven')
             self.assertEqual(result['browserCheck'], 'not_run')
@@ -374,7 +375,7 @@ class ProductBehaviorTests(unittest.TestCase):
             if "baseline" in case:
                 text = (CASES.parent / case["baseline"]).read_text().replace("revision-1\n", "revision-2\n", 1).replace("500", "1000").replace("499.99", "999.99")
             else:
-                text = PRD.replace("原型：是", "原型：否") + "\n" + "、".join(case["signals"]) + "\n"
+                text = PRD.replace("原型：是", "原型：否")
             path.write_text(text)
             artifacts.append({"id": case["id"], "prd": {"path": path.name, "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}})
         report = {"schemaVersion": 1, "casesFingerprint": hashlib.sha256((CASES.parent / "artifact-cases.json").read_bytes()).hexdigest(),
@@ -423,18 +424,16 @@ class ProductBehaviorTests(unittest.TestCase):
             item['prd']['path'] = 'prd.md'
             document = root / item['prd']['path']
             tracking = root / 'trace.md'
-            # Frozen signals may occur in either file, including identifiers in tracking.
             document.write_text(MAIN)
             tracking.write_text(TRACE + '\n客服、订单备注、200、保留输入\n')
             item['prd']['sha256'] = hashlib.sha256(document.read_bytes()).hexdigest()
             item['tracking'] = {'path': tracking.name, 'sha256': hashlib.sha256(tracking.read_bytes()).hexdigest()}
             path = root / 'report.json'
-            for change in ('valid', 'tamper', 'version', 'missing_signal', 'unlinked', 'escape', 'missing'):
+            for change in ('valid', 'tamper', 'version', 'unlinked', 'escape', 'missing'):
                 with self.subTest(change=change):
                     document.write_text(MAIN)
                     tracking.write_text(TRACE + '\n客服、订单备注、200、保留输入\n')
                     if change == 'version': tracking.write_text(tracking.read_text().replace('draft-1', 'draft-0'))
-                    if change == 'missing_signal': tracking.write_text(TRACE)
                     if change == 'unlinked': document.write_text(MAIN.replace('[验收追踪](trace.md)', '追踪另存'))
                     item['prd']['sha256'] = hashlib.sha256(document.read_bytes()).hexdigest()
                     item['tracking'] = {'path': tracking.name, 'sha256': hashlib.sha256(tracking.read_bytes()).hexdigest()}
@@ -444,6 +443,174 @@ class ProductBehaviorTests(unittest.TestCase):
                     path.write_text(json.dumps(report))
                     code, result = self.gate('--artifacts', str(path))
                     self.assertEqual(code, 0 if change == 'valid' else 1, result)
+
+    def content_review(self, root, report):
+        """Protocol fixture only: these judgments do not measure PRD quality."""
+        rules_path = CASES.parent / 'artifact-rules.json'
+        rules = json.loads(rules_path.read_text())
+        provenance = root / 'fixture-review-run.json'
+        provenance.write_text(json.dumps(dict(fixtureOnly=True)))
+        review = dict(schemaVersion=1, reviewer='independent-fixture-only',
+                      provenance=dict(path=provenance.name, sha256=hashlib.sha256(provenance.read_bytes()).hexdigest()),
+                      casesFingerprint=report['casesFingerprint'], baselineFingerprint=report['baselineFingerprint'],
+                      validatorIdentity=skill_identity(),
+                      rulesFingerprint=hashlib.sha256(rules_path.read_bytes()).hexdigest(),
+                      artifacts=report['artifacts'], cases=[])
+        for item in report['artifacts']:
+            quote = (root / item['prd']['path']).read_text().splitlines()[0]
+            review['cases'].append(dict(id=item['id'], checks=[
+                dict(id=key, verdict='pass', reason='Protocol fixture, not a semantic quality claim',
+                     evidence=[dict(artifact='prd', quote=quote)]) for key in rules[item['id']]]))
+        path = root / 'content-review.json'
+        path.write_text(json.dumps(review))
+        report['contentReview'] = dict(path=path.name, sha256=hashlib.sha256(path.read_bytes()).hexdigest())
+        return review, path
+
+    def test_release_requires_current_complete_evidenced_content_review(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            behavior = self.behavior_report(root)
+            for change in ('valid', 'missing_rule', 'contradiction', 'omitted_check', 'duplicate',
+                           'invented_quote', 'hidden_quote', 'stale_rules', 'stale_validator',
+                           'stale_artifacts', 'tamper', 'no_reviewer', 'wrong_input', 'bad_provenance',
+                           'valid_support', 'support_tamper', 'support_role', 'stale_baseline'):
+                with self.subTest(change=change):
+                    report = self.artifact_report(root)
+                    # These are protocol-only judgments; semantic discrimination is tested by the blind fixture replay.
+                    for item in report['artifacts']:
+                        file = root / item['prd']['path']
+                        if item['id'] == 'simple-rule':
+                            file.write_text(file.read_text() + '\n<!-- hidden evidence -->\n')
+                        item['prd']['sha256'] = hashlib.sha256(file.read_bytes()).hexdigest()
+                    review, review_path = self.content_review(root, report)
+                    check = review['cases'][0]['checks'][0]
+                    if change == 'missing_rule': check.update(verdict='missing', evidence=[])
+                    elif change == 'contradiction': check['verdict'] = 'contradiction'
+                    elif change == 'omitted_check': review['cases'][0]['checks'].pop()
+                    elif change == 'duplicate': review['cases'][0]['checks'].append(check.copy())
+                    elif change == 'invented_quote': check['evidence'][0]['quote'] = 'This text does not exist'
+                    elif change == 'hidden_quote': check['evidence'][0]['quote'] = '<!-- hidden evidence -->'
+                    elif change == 'stale_rules': review['rulesFingerprint'] = '0' * 64
+                    elif change == 'stale_validator': review['validatorIdentity'] = {}
+                    elif change == 'stale_artifacts': review['artifacts'] = []
+                    elif change == 'no_reviewer': review['reviewer'] = ''
+                    elif change == 'wrong_input': review['casesFingerprint'] = '0' * 64
+                    elif change == 'stale_baseline': review['baselineFingerprint'] = '0' * 64
+                    elif change == 'bad_provenance': review['provenance']['sha256'] = '0' * 64
+                    if change in ('valid_support', 'support_tamper', 'support_role'):
+                        support = root / 'reply.md'
+                        support.write_text('Additional handoff record')
+                        result = review['cases'][0]
+                        result['supporting'] = dict(reply=dict(path=support.name, sha256=hashlib.sha256(support.read_bytes()).hexdigest()))
+                        check['evidence'] = [dict(artifact='reply', quote=support.read_text())]
+                        if change == 'support_tamper': support.write_text('changed')
+                        elif change == 'support_role': result['supporting']['prd'] = result['supporting'].pop('reply')
+                    review_path.write_text(json.dumps(review))
+                    report['contentReview']['sha256'] = hashlib.sha256(review_path.read_bytes()).hexdigest()
+                    if change == 'tamper': review_path.write_text('{}')
+                    path = root / 'artifacts.json'
+                    path.write_text(json.dumps(report))
+                    code, result = self.gate('--release', '--report', str(behavior), '--artifacts', str(path))
+                    self.assertEqual(code, 0 if change in ('valid', 'valid_support') else 1, result)
+                    if change in ('valid', 'valid_support'):
+                        self.assertEqual(result['semanticCheck'], 'independently_reviewed')
+                        self.assertEqual(result['browserCheck'], 'not_run')
+
+    def test_content_review_cannot_quote_tracking_as_main_text(self):
+        from test_product_split import MAIN, TRACE
+        from validate_product_doc import prose
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            report = self.artifact_report(root)
+            item = report['artifacts'][0]
+            (root / 'prd.md').write_text(MAIN)
+            (root / 'trace.md').write_text(TRACE)
+            item['prd'] = dict(path='prd.md', sha256=hashlib.sha256((root / 'prd.md').read_bytes()).hexdigest())
+            item['tracking'] = dict(path='trace.md', sha256=hashlib.sha256((root / 'trace.md').read_bytes()).hexdigest())
+            review, review_path = self.content_review(root, report)
+            quote = next(line for line in TRACE.splitlines() if line.strip() and line not in MAIN and prose(line)[0].strip())
+            review['cases'][0]['checks'][0]['evidence'] = [dict(artifact='prd', quote=quote)]
+            review_path.write_text(json.dumps(review))
+            report['contentReview']['sha256'] = hashlib.sha256(review_path.read_bytes()).hexdigest()
+            path = root / 'report.json'
+            path.write_text(json.dumps(report))
+            code, result = self.gate('--artifacts', str(path))
+            self.assertEqual(code, 1, result)
+            self.assertIn('可见正文', result['reason'])
+
+    def test_frozen_semantic_pairs_replay_equivalence_missing_and_contradiction(self):
+        from unittest.mock import patch
+        from product_behavior_eval import check_content_review
+        controls_path = CASES.parent / 'semantic-regressions.json'
+        controls = json.loads(controls_path.read_text())
+        observations = json.loads((CASES.parent / 'semantic-regressions-reviewed.json').read_text())
+        self.assertEqual(observations['inputsFingerprint'], hashlib.sha256(controls_path.read_bytes()).hexdigest())
+        self.assertEqual(observations['rulesFingerprint'], hashlib.sha256((CASES.parent / 'artifact-rules.json').read_bytes()).hexdigest())
+        actual = {item['id']: item for item in observations['cases']}
+        self.assertEqual(set(actual), {item['id'] for item in controls})
+        rules = json.loads((CASES.parent / 'artifact-rules.json').read_text())
+        original = {item['id']: item for item in json.loads((CASES.parent / 'artifact-cases.json').read_text())}
+        for control in controls:
+            with self.subTest(case=control['id']), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                source = control['case']
+                rule = control['rule']
+                verdict = actual[control['id']]['checks'][0]['verdict']
+                self.assertEqual(verdict, control['expected'])
+                # The old token gate rejects the good pair and accepts both bad pairs.
+                signals_present = all(token in control['document'] for token in original[source]['signals'])
+                self.assertEqual(signals_present, control['expected'] != 'pass')
+                (root / 'artifact-rules.json').write_text(json.dumps({source: {rule: rules[source][rule]}}))
+                document = root / 'prd.md'
+                document.write_text(control['document'])
+                report = dict(casesFingerprint='fixture-only', baselineFingerprint='fixture-only', artifacts=[dict(id=source, prd=dict(
+                    path=document.name, sha256=hashlib.sha256(document.read_bytes()).hexdigest()))])
+                review = dict(schemaVersion=1, reviewer=observations['reviewer'], validatorIdentity=skill_identity(),
+                              casesFingerprint=report['casesFingerprint'], baselineFingerprint=report['baselineFingerprint'],
+                              artifacts=report['artifacts'],
+                              rulesFingerprint=hashlib.sha256((root / 'artifact-rules.json').read_bytes()).hexdigest(),
+                              cases=[dict(id=source, checks=actual[control['id']]['checks'])],
+                              provenance=dict(path='frozen-judgment.json', sha256=hashlib.sha256(
+                                  json.dumps(actual[control['id']]).encode()).hexdigest()))
+                (root / 'frozen-judgment.json').write_text(json.dumps(actual[control['id']]))
+                path = root / 'review.json'
+                path.write_text(json.dumps(review))
+                report['contentReview'] = dict(path=path.name, sha256=hashlib.sha256(path.read_bytes()).hexdigest())
+                with patch.dict(check_content_review.__globals__, CASES=root / 'cases.json'):
+                    if control['expected'] == 'pass':
+                        self.assertEqual(check_content_review(report, root / 'report.json', [dict(id=source)]), 'independently_reviewed')
+                    else:
+                        with self.assertRaisesRegex(ValueError, '业务规则缺失、矛盾或未验证'):
+                            check_content_review(report, root / 'report.json', [dict(id=source)])
+
+    def test_gate_only_revalidation_preserves_original_generation_and_rejects_drift(self):
+        import copy
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for kind in ('artifacts', 'behavior'):
+                original = self.artifact_report(root) if kind == 'artifacts' else json.loads(self.behavior_report(root).read_text())
+                original['skillIdentity']['../../scripts/product_behavior_eval.py'] = 'a' * 64
+                source = root / 'original.json'
+                for change in ('valid', 'authoring_drift', 'tool_drift', 'altered_output', 'source_tamper',
+                               'stale_validator', 'unsupported_scope', 'no_receipt'):
+                    with self.subTest(kind=kind, change=change):
+                        old = copy.deepcopy(original)
+                        if change == 'authoring_drift': old['skillIdentity']['SKILL.md'] = 'b' * 64
+                        elif change == 'tool_drift': old['skillIdentity']['../../scripts/validate_product_doc.py'] = 'b' * 64
+                        source.write_text(json.dumps(old))
+                        report = copy.deepcopy(old)
+                        report['revalidation'] = dict(scope='gate-only', validatorIdentity=skill_identity(),
+                            sourceReport=dict(path=source.name, sha256=hashlib.sha256(source.read_bytes()).hexdigest()))
+                        if change == 'altered_output': report['extra'] = 'changed generation evidence'
+                        elif change == 'source_tamper': source.write_text('{}')
+                        elif change == 'stale_validator': report['revalidation']['validatorIdentity'] = {}
+                        elif change == 'unsupported_scope': report['revalidation']['scope'] = 'anything'
+                        elif change == 'no_receipt': del report['revalidation']
+                        path = root / 'revalidated.json'
+                        path.write_text(json.dumps(report))
+                        code, result = self.gate('--artifacts' if kind == 'artifacts' else '--report', str(path))
+                        self.assertEqual(code, 0 if change == 'valid' else 1, result)
+                        self.assertEqual(report['skillIdentity'], old['skillIdentity'])
 
     @unittest.skipUnless(os.environ.get("PRODUCT_ARTIFACT_REPORT"), "actual authored artifacts not supplied")
     def test_actual_authored_artifacts(self):

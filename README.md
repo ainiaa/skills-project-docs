@@ -129,7 +129,7 @@ python3 scripts/product_dependencies.py --skill-root /path/to/upstream/skills
 
 结构检查证明编号、版本、确认记录、文件与资源关联；不证明业务语义、批准真实性或 JavaScript 行为。浏览器旅程、实际审图、模型内容评审及真人确认分别报告，示例与有限试验不能推导任意需求的成功率。
 
-CI 执行确定性与无界面浏览器检查，明确标记模型行为未执行。发布前须在报告原执行环境运行 `python3 scripts/product_behavior_eval.py --release --report <模型观察报告.json> --artifacts <成品报告.json>`，要求两类报告同时通过当前身份、冻结输入与修订保留检查。开发中仍可分别使用 `--report` 或 `--artifacts` 定向检查。普通 CI 实际执行 `.coveragerc` 声明的四个 Product 模块 90% 行覆盖率门槛；该数字不代表全仓覆盖率。缺报告返回 `uncovered`，陈旧或失败报告返回 `invalid`；普通测试的跳过不计为这两项通过。成品报告可显式提供同结构的 `prd`、`tracking` 文件引用，仍须独立阅读实际成品核对业务含义。详见[评测约定](skills/project-docs-product/references/evaluation.md)。
+CI 执行确定性与无界面浏览器检查，明确标记模型行为未执行。发布前须在报告原执行环境运行 `python3 scripts/product_behavior_eval.py --release --report <模型观察报告.json> --artifacts <成品报告.json>`，要求两类报告同时通过当前身份、冻结输入与修订保留检查，并提供覆盖全部既有规则、引用实际成品的独立内容复核记录。单独结构通过或关键词齐全均不能放行发布。开发中仍可分别使用 `--report` 或 `--artifacts` 定向检查。普通 CI 实际执行 `.coveragerc` 声明的四个 Product 模块 90% 行覆盖率门槛；该数字不代表全仓覆盖率。缺报告返回 `uncovered`，陈旧或失败报告返回 `invalid`；普通测试的跳过不计为这两项通过。成品报告可显式提供同结构的 `prd`、`tracking` 文件引用，仍须独立阅读实际成品核对业务含义。详见[评测约定](skills/project-docs-product/references/evaluation.md)。
 
 补充的[多轮回放与已知反例回归](scripts/fixtures/product-behavior/replay-closure/README.md)保留维修三轮原始输入及独立评审要点。生成者与评审资料分开，按轮释放；这组人工／模型回归不计入标准 13 案例发布门槛。
 
