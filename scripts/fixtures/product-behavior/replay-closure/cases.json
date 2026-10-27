@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "maintenance-three-turn-replay",
+      "mode": "complex",
+      "input": "maintenance-01.md",
+      "continuations": [
+        "maintenance-02.md",
+        "maintenance-03.md"
+      ],
+      "checks": [
+        "Release one original input at a time after the prior delivery; Markdown first and prototype only after explicit authorization.",
+        "Preserve the complete resident, dispatcher and technician journeys, park boundaries, exact 24-hour rule and source character-counting unit.",
+        "Unknown results isolate writes for the same actor and object without freezing unrelated objects or roles; distinguish success, confirmed not executed and still unknown.",
+        "After leaving, switching objects or roles and returning, retain the correct actor/object/action draft and pending context. Save through actual controls and verify the resulting record; do not leak a different draft.",
+        "Check that ordinary residents viewing their own in-progress ticket receive the specified offline next step, not just a generic absence of actions.",
+        "Demonstration controls must respect the same park and ownership rules as normal actions. Check legal maximum-length content at 390px and consistent sample creation/log times.",
+        "Independently exercise actual page controls, recovery exits and cross-role readback; author assertions and structural checks alone do not prove behavior."
+      ]
+    },
+    {
+      "id": "settlement-known-revision-regression",
+      "mode": "revision",
+      "input": "../revision-handoff/settlement.md",
+      "continuations": [
+        "../revision-handoff/revision-range.md",
+        "../revision-handoff/revision-display.md"
+      ],
+      "sourceKind": "existing synthetic settlement fixture; does not replace original private Word, code or historical user inputs",
+      "checks": [
+        "Derive accounting outcomes from explicit source assumptions and retain reproducible numeric cases through later simplification; do not promote a candidate to approval.",
+        "Distinguish pending or unknown original vouchers from confirmed nonexistence. Give the source-backed terminal route or a locally scoped unresolved decision, rather than an endless wait or invented accounting policy.",
+        "Consider an unposted original record whose monthly marker changes before its first voucher, and preserve any source-supported timing gap through revisions without silently expanding the agreed database scope.",
+        "Keep record values separate from processing statuses, actual existing page controls separate from target sketches, and recovery diagram scope consistent with its real exits.",
+        "Missing production configuration blocks only the dependent conclusion; provide the independent requested PRD body and state the verification boundary.",
+        "If readonly derived-value display is in scope, distinguish missing evidence from false, handle target-versus-actual period discrepancies explicitly, and isolate added-query failures without erasing existing lists or changing completed business/voucher facts."
+      ]
+    }
+  ]
+}

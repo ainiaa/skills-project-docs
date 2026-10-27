@@ -1,4 +1,5 @@
 import contextlib
+import hashlib
 import io
 import json
 import subprocess
@@ -11,6 +12,56 @@ from pathlib import Path
 from api_document_ir import ApiDocument, Schema
 from generate_api_docs import Endpoint, Field, example_for, gradle_modules, parse_class_from_jar, parse_classes, parse_endpoints, render_curl, render_markdown, render_postman, scan_java_document, unresolved_types
 from python_fastapi_adapter import module_name, scan_python_document
+
+
+class ApiModuleBoundaryTests(unittest.TestCase):
+    def test_adapters_and_renderers_import_without_cli_or_each_other(self):
+        for name, forbidden in (('java_spring_adapter', 'api_document_renderers'),
+                                ('api_document_renderers', 'java_spring_adapter')):
+            with self.subTest(module=name):
+                result = subprocess.run([sys.executable, '-c',
+                    f"import sys; import {name}; assert 'generate_api_docs' not in sys.modules; "
+                    f"assert {forbidden!r} not in sys.modules"],
+                    cwd=Path(__file__).parent, capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_existing_imports_reexport_the_same_implementations(self):
+        import generate_api_docs as cli
+        import api_document_renderers as renderers
+        import java_spring_adapter as java
+        for name in ('render_markdown', 'render_postman', 'render_curl', 'example_for'):
+            self.assertIs(getattr(cli, name), getattr(renderers, name))
+        for name in ('scan_java_document', 'parse_classes', 'parse_endpoints', 'parse_class_from_jar', 'gradle_modules'):
+            self.assertIs(getattr(cli, name), getattr(java, name))
+
+    def test_renderer_refactor_keeps_java_and_python_outputs_byte_for_byte(self):
+        # Baseline hashes were captured before moving the existing implementations.
+        expected = {
+  "java": [
+    "263eb719df5552cdd3aff19999a5456b2af4043d54e4d601129c6dbd9df82a9d",
+    "a9c8f7bcf1762ae1560c6cf19d9f2690731bdf226f4e5b5e07067a27d74950eb",
+    "0384ddc3e3badb1042cdbb22169c28c4037bf9d88b9c76db2bc43c6956660344"
+  ],
+  "python": [
+    "f6f4a1977654966fa4cd74c3921efdb0365c65479d0fa9f57385944a82469b98",
+    "2d09a0a17604a9f36979e24868360da9d3e00ec7192ede5cd4ab94eacaff444a",
+    "c105696a092e8f32357c2c8fa5a116e70d729935b8ee559a7a75f8142f0f0ab2"
+  ]
+}
+        for language in ('java', 'python'):
+            document = ApiDocument.from_legacy(language, 'spring' if language == 'java' else 'fastapi', [
+                Endpoint('save', '保存订单', 'POST', '/orders/{id}', [
+                    Field('id', 'String', example='order 1', location='path'),
+                    Field('tenant', 'String', example='tenant-a', location='header', wire_name='X-Tenant'),
+                    Field('query', 'String', example='a&b', location='query')],
+                    Field('request', 'Request'), 'List<Result>', 'fixture:1', 'application/json')],
+                {'Request': [Field('amount', 'int', minimum=2), Field('memo', 'String', description='订单|备注')],
+                 'Result': [Field('success', 'boolean')]})
+            values = [render_markdown(document, 'https://example.test'),
+                      json.dumps(render_postman(document, 'https://example.test'), ensure_ascii=False, sort_keys=True),
+                      render_curl(document, 'https://example.test')]
+            with self.subTest(language=language):
+                self.assertEqual([hashlib.sha256(value.encode()).hexdigest() for value in values], expected[language])
 
 
 class ParseEndpointsTest(unittest.TestCase):

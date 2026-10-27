@@ -12,8 +12,9 @@ def _related_graph(graph, paths, terms):
     edges = graph.get("edges", [])
     selected = {node.get("id") for node in nodes if node.get("filePath") in paths
                 or any(term in str(node.get(key, "")).casefold() for key in ("name", "summary") for term in terms)}
+    seeds = selected.copy()
     for edge in edges:
-        if edge.get("source") in selected or edge.get("target") in selected:
+        if edge.get("source") in seeds or edge.get("target") in seeds:
             selected.update((edge.get("source"), edge.get("target")))
     return ([node for node in nodes if node.get("id") in selected],
             [edge for edge in edges if edge.get("source") in selected and edge.get("target") in selected])
@@ -21,13 +22,17 @@ def _related_graph(graph, paths, terms):
 
 def focused_context(context, focus):
     terms = [item.casefold() for item in focus if item.strip()]
-    paths = {path for path in context["files"] if any(term in path.casefold() for term in terms)}
-    for field, key in (("symbols", "name"), ("routes", "value"), ("configKeys", "key"), ("tables", "name")):
-        paths.update(item["path"] for item in context[field]
-                     if any(term in str(item[key]).casefold() for term in terms))
+    matches = {}
+    for term in terms:
+        matches[term] = {path for path in context["files"] if term in path.casefold()}
+        for field, key in (("symbols", "name"), ("routes", "value"), ("configKeys", "key"), ("tables", "name")):
+            matches[term].update(item["path"] for item in context[field] if term in str(item[key]).casefold())
+    paths = set().union(*matches.values())
+    missing = [item for item in focus if item.strip() and not matches[item.casefold()]]
     result = {"project": context["project"], "gitCommitHash": context["gitCommitHash"],
               "focus": focus, "totalFiles": len(context["files"]), "matchedFiles": sorted(paths),
-              "needsBroaderSearch": not bool(paths), "warnings": list(context["warnings"])}
+              "needsBroaderSearch": not bool(paths) or bool(missing), "warnings": list(context["warnings"])}
+    result["warnings"].extend(f"focus has no source matches: {item}" for item in missing)
     for field in ("symbols", "routes", "configKeys", "tables"):
         result[field] = [item for item in context[field] if item["path"] in paths]
     for field, prefix in (("knowledgeGraph", "graph"), ("domainGraph", "domain")):

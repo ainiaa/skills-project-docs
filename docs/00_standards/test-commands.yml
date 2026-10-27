@@ -1,2 +1,2 @@
 # Product-owned Python entrypoints; existing modules are checked by full regression.
-coverage: python3 -m pytest scripts/test_product_docs.py scripts/test_product_dependencies.py scripts/test_product_bundle.py scripts/test_product_behavior_eval.py --cov --cov-fail-under=90
+coverage: python3 -m pytest scripts/test_product_docs.py scripts/test_product_split.py scripts/test_product_dependencies.py scripts/test_product_bundle.py scripts/test_product_behavior_eval.py --cov --cov-fail-under=90

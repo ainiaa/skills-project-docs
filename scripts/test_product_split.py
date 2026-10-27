@@ -182,6 +182,18 @@ class SplitApprovalTests(unittest.TestCase):
                 p=root/d/'trace.md';p.write_text(p.read_text()+extra.replace('允许为空。','允许为空或短备注。') if d=='current' else p.read_text()+extra)
             code,report=self.run_check(root/'current',self.flags(root/'current',old));self.assertEqual(code,0,report)
 
+    def test_unconfirmed_section_link_does_not_expand_other_split_confirmation(self):
+        extra = '\n### FR-02 备注\n状态：待确认\n依据：SRC-01\n原型：否\n备注可选。\n#### AC-02 备注为空\n允许为空。\n'
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);old=self.approved_pair(root/'old');self.approved_pair(root/'current','draft-2')
+            for name in ('old', 'current'):
+                p=root/name/'trace.md';p.write_text(p.read_text()+extra)
+            current=root/'current';(current/'input.txt').write_text('note only')
+            p=current/'trace.md';p.write_text(p.read_text().replace('备注可选。','备注可选。[输入](input.txt)'))
+            code,report=self.run_check(current,self.flags(current,old));self.assertEqual(code,0,report)
+            p=current/'prd.md';p.write_text(p.read_text()+'\n[共享输入](input.txt)\n')
+            self.assertNotEqual(self.run_check(current,self.flags(current,old))[0],0)
+
     def test_split_old_external_or_other_file_references_are_not_auto_frozen(self):
         for target in ['https://example.invalid/rule','extra.md','image.png']:
             with self.subTest(target=target),tempfile.TemporaryDirectory() as folder:

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "settlement-handoff",
+      "mode": "complex",
+      "input": "settlement.md",
+      "checks": ["explain the business problem before implementation", "derive scenarios from operation order as well as month", "give record values and reproducible balances", "trace the new field through affected consumers", "keep accounting candidates separate from settled requirements"]
+    },
+    {
+      "id": "settlement-revision",
+      "mode": "revision",
+      "input": "settlement.md",
+      "continuations": ["revision-range.md", "revision-display.md"],
+      "checks": ["retain background scenarios and settled scope after each revision", "keep the same record identifiers and deferred accounting candidate", "change only affected content", "provide reader answers with locations rather than a generic pass", "finish content checks before final document formatting"]
+    },
+    {
+      "id": "light-error-message",
+      "mode": "light",
+      "input": "../lean-split/light-message.md",
+      "checks": ["deliver a short change with normal boundary and invalid cases", "do not impose a complex document or new approval step"]
+    }
+  ]
+}

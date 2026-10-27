@@ -6,6 +6,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from test_install_product_dependencies import isolated_upstreams
 
 
 REPOSITORY = Path(__file__).resolve().parents[1]
@@ -54,6 +55,8 @@ class InstallTests(unittest.TestCase):
                                 UNDERSTAND_RENDERER_HOME=str(self.root / "renderers"))
         for variable in ("DSH_HOME", "PI_CODING_AGENT_DIR", "XDG_CONFIG_HOME", "GEMINI_CLI_HOME", "GROK_HOME"):
             self.environment.pop(variable, None)
+        _, launcher = isolated_upstreams(self.root)
+        self.environment["UNDERSTAND_PYTHON"] = str(launcher)
 
     def host_directories(self):
         return {
@@ -114,6 +117,66 @@ class InstallTests(unittest.TestCase):
         self.assertEqual(self.arch_target.resolve(), REPOSITORY / "skills" / "project-docs-diagram")
         self.assertEqual(self.project_target.resolve(), REPOSITORY / "skills" / "project-docs-overview")
         self.assertEqual(self.run_installer("--doctor").returncode, 0)
+
+    def test_required_upstream_auto_install_reuse_and_uninstall_preservation(self):
+        result = self.run_installer()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        skills = self.codex_home / "skills"
+        for name in ("brainstorming", "grilling", "domain-modeling"):
+            self.assertTrue((skills / name / "SKILL.md").is_file(), result.stdout)
+        entry = skills / "grilling/SKILL.md"
+        entry.write_text(entry.read_text() + "user customization\n")
+        before = entry.read_bytes()
+        self.assertEqual(self.run_installer("--update-deps").returncode, 0)
+        self.assertEqual(entry.read_bytes(), before)
+        self.assertFalse((skills / "optional-skill").exists())
+        self.assertEqual(self.run_installer("--uninstall").returncode, 0)
+        self.assertEqual(entry.read_bytes(), before)
+
+    def test_upstream_conflict_blocks_both_hosts_before_collection_links(self):
+        conflict = self.claude_home / "skills/domain-modeling"
+        conflict.mkdir(parents=True)
+        (conflict / "keep.txt").write_text("keep")
+        result = self.run_installer("--no-engines", isolated=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(self.target.exists())
+        self.assertFalse((self.codex_home / "skills/brainstorming").exists())
+        self.assertEqual((conflict / "keep.txt").read_text(), "keep")
+
+    def test_doctor_reports_missing_upstream_without_installing_it(self):
+        self.assertEqual(self.run_installer().returncode, 0)
+        dependency = self.codex_home / "skills/grilling"
+        self.assertTrue(dependency.is_dir())
+        self.assertTrue(dependency.is_symlink())
+        dependency.unlink()
+        result = self.run_installer("--doctor")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("grilling", result.stdout + result.stderr)
+        self.assertFalse(dependency.exists())
+
+    def test_upstream_conflict_prevents_renderer_invocation(self):
+        conflict = self.codex_home / "skills/domain-modeling"
+        conflict.mkdir(parents=True)
+        (conflict / "keep.txt").write_text("keep")
+        launcher = self.root / "probe-python"
+        real = self.environment["UNDERSTAND_PYTHON"]
+        launcher.write_text(f"#!{sys.executable}\nimport os,sys\nfrom pathlib import Path\n"
+                            f"if len(sys.argv)>1 and Path(sys.argv[1]).name=='install_renderers.py':\n Path({str(self.root / 'renderer-called')!r}).touch();sys.exit(1)\n"
+                            f"os.execv({real!r},[{real!r},*sys.argv[1:]])\n")
+        launcher.chmod(0o755)
+        self.environment["UNDERSTAND_PYTHON"] = str(launcher)
+        result = self.run_installer("--host", "codex", "--engine", "mermaid", isolated=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse((self.root / "renderer-called").exists())
+
+    def test_invalid_preference_path_fails_before_publishing_upstreams(self):
+        path = self.root / "renderers"
+        path.write_text("keep")
+        result = self.run_installer()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(path.read_text(), "keep")
+        self.assertFalse((self.codex_home / "skills/brainstorming").exists())
+        self.assertFalse(self.target.exists())
 
     def test_install_uses_home_when_codex_home_is_unset(self):
         del self.environment["CODEX_HOME"]
@@ -509,7 +572,7 @@ class InstallTests(unittest.TestCase):
         result = self.run_installer("--uninstall", "--host", "all", isolated=False)
         self.assertEqual(result.returncode, 0, result.stderr)
         for directory in self.host_directories().values():
-            self.assertEqual(list(directory.iterdir()), [])
+            self.assertEqual({p.name for p in directory.iterdir()}, {"brainstorming", "grilling", "domain-modeling"})
 
     def test_new_host_conflicts_block_all_actions_before_any_link_changes(self):
         self.suite_target.parent.mkdir(parents=True)
@@ -641,7 +704,7 @@ class InstallTests(unittest.TestCase):
             if action != "--uninstall":
                 self.assertEqual((shared / "project-docs").resolve(), REPOSITORY / "skills" / "project-docs")
         self.assertEqual(directory.readlink(), shared)
-        self.assertEqual(list(shared.iterdir()), [])
+        self.assertEqual({p.name for p in shared.iterdir()}, {"brainstorming", "grilling", "domain-modeling"})
 
     def test_gemini_and_grok_native_home_overrides_apply_to_all_local_actions(self):
         for host, variable, suffix in (("gemini", "GEMINI_CLI_HOME", ".gemini/skills"),

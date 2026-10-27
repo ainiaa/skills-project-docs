@@ -21,19 +21,22 @@ jobs:
           node-version: '22'
       - name: Install the pinned product Markdown parser
         run: python3 -m pip install -r scripts/requirements-product.txt
+      - name: Install the existing coverage test tools
+        run: python3 -m pip install pytest==8.4.2 pytest-cov==7.0.0
       - name: Reuse the existing Mermaid browser runtime
         run: python3 scripts/install_renderers.py --engine mermaid
       - name: Product contracts, frozen fixtures and installation regressions
         run: |
-          python3 -m unittest discover -s scripts -p 'test_product*.py'
+          python3 -m pytest scripts/test_product*.py --cov --cov-fail-under=90
           python3 -m unittest discover -s scripts -p test_install.py
           python3 -m unittest discover -s scripts -p test_update.py
+          python3 -m unittest discover -s scripts -p test_install_product_dependencies.py
       - name: Record model behavior verification boundary
         run: |
           python3 - <<'PY'
           import os
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
-              summary.write('Model behavior and actual authored artifact trials: **not run / uncovered** in deterministic CI. Skill changes and release acceptance require fresh managed model observations and `python3 scripts/product_behavior_eval.py --report <report.json>`.\n')
+              summary.write('Model behavior and actual authored artifact trials: **not run / uncovered** in deterministic CI. Release acceptance requires both fresh reports in their original upstream environment: `python3 scripts/product_behavior_eval.py --release --report <behavior.json> --artifacts <artifacts.json>`. The 90% coverage gate covers the four Product modules declared in `.coveragerc`, not the whole repository.\n')
           PY
       - name: Validate the example PRD and interactive prototype
         run: |

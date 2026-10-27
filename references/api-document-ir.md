@@ -6,6 +6,8 @@
 adapter(source, options) -> ApiDocument -> Markdown / Postman / cURL
 ```
 
+代码职责：`scripts/java_spring_adapter.py` 读取 Java 源码、JAR 和 Gradle 声明，`scripts/python_fastapi_adapter.py` 读取 FastAPI 源码；二者输出 `scripts/api_document_ir.py` 的中间模型。`scripts/api_document_renderers.py` 只消费模型，生成 Markdown、Postman 和 cURL；不依赖语言适配器或 CLI。`scripts/generate_api_docs.py` 保留命令行编排、发现与选择，并重新导出已有适配和渲染函数，兼容原有 Python 导入。新增解析语义放适配器，公共类型展开放 IR，展示规则放渲染器。
+
 字段：
 
 - `ir_version`：当前为 `1`。

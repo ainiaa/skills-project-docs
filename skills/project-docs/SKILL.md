@@ -9,6 +9,8 @@ description: 项目文档 Skill 集合的统一入口；当用户点名 project-
 
 用户要求更新本集合及依赖时，运行 `bash <真实Skill目录>/../../install.sh --update --host <宿主>`；根据当前实际宿主选 `codex`、`claude`、`zcode`、`dsh`、`gemini`、`grok`、`pi` 或 `opencode`，用户明确要求全部宿主时才用 `all`。只同步依赖时使用 `--update-deps`，仅更新 Skill 时加 `--no-engines`；诊断和卸载也使用同一个 `--host`。不要省略宿主参数后误用默认的 Codex、Claude Code 两端。四个子 Skill 随仓库更新，绘图 CLI 以集合锁定版本为最低基线，保留相同或更高稳定版本，无法识别版本时停止；显式 CLI 覆盖由外部管理。更新保护本地改动，不自动切分支或重置；失败时报告具体阶段，不宣称全部更新成功。普通文档生成不先联网升级，也不升级用户的其他全局 Skill。
 
+安装及依赖同步会补齐 Product 必要的 `brainstorming`、`grilling`、`domain-modeling`，已有有效安装直接复用，不覆盖、不自动升级。`--no-engines` 仍检查并补齐必要 Skill；`--doctor` 只读检查，卸载保留第三方 Skill。可选前端、UI/UX、PDLC 等不默认安装，按任务需要及明确授权处理。
+
 | 用户需要 | 读取的能力 | 交付物 |
 |---|---|---|
 | 业务需求梳理、PRD、产品评审，或可点击 HTML 界面原型 | [project-docs-product](../project-docs-product/SKILL.md) | 可追溯 PRD、按需交互 HTML 原型及评审记录 |

@@ -9,47 +9,70 @@ import unittest
 from pathlib import Path
 
 from product_dependencies import diagnose
+from product_behavior_eval import check_behavior_report, check_observations, skill_identity
 
 ROOT = Path(__file__).resolve().parents[1]
 CASES = ROOT / "scripts/fixtures/product-behavior/cases.json"
 SKILL = ROOT / "skills/project-docs-product"
 
 
-def skill_identity():
-    return {str(path.relative_to(SKILL)): hashlib.sha256(path.read_bytes()).hexdigest()
-            for path in [SKILL / "SKILL.md", SKILL / "assets/prd-template.md", SKILL / "assets/prd-reader-template.md",
-                         SKILL / "assets/prd-traceability-template.md", *sorted((SKILL / "references").glob("*.md"))]}
-
-
-def check_observations(report):
-    expected = {
-        "refund-sufficient": ("write", "prd"),
-        "procurement-conflict": ("clarify", "full"),
-        "publishing-resume": ("clarify", "prd"),
-        "refund-local-revision": ("revise", "full"),
-        "procurement-full-flow": ("prototype", "full"),
-        "publishing-local-prototype": ("prototype", "partial"),
-    }
-    values = report["observations"]
-    assert len(values) == len(expected) and {value["id"] for value in values} == set(expected), "all frozen samples required"
-    for value in values:
-        assert (value["action"], value["scope"]) == expected[value["id"]], value
-        assert value["autoApprove"] is False and value["writeBusinessCode"] is False, value
-        if value["id"] == "refund-sufficient":
-            assert value["questions"] == [], value
-        if value["id"] == "procurement-conflict":
-            assert len(value["questions"]) == 1 and any(word in value["questions"][0] for word in ("500", "1000", "阈值")), value
-        if value["id"] == "publishing-resume":
-            assert len(value["questions"]) == 1 and "FR-002" in value["questions"][0] and value["preserve"] == ["FR-001"], value
-        if value["id"] == "refund-local-revision":
-            assert value["affected"] == ["FR-001"] and value["preserve"] == ["FR-002"], value
-        if value["id"] == "procurement-full-flow":
-            assert value["sharedObject"] is True and set(value["journey"]) == {"create", "handoff", "result", "failure-recovery"}, value
-        if value["id"] == "publishing-local-prototype":
-            assert set(value["uncovered"]) == {"approval", "publishing", "result"}, value
+def clarification_observations():
+    return [
+        dict(id='refund-unresolved-threshold', action='clarify', scope='prd', questions=['审批阈值采用多少元？'],
+             businessUndecided=['approval-threshold']),
+        dict(id='notes-known-unapproved', action='clarify', scope='prd', questions=['200字的计数口径采用什么？'],
+             businessUndecided=['length-unit'], technicalUnverified=['storage-interface'], approvalPending=True),
+        dict(id='notes-explicit-unapproved', action='write', scope='prd', questions=[], businessUndecided=[],
+             technicalUnverified=['storage-interface'], approvalPending=True),
+        dict(id='refund-deferred-draft', action='write', scope='prd', questions=[],
+             businessUndecided=['approval-threshold']),
+        dict(id='notes-inherited-generation', action='write', scope='prd', questions=[], businessUndecided=[],
+             technicalUnverified=['storage-interface'], approvalPending=True),
+        dict(id='notes-inherited-review', action='review', scope='prd', questions=[], businessUndecided=[],
+             technicalUnverified=['storage-interface'], approvalPending=True, writePrd=False),
+        dict(id='notes-conflict-review', action='clarify', scope='prd', questions=['上限采用200还是300码元？'],
+             businessUndecided=['length-limit'], reviewFindings=['length-conflict', 'typo'], writePrd=False),
+    ]
 
 
 class ProductBehaviorTests(unittest.TestCase):
+    def test_stage_trials_keep_inputs_separate_from_blind_review_criteria(self):
+        root = CASES.parent / 'stage-routing'
+        manifest = json.loads((root / 'cases.json').read_text())
+        self.assertEqual(manifest['schemaVersion'], 1)
+        cases = manifest['cases']
+        self.assertEqual({case['stage'] for case in cases}, {'review', 'synthesis', 'exploration'})
+        self.assertEqual(len({case['id'] for case in cases}), len(cases))
+        self.assertEqual(manifest['readerTrial'], 'not_run')
+        for case in cases:
+            with self.subTest(case=case['id']):
+                inputs = [case['input'], *case.get('continuations', [])]
+                self.assertNotIn(case['criteria'], inputs)
+                for name in [*inputs, case['criteria']]:
+                    path = (root / name).resolve()
+                    self.assertTrue(path.is_relative_to(CASES.parent.resolve()))
+                    self.assertTrue(path.is_file(), name)
+                    self.assertTrue(path.read_text().strip(), name)
+
+    def test_revision_handoff_trials_have_portable_inputs_and_separate_continuations(self):
+        root = CASES.parent / 'revision-handoff'
+        manifest = json.loads((root / 'cases.json').read_text())
+        self.assertEqual(manifest['schemaVersion'], 1)
+        cases = manifest['cases']
+        self.assertEqual(len({case['id'] for case in cases}), len(cases))
+        self.assertEqual({case['mode'] for case in cases}, {'complex', 'revision', 'light'})
+        for case in cases:
+            with self.subTest(case=case['id']):
+                inputs = [case['input'], *case.get('continuations', [])]
+                self.assertEqual(len(inputs), len(set(inputs)))
+                for name in inputs:
+                    path = (root / name).resolve()
+                    self.assertTrue(path.is_relative_to(CASES.parent.resolve()))
+                    self.assertTrue(path.is_file(), name)
+                    self.assertTrue(path.read_text().strip(), name)
+                if case['mode'] == 'revision':
+                    self.assertEqual(len(case['continuations']), 2)
+
     def test_multi_input_trials_freeze_four_modes_and_six_independent_runs(self):
         root = CASES.parent / 'multi-input'
         manifest = json.loads((root / 'cases.json').read_text())
@@ -71,16 +94,42 @@ class ProductBehaviorTests(unittest.TestCase):
             root = Path(directory)
             (root / 'assets').mkdir()
             (root / 'references').mkdir()
-            for name in ('SKILL.md', 'assets/prd-template.md', 'assets/prd-reader-template.md', 'assets/prd-traceability-template.md'):
+            for name in ('SKILL.md', 'assets/prd-template.md', 'assets/prd-reader-template.md', 'assets/prd-traceability-template.md', 'assets/prototype.html'):
                 (root / name).write_text('baseline')
             with patch.dict(skill_identity.__globals__, SKILL=root):
                 before = skill_identity()
-                for name in ('assets/prd-reader-template.md', 'assets/prd-traceability-template.md'):
+                for name in ('assets/prd-reader-template.md', 'assets/prd-traceability-template.md', 'assets/prototype.html'):
                     with self.subTest(template=name):
                         (root / name).write_text('changed authoring behavior')
                         self.assertNotEqual(before, skill_identity())
                         self.assertIn(name, skill_identity())
                         (root / name).write_text('baseline')
+
+    def test_skill_identity_invalidates_reports_after_product_tool_changes(self):
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            skill = root / 'skills/product'
+            (skill / 'assets').mkdir(parents=True)
+            (skill / 'references').mkdir()
+            for name in ('SKILL.md', 'assets/prd-template.md', 'assets/prd-reader-template.md',
+                         'assets/prd-traceability-template.md', 'assets/prototype.html'):
+                (skill / name).write_text('baseline')
+            scripts = root / 'scripts'
+            scripts.mkdir()
+            names = ('product_behavior_eval.py', 'validate_product_doc.py', 'product_bundle.py',
+                     'product_browser.mjs', 'product_dependencies.py', 'requirements-product.txt')
+            for name in names:
+                (scripts / name).write_text('baseline')
+            with patch.dict(skill_identity.__globals__, SKILL=skill,
+                            __file__=str(scripts / 'product_behavior_eval.py')):
+                before = skill_identity()
+                for name in names:
+                    with self.subTest(tool=name):
+                        (scripts / name).write_text('changed implementation')
+                        self.assertNotEqual(before, skill_identity())
+                        (scripts / name).write_text('baseline')
+                        self.assertEqual(before, skill_identity())
 
     def test_usability_trials_exercise_decision_summary_calculation_and_delivery_coverage(self):
         cases = {case["id"]: case for case in json.loads((CASES.parent / "artifact-cases.json").read_text())}
@@ -131,7 +180,7 @@ class ProductBehaviorTests(unittest.TestCase):
                  journey=['create', 'handoff', 'result', 'failure-recovery']),
             dict(id='publishing-local-prototype', action='prototype', scope='partial',
                  uncovered=['approval', 'publishing', 'result']),
-        ]}
+        ] + clarification_observations()}
         for item in report['observations']:
             item.update(autoApprove=False, writeBusinessCode=False)
         check_observations(report)
@@ -168,6 +217,153 @@ class ProductBehaviorTests(unittest.TestCase):
         code, report = self.gate(optimized=True)
         self.assertEqual(code, 1)
         self.assertEqual(report["status"], "invalid")
+
+    def behavior_report(self, root):
+        from product_dependencies import REQUIRED
+        for name, references in REQUIRED.items():
+            directory = root / "upstream" / name
+            directory.mkdir(parents=True)
+            (directory / "SKILL.md").write_text(f"---\nname: {name}\n---\nFixture only\n")
+            for reference in references:
+                (directory / reference).write_text("Fixture only")
+        report = dict(casesFingerprint=hashlib.sha256(CASES.read_bytes()).hexdigest(),
+                      skillIdentity=skill_identity(), skillRoots=[str(root / "upstream")],
+                      dependencies=diagnose([root / "upstream"])["dependencies"],
+                      runnerStatus="completed", roleStatus="available", observations=[
+            dict(id='refund-sufficient', action='write', scope='prd', questions=[]),
+            dict(id='procurement-conflict', action='clarify', scope='full', questions=['阈值500还是1000？']),
+            dict(id='publishing-resume', action='clarify', scope='prd', questions=['FR-002？'], preserve=['FR-001']),
+            dict(id='refund-local-revision', action='revise', scope='full', affected=['FR-001'], preserve=['FR-002']),
+            dict(id='procurement-full-flow', action='prototype', scope='full', sharedObject=True,
+                 journey=['create', 'handoff', 'result', 'failure-recovery']),
+            dict(id='publishing-local-prototype', action='prototype', scope='partial',
+                 uncovered=['approval', 'publishing', 'result']),
+        ] + clarification_observations())
+        for value in report['observations']:
+            value.update(autoApprove=False, writeBusinessCode=False)
+        path = root / 'behavior.json'
+        path.write_text(json.dumps(report))
+        return path
+
+    def test_clarification_does_not_hide_business_gaps_or_reask_known_rules(self):
+        import copy
+        with tempfile.TemporaryDirectory() as directory:
+            report = json.loads(self.behavior_report(Path(directory)).read_text())
+        check_observations(report)
+        by_id = {item['id']: index for index, item in enumerate(report['observations'])}
+        mutations = [
+            ('refund-unresolved-threshold', dict(action='write', questions=[])),
+            ('refund-unresolved-threshold', dict(questions=[])),
+            ('notes-known-unapproved', dict(action='write', questions=[])),
+            ('notes-known-unapproved', dict(businessUndecided=[])),
+            ('notes-explicit-unapproved', dict(questions=['200码元是否确认？'])),
+            ('notes-explicit-unapproved', dict(businessUndecided=['length-unit'])),
+            ('notes-explicit-unapproved', dict(technicalUnverified=[])),
+            ('notes-explicit-unapproved', dict(approvalPending=False)),
+            ('refund-deferred-draft', dict(questions=['审批阈值多少元？'])),
+            ('refund-deferred-draft', dict(businessUndecided=[])),
+            ('refund-deferred-draft', dict(action='clarify', questions=['结果未知时如何恢复？'])),
+        ]
+        for identifier, changes in mutations:
+            invalid = copy.deepcopy(report)
+            invalid['observations'][by_id[identifier]].update(changes)
+            with self.subTest(case=identifier, changes=changes), self.assertRaises(AssertionError):
+                check_observations(invalid)
+
+        draft = report['observations'][by_id['refund-deferred-draft']]
+        draft.update(questions=['结果未知时如何恢复？'],
+                     businessUndecided=['approval-threshold', 'unknown-result-recovery'])
+        check_observations(report)
+
+    def test_generation_and_review_preserve_inherited_decisions_and_review_scope(self):
+        import copy
+        with tempfile.TemporaryDirectory() as directory:
+            report = json.loads(self.behavior_report(Path(directory)).read_text())
+        check_observations(report)
+        by_id = {item['id']: index for index, item in enumerate(report['observations'])}
+        for identifier, changes in [
+            ('notes-inherited-generation', dict(questions=['继续采用UTF-16吗？'])),
+            ('notes-inherited-generation', dict(businessUndecided=['length-unit'])),
+            ('notes-inherited-review', dict(action='write')),
+            ('notes-inherited-review', dict(questions=['请确认已明确的上限？'])),
+            ('notes-inherited-review', dict(businessUndecided=['length-unit'])),
+            ('notes-inherited-review', dict(technicalUnverified=[])),
+            ('notes-inherited-review', dict(approvalPending=False)),
+            ('notes-inherited-review', dict(writePrd=True)),
+            ('notes-conflict-review', dict(questions=[])),
+            ('notes-conflict-review', dict(businessUndecided=[])),
+            ('notes-conflict-review', dict(reviewFindings=['length-conflict'])),
+            ('notes-conflict-review', dict(reviewFindings=['typo'])),
+            ('notes-conflict-review', dict(writePrd=True)),
+        ]:
+            invalid = copy.deepcopy(report)
+            invalid['observations'][by_id[identifier]].update(changes)
+            with self.subTest(case=identifier, changes=changes), self.assertRaises(AssertionError):
+                check_observations(invalid)
+
+    def test_release_requires_both_current_reports(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            behavior = self.behavior_report(root)
+            artifacts = root / 'artifacts.json'
+            artifacts.write_text(json.dumps(self.artifact_report(root)))
+            for args in ((), ('--report', str(behavior)), ('--artifacts', str(artifacts))):
+                with self.subTest(args=args):
+                    code, result = self.gate('--release', *args)
+                    self.assertEqual(code, 2, result)
+                    self.assertEqual(result['status'], 'uncovered')
+            code, result = self.gate('--release', '--report', str(behavior), '--artifacts', str(artifacts))
+            self.assertEqual(code, 0, result)
+            self.assertEqual(result['status'], 'pass')
+            self.assertEqual(set(result['checks']), {'behavior', 'artifacts'})
+            self.assertEqual(result['semanticCheck'], 'not_proven')
+            self.assertEqual(result['browserCheck'], 'not_run')
+
+    def test_release_rejects_stale_invalid_and_missing_inputs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            behavior = self.behavior_report(root)
+            artifacts = root / 'artifacts.json'
+            artifacts.write_text(json.dumps(self.artifact_report(root)))
+            original = {path: path.read_text() for path in (behavior, artifacts)}
+            for path in (behavior, artifacts):
+                for text in ('broken json', json.dumps(dict(json.loads(original[path]), skillIdentity={}))):
+                    with self.subTest(path=path, text=text):
+                        path.write_text(text)
+                        code, result = self.gate('--release', '--report', str(behavior), '--artifacts', str(artifacts))
+                        self.assertEqual(code, 1, result)
+                        self.assertEqual(result['status'], 'invalid')
+                        path.write_text(original[path])
+            behavior.unlink()
+            code, result = self.gate('--release', '--report', str(behavior), '--artifacts', str(artifacts))
+            self.assertEqual(code, 2, result)
+            self.assertEqual(result['status'], 'uncovered')
+            code, result = self.gate('--release', '--artifacts', str(artifacts), optimized=True)
+            self.assertEqual(code, 1, result)
+            self.assertEqual(result['status'], 'invalid')
+
+    def test_imported_evaluation_is_repeatable_without_environment_changes(self):
+        from product_behavior_eval import evaluate
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            behavior = self.behavior_report(root)
+            artifacts = root / 'artifacts.json'
+            artifacts.write_text(json.dumps(self.artifact_report(root)))
+            environment = dict(os.environ)
+            for arguments in ({'artifacts': artifacts}, {'report': behavior}, {'report': behavior}):
+                code, result = evaluate(**arguments)
+                self.assertEqual(code, 0, result)
+                self.assertEqual(result['status'], 'pass')
+                self.assertEqual(dict(os.environ), environment)
+
+    def test_missing_artifact_report_has_its_own_diagnostic(self):
+        code, result = self.gate('--release')
+        self.assertEqual(code, 2, result)
+        self.assertIn('模型观察报告', result['checks']['behavior']['reason'])
+        self.assertIn('成品报告', result['checks']['artifacts']['reason'])
+        code, result = self.gate('--artifacts', '/missing/artifacts.json')
+        self.assertEqual(code, 2, result)
+        self.assertIn('成品报告', result['reason'])
 
     def artifact_report(self, root):
         from test_product_docs import PRD
@@ -271,21 +467,13 @@ class ProductBehaviorTests(unittest.TestCase):
 
     def test_frozen_cases_cover_three_domains_and_expected_boundaries(self):
         cases = json.loads(CASES.read_text())
-        self.assertEqual(len(cases), 6)
-        self.assertEqual(len({case["id"] for case in cases}), 6)
+        self.assertEqual(len(cases), 13)
+        self.assertEqual(len({case["id"] for case in cases}), 13)
         self.assertTrue(all(case["input"] for case in cases))
 
     @unittest.skipUnless(os.environ.get("PRODUCT_BEHAVIOR_REPORT"), "fresh model observations not supplied")
     def test_actual_fresh_context_behavior_and_upstream_identity(self):
-        report = json.loads(Path(os.environ["PRODUCT_BEHAVIOR_REPORT"]).read_text())
-        self.assertEqual(report["casesFingerprint"], hashlib.sha256(CASES.read_bytes()).hexdigest())
-        self.assertEqual(report["skillIdentity"], skill_identity())
-        current = diagnose(report["skillRoots"])
-        self.assertTrue(current["ready"], current)
-        self.assertEqual(report["dependencies"], current["dependencies"])
-        self.assertEqual(report["runnerStatus"], "completed")
-        self.assertEqual(report["roleStatus"], "available")
-        check_observations(report)
+        check_behavior_report(Path(os.environ["PRODUCT_BEHAVIOR_REPORT"]))
 
 
 if __name__ == "__main__":

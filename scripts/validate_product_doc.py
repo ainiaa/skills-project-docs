@@ -5,6 +5,7 @@ import json
 import re
 import shlex
 import sys
+from collections import Counter
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
@@ -239,14 +240,37 @@ def approval_content(content, companion=None, internal_resources=()):
         sections.update(other_sections)
         shared += "\n\n## 文档边界\n\n" + other_shared
         resources += other_resources
-    resources = [target for target in resources if target not in internal_resources]
-    values = {}
+    references = {}
     for identifier, body in sections.items():
         if identifier.startswith("FR-"):
             declaration = re.split(r"(?m)^####[ \t]+", prose(body)[0], maxsplit=1)[0]
-            refs = (field(declaration, "依据") or "").split()
-            values[identifier] = (body, tuple((ref, sections.get(ref, "")) for ref in refs),
-                                  shared, tuple(resources))
+            references[identifier] = (field(declaration, "依据") or "").split()
+    owned = {identifier: prose(sections[identifier])[1]
+             for identifier in set(references) | {ref for refs in references.values() for ref in refs}
+             if identifier in sections}
+    from markdown_it import MarkdownIt
+    definitions = []
+    for part in (content, companion):
+        if part is not None:
+            environment = {}
+            MarkdownIt("commonmark").parse(part, environment)
+            definitions.extend(environment.get("references", {}))
+    if definitions:
+        # Aliases resolve across sections and duplicate definitions are deduplicated globally.
+        common = resources
+    else:
+        common = prose(shared)[1]
+        # Unknown ownership stays shared; only direct, section-local links can be isolated.
+        unassigned = Counter(resources)
+        unassigned.subtract(common)
+        for targets in owned.values():
+            unassigned.subtract(targets)
+        common += list(unassigned.elements())
+    values = {}
+    for identifier, refs in references.items():
+        targets = common + owned[identifier] + [target for ref in refs for target in owned.get(ref, [])]
+        values[identifier] = (sections[identifier], tuple((ref, sections.get(ref, "")) for ref in refs),
+                              shared, tuple(target for target in targets if target not in internal_resources))
     return values
 
 
@@ -324,7 +348,8 @@ def document_contract(content, previous=None, *, parsed=None, meaning=None, conf
             elif previous and identifier in previous and previous[identifier][0] == record and previous[identifier][1] != meaning.get(identifier):
                 errors.append(f"需求内容已变更，必须重新确认：{identifier}")
             elif not version or not re.search(rf"(?<![A-Za-z0-9._-]){re.escape(version)}(?![A-Za-z0-9._-])", record):
-                if any(urlsplit(resource).scheme or urlsplit(resource).path for resource in confirmation_resources):
+                scoped_resources = meaning[identifier][3] if identifier in meaning else confirmation_resources
+                if any(urlsplit(resource).scheme or urlsplit(resource).path for resource in scoped_resources):
                     errors.append(f"引用资料未冻结，旧确认须人工复核：{identifier}")
                 elif not previous or previous.get(identifier) != (record, meaning.get(identifier)):
                     errors.append(f"确认记录未绑定当前产品版本且无未变更基线证明：{identifier}")

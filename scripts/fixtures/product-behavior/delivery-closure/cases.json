@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {"id": "portable", "input": "portable.md"},
+    {"id": "refresh", "input": "refresh.md", "seed": "seed"}
+  ]
+}

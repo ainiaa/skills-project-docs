@@ -48,9 +48,11 @@ HTML = """<!doctype html><html lang="zh-CN"><head>
 class ProductWorkflowTests(unittest.TestCase):
     def test_product_ci_discovers_all_product_python_suites(self):
         workflow = (ROOT / '.github/workflows/product-acceptance.yml').read_text()
-        self.assertRegex(workflow, r"python3 -m unittest discover -s scripts -p ['\"]test_product\*\.py['\"]")
+        command = 'python3 -m pytest scripts/test_product*.py --cov --cov-fail-under=90'
+        self.assertIn(command, workflow)
         self.assertLess(workflow.index('run: python3 scripts/install_renderers.py --engine mermaid'),
-                        workflow.index("python3 -m unittest discover -s scripts -p 'test_product*.py'"))
+                        workflow.index(command))
+        self.assertLess(workflow.index('python3 -m pip install pytest=='), workflow.index(command))
 
     def test_product_job_env_uses_contexts_available_before_runner_assignment(self):
         workflow = (ROOT / '.github/workflows/product-acceptance.yml').read_text()
@@ -108,6 +110,7 @@ class ProductWorkflowTests(unittest.TestCase):
             return re.sub(r'<!--.*?-->', '', path.read_text(), flags=re.S)
         content = clean(PRODUCT / 'assets/prd-reader-template.md')
         self.assertNotRegex(content, r'(?m)^#{3,4} (?:FR|AC|SRC)-')
+        content += '\n[需求与验收追踪](prd-traceability.md)。\n'
         with tempfile.TemporaryDirectory() as directory:
             document = Path(directory) / 'prd.md'
             tracking = Path(directory) / 'prd-traceability.md'
@@ -116,6 +119,17 @@ class ProductWorkflowTests(unittest.TestCase):
             result = subprocess.run([sys.executable, str(ROOT / 'scripts/validate_product_doc.py'),
                                      '--file', str(document), '--tracking', str(tracking)],
                                     text=True, capture_output=True)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_reader_template_forms_a_valid_single_file_delivery(self):
+        content = re.sub(r'<!--.*?-->', '',
+                         (PRODUCT / 'assets/prd-reader-template.md').read_text(), flags=re.S)
+        content += '\n## 来源与决策\n' + PRD.replace('原型：是', '原型：否').split('## 来源与决策', 1)[1]
+        with tempfile.TemporaryDirectory() as directory:
+            document = Path(directory) / 'prd.md'
+            document.write_text(content)
+            result = subprocess.run([sys.executable, str(ROOT / 'scripts/validate_product_doc.py'),
+                                     '--file', str(document)], text=True, capture_output=True)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_brownfield_prd_requires_baseline_lifecycle_and_combined_scenarios(self):
@@ -153,6 +167,14 @@ class ProductWorkflowTests(unittest.TestCase):
         for signal in ('原编号', '不补零', '证据附录', '已明确规则', '--source-root'):
             self.assertIn(signal, guide)
         self.assertIn('技术待核实', workflow)
+
+    def test_prd_review_routes_to_its_contract_instead_of_authoring_defaults(self):
+        skill = (PRODUCT / 'SKILL.md').read_text()
+        guide = (PRODUCT / 'references/reading-and-change.md').read_text()
+        self.assertIn('references/workflow.md#prd评审', skill)
+        self.assertIn('workflow.md#prd评审', guide)
+        workflow = (PRODUCT / 'references/workflow.md').read_text()
+        self.assertIn('## PRD评审', workflow)
 
     def test_delivery_reply_prioritizes_decisions_and_links_detailed_evidence(self):
         guide = (PRODUCT / "references/reading-and-change.md").read_text()
@@ -336,10 +358,12 @@ class ProductWorkflowTests(unittest.TestCase):
         skill = (PRODUCT / "SKILL.md").read_text()
         self.assertIn("name: project-docs-product", skill)
         self.assertIn("$project-docs-product", (PRODUCT / "agents/openai.yaml").read_text())
-        for match in re.finditer(r"\]\(([^)#]+)(?:#[^)]*)?\)", skill):
-            target = match[1]
-            if not target.startswith("https://"):
-                self.assertTrue((PRODUCT / target).resolve().is_file(), target)
+        for source in [PRODUCT / "SKILL.md", *sorted((PRODUCT / "references").glob("*.md"))]:
+            with self.subTest(source=source.relative_to(PRODUCT)):
+                for match in re.finditer(r"\]\(([^)#]+)(?:#[^)]*)?\)", source.read_text()):
+                    target = match[1]
+                    if not target.startswith("https://"):
+                        self.assertTrue((source.parent / target).resolve().is_file(), target)
 
     def test_handoff_keeps_one_question_owner_and_explicit_confirmation(self):
         self.assertTrue((PRODUCT / "references/workflow.md").is_file())
@@ -638,6 +662,50 @@ class ProductValidationTests(unittest.TestCase):
         third = current.replace("draft-2", "draft-3")
         self.assertTrue(self.validate(prd=third, prototype=False, baselines=[old, current])["valid"])
         self.assertFalse(self.validate(prd=current, prototype=False)["valid"])
+
+    def test_unrelated_requirement_links_do_not_invalidate_unchanged_confirmation(self):
+        from validate_product_doc import approval_content
+        old = (ROOT / 'scripts/fixtures/product-behavior/revision-baseline.md').read_text()
+        current = old.replace('revision-1\n', 'revision-2\n', 1).replace('500', '1000')
+        (self.directory / 'input.txt').write_text('FR-001 threshold only')
+        for before in ('达到1000元进入待审批，低于阈值进入处理中。',
+                       '本样本的审批分流设定，真实产品仍需业务确认。'):
+            with self.subTest(owner=before):
+                linked = current.replace(before, before + '\n[本次输入](input.txt)')
+                report = self.validate(prd=linked, prototype=False, baselines=[old])
+                self.assertTrue(report['valid'], report)
+                self.assertEqual(approval_content(old)['FR-002'], approval_content(linked)['FR-002'])
+        invalid = current.replace('达到1000元进入待审批，低于阈值进入处理中。',
+                                  '达到1000元进入待审批，低于阈值进入处理中。\n[输入](missing.txt)')
+        self.assertFalse(self.validate(prd=invalid, prototype=False, baselines=[old])['valid'])
+
+    def test_owned_shared_and_ambiguous_references_still_require_confirmation(self):
+        old = (ROOT / 'scripts/fixtures/product-behavior/revision-baseline.md').read_text()
+        (self.directory / 'input.txt').write_text('unfrozen')
+        additions = [
+            ('客服按订单号查询；不存在时显示空状态，不创建申请。', '\n[查询依据](input.txt)'),
+            ('以下查询确认仅用于回归测试，不是实际业务授权。', '\n[查询依据](input.txt)'),
+            ('## 未决事项', '\n[共享依据](input.txt)'),
+            ('无其他未决事项；阈值规则保持待确认。', '\n### SRC-003 未绑定来源\n[依据](input.txt)'),
+        ]
+        for before, addition in additions:
+            with self.subTest(scope=before):
+                baseline = old.replace(before, before + addition)
+                current = baseline.replace('revision-1\n', 'revision-2\n', 1)
+                self.assertFalse(self.validate(prd=current, prototype=False, baselines=[baseline])['valid'])
+        # A reference-style link resolved by another section must not be mistaken for its property.
+        baseline = old.replace('真实产品仍需业务确认。',
+                               '真实产品仍需业务确认。\n\n[external]: input.txt\n\n[直接引用](input.txt)')
+        baseline = baseline.replace('客服按订单号查询；', '[查询依据][external]\n客服按订单号查询；')
+        current = baseline.replace('revision-1\n', 'revision-2\n', 1)
+        self.assertFalse(self.validate(prd=current, prototype=False, baselines=[baseline])['valid'])
+        # CommonMark deduplicates repeated definitions globally, unlike isolated sections.
+        for repeated in ('[external]: input.txt', '[EXTERNAL]: input.txt'):
+            with self.subTest(repeated=repeated):
+                duplicate = baseline.replace('达到500元进入待审批，低于阈值进入处理中。',
+                                             '达到500元进入待审批，低于阈值进入处理中。\n\n'+repeated+'\n')
+                current = duplicate.replace('revision-1\n', 'revision-2\n', 1)
+                self.assertFalse(self.validate(prd=current, prototype=False, baselines=[duplicate])['valid'])
 
     def test_inline_heading_markers_cannot_drop_approved_source_rules(self):
         old = PRD.replace("### FR-001 申请退款", "### FR-001 显示 `#### 标题` 文本").replace(
