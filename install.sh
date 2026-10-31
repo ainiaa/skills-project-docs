@@ -20,10 +20,10 @@ OPENCODE_SKILLS_DIR="${HOME}/.config/opencode/skills"
 if [[ "${XDG_CONFIG_HOME:-}" == /* ]]; then OPENCODE_SKILLS_DIR="$XDG_CONFIG_HOME/opencode/skills"; fi
 PYTHON_BIN="${UNDERSTAND_PYTHON:-python3}"
 RENDERER_HOME="${UNDERSTAND_RENDERER_HOME:-${HOME}/.local/share/understand-skills/renderers}"
-SKILL_NAMES=(project-docs project-docs-api project-docs-diagram project-docs-overview project-docs-product)
+SKILL_NAMES=(project-docs project-docs-api project-docs-diagram project-docs-overview project-docs-product project-docs-lifecycle)
 SOURCES=("$SOURCE_DIR/skills/project-docs" "$SOURCE_DIR/skills/project-docs-api"
          "$SOURCE_DIR/skills/project-docs-diagram" "$SOURCE_DIR/skills/project-docs-overview"
-         "$SOURCE_DIR/skills/project-docs-product")
+         "$SOURCE_DIR/skills/project-docs-product" "$SOURCE_DIR/skills/project-docs-lifecycle")
 OLD_NAMES=(api-savior-docs understand-api-docs understand-api-arch understand-docs understand-arch understand-project)
 OLD_SOURCES=("$SOURCE_DIR" "$SOURCE_DIR" "$SOURCE_DIR/skills/understand-api-arch"
              "$SOURCE_DIR" "$SOURCE_DIR/skills/understand-arch" "$SOURCE_DIR/skills/understand-project")
@@ -49,7 +49,7 @@ HOST: codex, claude, zcode, dsh, gemini, grok, pi, opencode, both, all.
 both (default) selects Codex and Claude Code; all selects all eight hosts.
 grok targets xAI Grok Build; pi targets the pi coding agent.
 
-Default: install the unified entry and four specialist skills for Codex and Claude Code, and install all missing
+Default: install the unified entry and five specialist skills for Codex and Claude Code, and install all missing
 Mermaid, PlantUML, draw.io, and Archify renderers. --engine installs/checks only
 the named renderer; --no-engines installs/checks only the skill links.
 Uninstall removes this checkout's skill links, never shared renderer programs.
@@ -163,6 +163,24 @@ if [[ "$ACTION" == install ]]; then
   fi
 fi
 
+lifecycle_status=0
+if [[ "$ACTION" == install || "$ACTION" == doctor ]]; then
+  for relative in scripts/lifecycle_record.py \
+                  scripts/lifecycle_quality.py \
+                  scripts/lifecycle_test_runner.py \
+                  skills/project-docs-lifecycle/references/quality-and-trace.md \
+                  skills/project-docs-lifecycle/references/lifecycle.md \
+                  skills/project-docs-lifecycle/references/record-contract.md \
+                  skills/project-docs-lifecycle/references/validation.md \
+                  skills/project-docs-lifecycle/assets/lifecycle-record.json; do
+    if [[ ! -f "$SOURCE_DIR/$relative" || ! -r "$SOURCE_DIR/$relative" || ! -s "$SOURCE_DIR/$relative" ]]; then
+      echo "Error: missing, empty, or unreadable lifecycle resource: $SOURCE_DIR/$relative" >&2
+      if [[ "$ACTION" == install ]]; then exit 1; fi
+      lifecycle_status=1
+    fi
+  done
+fi
+
 # Check every selected host before installing engines or changing any skill link.
 if [[ "$ACTION" != doctor ]]; then
   for skills_dir in "${SKILLS_DIRS[@]}"; do
@@ -246,6 +264,7 @@ case "$ACTION" in
     ;;
   doctor)
     status="$renderer_status"
+    if [[ "$lifecycle_status" != 0 ]]; then status=1; fi
     "$PYTHON_BIN" "$SOURCE_DIR/scripts/install_product_dependencies.py" --check "${dependency_args[@]}" || status=1
     version="$(head -1 "$SOURCE_DIR/VERSION" 2>/dev/null || true)"
     if [[ -z "$version" ]]; then

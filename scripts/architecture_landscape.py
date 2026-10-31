@@ -130,7 +130,7 @@ def render_landscape(ir):
     if has_scope:
         _cell(root, "scope_boundary", "模块边界  ·  " + subtitle, MAIN_LEFT - 21,
               scope_start, MAIN_WIDTH + 42, scope_end - scope_start,
-              "rounded=1;arcSize=2;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacingLeft=18;spacingTop=13;fontSize=17;fontStyle=1;fontColor=#456B5A;fillColor=#F8FCF9;strokeColor=#A7C8B3;strokeWidth=2;")
+              "container=1;rounded=1;arcSize=2;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacingLeft=18;spacingTop=13;fontSize=17;fontStyle=1;fontColor=#456B5A;fillColor=#F8FCF9;strokeColor=#A7C8B3;strokeWidth=2;")
 
     positions = {}
     for name, heading, _ in STAGES:
@@ -227,7 +227,8 @@ def render_landscape(ir):
         color, width, dash = ROUTE_STYLE[relation["kind"]]
         edge = ET.SubElement(root, "mxCell", {"id": "edge_" + str(index),
                                                "value": f"{index + 1:02}",
-                                               "style": ("edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;"
+                                               "style": (("noEdgeStyle=1;" if points else "edgeStyle=orthogonalEdgeStyle;") +
+                                                         "rounded=0;html=0;"
                                                          "endArrow=block;endFill=1;labelBackgroundColor=#FFFFFF;"
                                                          "fontSize=12;fontStyle=1;" +
                                                          f"fontColor={color};strokeColor={color};strokeWidth={width};" + dash + ports),

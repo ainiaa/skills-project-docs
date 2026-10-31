@@ -12,6 +12,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from architecture_ir import _check_evidence
+from drawio_quality import check_drawio_quality
 from generate_architecture import EXPORT_FORMATS, _check_diagram, _check_export, _render_export
 from engine_paths import find_engine, prepare_runtime
 from python_runtime import require_python
@@ -354,6 +355,12 @@ def main(argv=None):
     if manifest:
         metadata.update({"claimCount": len(manifest["claims"]),
                          "declaredDiagramType": manifest["diagramType"]})
+    if engine == "drawio":
+        quality = check_drawio_quality(source.read_text(encoding="utf-8"))
+        metadata["drawioQuality"] = quality
+        if quality["status"] == "fail":
+            return _result(False, engine, **metadata, officialCheck="not_run",
+                           exportCheck="not_run", problems=quality["problems"])
 
     def report(ok, artifacts=(), **extra):
         return _result(ok, engine, artifacts, **metadata, **extra)

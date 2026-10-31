@@ -30,6 +30,7 @@ jobs:
           python3 -m pytest scripts/test_product*.py --cov --cov-fail-under=90
           python3 -m unittest discover -s scripts -p test_install.py
           python3 -m unittest discover -s scripts -p test_update.py
+          python3 -m unittest discover -s scripts -p 'test_lifecycle*.py'
           python3 -m unittest discover -s scripts -p test_install_product_dependencies.py
       - name: Record model behavior verification boundary
         run: |

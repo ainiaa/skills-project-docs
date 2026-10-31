@@ -30,7 +30,8 @@ class UpdateTests(unittest.TestCase):
         shutil.copytree(REPOSITORY / "skills", self.seed / "skills")
         scripts = self.seed / "scripts"
         scripts.mkdir()
-        for name in ("update_project_docs.py", "python_runtime.py", "product_dependencies.py", "install_product_dependencies.py"):
+        for name in ("update_project_docs.py", "python_runtime.py", "product_dependencies.py", "install_product_dependencies.py", "lifecycle_record.py",
+                     "lifecycle_quality.py", "lifecycle_test_runner.py"):
             source = REPOSITORY / "scripts" / name
             if source.exists():
                 shutil.copy(source, scripts / name)
@@ -86,7 +87,7 @@ class UpdateTests(unittest.TestCase):
         result = self.run_update("--no-engines")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual((self.checkout / "VERSION").read_text(), "0.5.1\n")
-        for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product"):
+        for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product", "project-docs-lifecycle"):
             self.assertEqual((self.root / "codex" / "skills" / name).resolve(), self.checkout / "skills" / name)
         self.assertFalse((self.root / "claude" / "skills").exists())
         self.assertFalse((self.root / "renderers" / "no-auto-install").exists())
@@ -186,7 +187,7 @@ class UpdateTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual((self.checkout / "VERSION").read_text(), "0.5.1\n")
                 directory = self.root / relative
-                for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product"):
+                for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product", "project-docs-lifecycle"):
                     self.assertEqual((directory / name).resolve(), self.checkout / "skills" / name)
                     (directory / name).unlink()
                 self.assertFalse((self.root / "codex" / "skills").exists())
