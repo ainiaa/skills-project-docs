@@ -1,0 +1,377 @@
+{
+  "schema_version": 1,
+  "project_ref": "SIM-EVENT",
+  "subject_ref": "SIM-REG-001",
+  "build": {
+    "path": "app/legacy_export.py",
+    "sha256": "3e3362225871a084d771e48c30381238a452b8cf89dce1aa2ff48ef3121f3366"
+  },
+  "environment": "local isolated Python CLI subprocess; SIMULATED data; no desktop/network",
+  "scope": "PRD draft-1 AC-001..006 plus simulation-resolution v1; no production; SIMULATED whitespace boundary clarification v1; automated CLI assertions only; original-channel verification and organizer confirmation require separate human evidence",
+  "requirements": [
+    {
+      "id": "FR-001",
+      "version": 1,
+      "source": {
+        "path": "prd-traceability.md",
+        "sha256": "41bc0604e8d8af4dfbf1a4eb8fd443d80aa7d0c36ce5b1b9f0221664c53d2e44"
+      }
+    },
+    {
+      "id": "FR-002",
+      "version": 1,
+      "source": {
+        "path": "prd-traceability.md",
+        "sha256": "41bc0604e8d8af4dfbf1a4eb8fd443d80aa7d0c36ce5b1b9f0221664c53d2e44"
+      }
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-001",
+      "version": 1,
+      "required": true,
+      "requirements": [
+        {
+          "id": "FR-001",
+          "version": 1
+        },
+        {
+          "id": "FR-002",
+          "version": 1
+        }
+      ],
+      "source": {
+        "path": "prd.md",
+        "sha256": "53cb56cbfa4276f1e25eb5908718baca368d5dbd404a0385de65e6038a56a30b"
+      }
+    },
+    {
+      "id": "AC-002",
+      "version": 1,
+      "required": true,
+      "requirements": [
+        {
+          "id": "FR-001",
+          "version": 1
+        }
+      ],
+      "source": {
+        "path": "prd.md",
+        "sha256": "53cb56cbfa4276f1e25eb5908718baca368d5dbd404a0385de65e6038a56a30b"
+      }
+    },
+    {
+      "id": "AC-003",
+      "version": 1,
+      "required": true,
+      "requirements": [
+        {
+          "id": "FR-001",
+          "version": 1
+        },
+        {
+          "id": "FR-002",
+          "version": 1
+        }
+      ],
+      "source": {
+        "path": "prd.md",
+        "sha256": "53cb56cbfa4276f1e25eb5908718baca368d5dbd404a0385de65e6038a56a30b"
+      }
+    },
+    {
+      "id": "AC-004",
+      "version": 1,
+      "required": true,
+      "requirements": [
+        {
+          "id": "FR-002",
+          "version": 1
+        }
+      ],
+      "source": {
+        "path": "prd.md",
+        "sha256": "53cb56cbfa4276f1e25eb5908718baca368d5dbd404a0385de65e6038a56a30b"
+      }
+    },
+    {
+      "id": "AC-005",
+      "version": 1,
+      "required": true,
+      "requirements": [
+        {
+          "id": "FR-002",
+          "version": 1
+        },
+        {
+          "id": "FR-001",
+          "version": 1
+        }
+      ],
+      "source": {
+        "path": "prd.md",
+        "sha256": "53cb56cbfa4276f1e25eb5908718baca368d5dbd404a0385de65e6038a56a30b"
+      }
+    },
+    {
+      "id": "AC-006",
+      "version": 1,
+      "required": true,
+      "requirements": [
+        {
+          "id": "FR-002",
+          "version": 1
+        }
+      ],
+      "source": {
+        "path": "prd.md",
+        "sha256": "53cb56cbfa4276f1e25eb5908718baca368d5dbd404a0385de65e6038a56a30b"
+      }
+    }
+  ],
+  "tests": [
+    {
+      "id": "test_registrations.RegistrationTests.test_sample_s1_snapshot_and_pending_source",
+      "version": 2,
+      "source": {
+        "path": "tests/test_registrations.py",
+        "sha256": "cc95a3f61ee54cc00fd8d3f2f92e3d788d41483840cc462ff6d41921a9750772"
+      },
+      "covers": [
+        {
+          "id": "AC-001",
+          "version": 1
+        },
+        {
+          "id": "AC-004",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "id": "test_registrations.RegistrationTests.test_sample_s2_is_independent",
+      "version": 2,
+      "source": {
+        "path": "tests/test_registrations.py",
+        "sha256": "cc95a3f61ee54cc00fd8d3f2f92e3d788d41483840cc462ff6d41921a9750772"
+      },
+      "covers": [
+        {
+          "id": "AC-001",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "id": "test_registrations.RegistrationTests.test_duplicate_cross_session_and_row_order",
+      "version": 2,
+      "source": {
+        "path": "tests/test_registrations.py",
+        "sha256": "cc95a3f61ee54cc00fd8d3f2f92e3d788d41483840cc462ff6d41921a9750772"
+      },
+      "covers": [
+        {
+          "id": "AC-002",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "id": "test_registrations.RegistrationTests.test_conflict_group_isolated_before_cancel_filter",
+      "version": 2,
+      "source": {
+        "path": "tests/test_registrations.py",
+        "sha256": "cc95a3f61ee54cc00fd8d3f2f92e3d788d41483840cc462ff6d41921a9750772"
+      },
+      "covers": [
+        {
+          "id": "AC-003",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "id": "test_registrations.RegistrationTests.test_all_cancelled_contributes_zero",
+      "version": 2,
+      "source": {
+        "path": "tests/test_registrations.py",
+        "sha256": "cc95a3f61ee54cc00fd8d3f2f92e3d788d41483840cc462ff6d41921a9750772"
+      },
+      "covers": [
+        {
+          "id": "AC-003",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "id": "test_registrations.RegistrationTests.test_missing_employee_rows_are_not_merged",
+      "version": 2,
+      "source": {
+        "path": "tests/test_registrations.py",
+        "sha256": "cc95a3f61ee54cc00fd8d3f2f92e3d788d41483840cc462ff6d41921a9750772"
+      },
+      "covers": [
+        {
+          "id": "AC-004",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "id": "test_registrations.RegistrationTests.test_header_only_and_absent_session",
+      "version": 2,
+      "source": {
+        "path": "tests/test_registrations.py",
+        "sha256": "cc95a3f61ee54cc00fd8d3f2f92e3d788d41483840cc462ff6d41921a9750772"
+      },
+      "covers": [
+        {
+          "id": "AC-005",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "id": "test_registrations.RegistrationTests.test_missing_file_reports_failure_without_count",
+      "version": 2,
+      "source": {
+        "path": "tests/test_registrations.py",
+        "sha256": "cc95a3f61ee54cc00fd8d3f2f92e3d788d41483840cc462ff6d41921a9750772"
+      },
+      "covers": [
+        {
+          "id": "AC-005",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "id": "test_registrations.RegistrationTests.test_missing_columns_and_empty_critical_fields",
+      "version": 2,
+      "source": {
+        "path": "tests/test_registrations.py",
+        "sha256": "cc95a3f61ee54cc00fd8d3f2f92e3d788d41483840cc462ff6d41921a9750772"
+      },
+      "covers": [
+        {
+          "id": "AC-005",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "id": "test_registrations.RegistrationTests.test_invalid_status_in_other_session_invalidates_snapshot",
+      "version": 2,
+      "source": {
+        "path": "tests/test_registrations.py",
+        "sha256": "cc95a3f61ee54cc00fd8d3f2f92e3d788d41483840cc462ff6d41921a9750772"
+      },
+      "covers": [
+        {
+          "id": "AC-005",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "id": "test_registrations.RegistrationTests.test_malformed_csv_and_invalid_encoding",
+      "version": 2,
+      "source": {
+        "path": "tests/test_registrations.py",
+        "sha256": "cc95a3f61ee54cc00fd8d3f2f92e3d788d41483840cc462ff6d41921a9750772"
+      },
+      "covers": [
+        {
+          "id": "AC-005",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "id": "test_registrations.RegistrationTests.test_extra_columns_are_ignored_without_changing_source",
+      "version": 2,
+      "source": {
+        "path": "tests/test_registrations.py",
+        "sha256": "cc95a3f61ee54cc00fd8d3f2f92e3d788d41483840cc462ff6d41921a9750772"
+      },
+      "covers": [
+        {
+          "id": "AC-005",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "id": "test_registrations.RegistrationTests.test_employee_identity_is_opaque",
+      "version": 2,
+      "source": {
+        "path": "tests/test_registrations.py",
+        "sha256": "cc95a3f61ee54cc00fd8d3f2f92e3d788d41483840cc462ff6d41921a9750772"
+      },
+      "covers": [
+        {
+          "id": "AC-002",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "id": "test_registrations.RegistrationTests.test_reconciled_new_snapshot_retains_old_snapshot_and_result",
+      "version": 2,
+      "source": {
+        "path": "tests/test_registrations.py",
+        "sha256": "cc95a3f61ee54cc00fd8d3f2f92e3d788d41483840cc462ff6d41921a9750772"
+      },
+      "covers": [
+        {
+          "id": "AC-006",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "id": "test_registrations.RegistrationTests.test_whitespace_employee_ids_preserve_raw_pending_rows",
+      "version": 2,
+      "source": {
+        "path": "tests/test_registrations.py",
+        "sha256": "cc95a3f61ee54cc00fd8d3f2f92e3d788d41483840cc462ff6d41921a9750772"
+      },
+      "covers": [
+        {
+          "id": "AC-004",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "id": "test_registrations.RegistrationTests.test_whitespace_critical_fields_fail_without_count",
+      "version": 2,
+      "source": {
+        "path": "tests/test_registrations.py",
+        "sha256": "cc95a3f61ee54cc00fd8d3f2f92e3d788d41483840cc462ff6d41921a9750772"
+      },
+      "covers": [
+        {
+          "id": "AC-005",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "id": "test_registrations.RegistrationTests.test_duplicate_header_is_rejected",
+      "version": 2,
+      "source": {
+        "path": "tests/test_registrations.py",
+        "sha256": "cc95a3f61ee54cc00fd8d3f2f92e3d788d41483840cc462ff6d41921a9750772"
+      },
+      "covers": [
+        {
+          "id": "AC-005",
+          "version": 1
+        }
+      ]
+    }
+  ]
+}

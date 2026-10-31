@@ -15,6 +15,67 @@ API_SKILL = REPOSITORY / "skills" / "project-docs-api"
 
 
 class InstallTests(unittest.TestCase):
+    def test_lifecycle_skill_is_installed_and_uninstalled_with_collection(self):
+        target = self.codex_home / "skills" / "project-docs-lifecycle"
+        first = self.run_installer()
+        self.assertEqual(first.returncode, 0, first.stderr)
+        self.assertTrue(target.is_symlink())
+        self.assertEqual(target.resolve(), REPOSITORY / "skills/project-docs-lifecycle")
+        self.assertTrue((target / "SKILL.md").is_file())
+        self.assertTrue((target / "references/lifecycle.md").is_file())
+        self.assertEqual(self.run_installer("--doctor").returncode, 0)
+        self.assertEqual(self.run_installer("--uninstall").returncode, 0)
+        self.assertFalse(target.exists())
+
+    def test_incomplete_lifecycle_checkout_is_rejected_before_install(self):
+        collection = self.root / "incomplete"
+        shutil.copytree(REPOSITORY / "skills", collection / "skills")
+        shutil.copytree(REPOSITORY / "scripts", collection / "scripts")
+        shutil.copy(INSTALLER, collection / "install.sh")
+        shutil.copy(REPOSITORY / "VERSION", collection / "VERSION")
+        (collection / "scripts/lifecycle_record.py").unlink()
+        result = subprocess.run(["bash", str(collection / "install.sh"), "--host", "codex", "--no-engines"],
+                                env=self.environment, capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(self.target.exists())
+
+    def test_doctor_detects_missing_or_empty_lifecycle_runtime_resources(self):
+        collection = self.linked_collection()
+        shutil.copytree(REPOSITORY / "scripts", collection / "scripts")
+        argv = ["bash", str(collection / "install.sh"), "--host", "codex", "--no-engines"]
+        installed = subprocess.run(argv, env=self.environment, capture_output=True, text=True)
+        self.assertEqual(installed.returncode, 0, installed.stderr)
+        self.assertEqual(subprocess.run([*argv, "--doctor"], env=self.environment, capture_output=True).returncode, 0)
+        for relative in ("scripts/lifecycle_record.py", "scripts/lifecycle_quality.py", "scripts/lifecycle_test_runner.py",
+                         "skills/project-docs-lifecycle/references/quality-and-trace.md",
+                         "skills/project-docs-lifecycle/references/lifecycle.md",
+                         "skills/project-docs-lifecycle/references/record-contract.md",
+                         "skills/project-docs-lifecycle/references/validation.md",
+                         "skills/project-docs-lifecycle/assets/lifecycle-record.json"):
+            path = collection / relative
+            original = path.read_bytes()
+            for missing in (True, False):
+                with self.subTest(relative=relative, missing=missing):
+                    if missing:
+                        path.unlink()
+                    else:
+                        path.write_bytes(b"")
+                    result = subprocess.run([*argv, "--doctor"], env=self.environment, capture_output=True, text=True)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn(relative, result.stderr)
+                    self.assertEqual(path.exists(), not missing)
+                    path.write_bytes(original)
+
+    def test_lifecycle_name_conflict_prevents_partial_install(self):
+        target = self.codex_home / "skills" / "project-docs-lifecycle"
+        target.mkdir(parents=True)
+        sentinel = target / "user-file"
+        sentinel.write_text("keep")
+        result = self.run_installer()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(self.target.exists())
+        self.assertEqual(sentinel.read_text(), "keep")
+
     def test_product_skill_lifecycle_and_conflict_are_atomic(self):
         product = self.codex_home / "skills" / "project-docs-product"
         product.mkdir(parents=True)
@@ -278,7 +339,7 @@ class InstallTests(unittest.TestCase):
         for target in legacy:
             self.assertFalse(target.is_symlink(), target)
         for home in (self.codex_home, self.claude_home):
-            for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product"):
+            for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product", "project-docs-lifecycle"):
                 installed = home / "skills" / name
                 self.assertEqual(installed.resolve(), REPOSITORY / "skills" / name)
                 self.assertIn(f"name: {name}\n", (installed / "SKILL.md").read_text())
@@ -529,7 +590,7 @@ class InstallTests(unittest.TestCase):
         self.assertFalse(self.target.exists())
 
     def test_new_hosts_install_update_doctor_and_uninstall_in_isolation(self):
-        names = ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product")
+        names = ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product", "project-docs-lifecycle")
         for host, directory in self.host_directories().items():
             if host in ("codex", "claude"):
                 continue
@@ -566,7 +627,7 @@ class InstallTests(unittest.TestCase):
             result = self.run_installer(action, "--host", "all", "--no-engines", isolated=False)
             self.assertEqual(result.returncode, 0, result.stderr)
             for directory in self.host_directories().values():
-                for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product"):
+                for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product", "project-docs-lifecycle"):
                     self.assertEqual((directory / name).resolve(), REPOSITORY / "skills" / name)
             self.assertFalse(any(target.is_symlink() for target in legacy))
         result = self.run_installer("--uninstall", "--host", "all", isolated=False)

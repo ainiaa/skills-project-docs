@@ -350,7 +350,7 @@ def _drawio(ir):
             band_label = ({"entry": "入口", "application": "业务处理", "integration": "集成与支撑",
                            "storage": "持久化", "external": "外部系统"}[band] if chinese else band.title())
             _cell(root, "band_" + band, band_label, 45, y, 1780, height,
-                  "rounded=1;whiteSpace=wrap;html=0;fillColor=#F8FAFC;strokeColor=#CBD5E1;align=left;verticalAlign=top;fontSize=16;fontStyle=1;spacing=14;")
+                  "container=1;rounded=1;whiteSpace=wrap;html=0;fillColor=#F8FAFC;strokeColor=#CBD5E1;align=left;verticalAlign=top;fontSize=16;fontStyle=1;spacing=14;")
             for index, item in enumerate(items):
                 row_items = min(columns, len(items) - (index // columns) * columns)
                 start_x = (1920 - (row_items * 350 + (row_items - 1) * 70)) / 2
@@ -373,7 +373,7 @@ def _drawio(ir):
                           ir["scope"]["container"])
             _cell(root, "scope_boundary", scope_name, left, top, right - left,
                   bottom - top,
-                  "rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;"
+                  "container=1;rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;"
                   "spacingLeft=14;spacingTop=10;fontSize=16;fontStyle=1;"
                   "fillColor=#F8FCF9;strokeColor=#8DB7A0;strokeWidth=2;")
         edge_groups = {}
@@ -439,6 +439,7 @@ def _drawio(ir):
             _cell(root, "participant_" + item["id"], item["name"], x - 105, 145, 210, 62,
                   "rounded=0;whiteSpace=wrap;html=0;fillColor=#DBEAFE;strokeColor=#475569;fontSize=16;fontStyle=1;")
             line = ET.SubElement(root, "mxCell", {"id": "lifeline_" + item["id"], "value": "",
+                          "data-diagram-role": "lifeline",
                           "style": "dashed=1;dashPattern=4 4;endArrow=none;strokeColor=#94A3B8;strokeWidth=1.5;",
                           "edge": "1", "parent": "1"})
             geometry = ET.SubElement(line, "mxGeometry", {"relative": "1", "as": "geometry"})
@@ -478,7 +479,7 @@ def _drawio(ir):
                             for lane, items in lanes.items()}
             pool_height = 42 + sum(lane_heights.values())
             _cell(root, "pool_" + str(pool_index), pool, 45, next_y, 1780, pool_height,
-                  "rounded=0;html=0;fillColor=#F1F5F9;strokeColor=#64748B;fontSize=17;align=left;verticalAlign=top;spacing=12;")
+                  "container=1;rounded=0;html=0;fillColor=#F1F5F9;strokeColor=#64748B;fontSize=17;align=left;verticalAlign=top;spacing=12;")
             lane_y = next_y + 42
             for lane_index, (lane, items) in enumerate(lanes.items()):
                 height = lane_heights[lane]

@@ -1,0 +1,380 @@
+{
+  "schema_version": 1,
+  "revision": 1,
+  "project_ref": "SYNTHETIC-local-example",
+  "subject_ref": "FR-EX-1",
+  "goal": "合成案例：从异常进度痛点追踪到隔离本地制品运行",
+  "owner": "synthetic-owner",
+  "updated_at": "2026-10-31T10:00:00+08:00",
+  "validation_scope": {
+    "business_decision": "simulated",
+    "business_uat": "simulated",
+    "release_approval": "simulated",
+    "effect": "uncovered",
+    "technical_execution": "only proven by a fresh replay test",
+    "production": "uncovered"
+  },
+  "assertions": [
+    {
+      "text": "所有业务确认均为模拟",
+      "classification": "hypothesis",
+      "source": "scenario.md",
+      "owner": "synthetic-owner",
+      "confirmation": "unconfirmed"
+    }
+  ],
+  "branches": [
+    {
+      "id": "local-demo",
+      "route": "development",
+      "required": [
+        "intake",
+        "investigation",
+        "decision",
+        "requirement",
+        "design",
+        "code-build",
+        "test",
+        "uat",
+        "release-approval",
+        "deploy-smoke",
+        "handover"
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "intake",
+      "kind": "intake",
+      "stage": "L0",
+      "branch": "local-demo",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md",
+      "status": "completed",
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "confirmed",
+          "source": "scenario.md",
+          "actor": "SIMULATED-role-not-real-approval",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "intake",
+            "version": 1
+          },
+          "context": "synthetic-input; real local execution only when replay test runs"
+        }
+      ]
+    },
+    {
+      "id": "investigation",
+      "kind": "investigation",
+      "stage": "L1",
+      "branch": "local-demo",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "intake",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "confirmed",
+          "source": "scenario.md",
+          "actor": "SIMULATED-role-not-real-approval",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "investigation",
+            "version": 1
+          },
+          "context": "synthetic-input; real local execution only when replay test runs"
+        }
+      ]
+    },
+    {
+      "id": "decision",
+      "kind": "decision",
+      "stage": "L2",
+      "branch": "local-demo",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "investigation",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "confirmed",
+          "source": "scenario.md",
+          "actor": "SIMULATED-role-not-real-approval",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "decision",
+            "version": 1
+          },
+          "context": "synthetic-input; real local execution only when replay test runs"
+        }
+      ]
+    },
+    {
+      "id": "requirement",
+      "kind": "requirement",
+      "stage": "L3",
+      "branch": "local-demo",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "decision",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "confirmed",
+          "source": "scenario.md",
+          "actor": "SIMULATED-role-not-real-approval",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "requirement",
+            "version": 1
+          },
+          "context": "synthetic-input; real local execution only when replay test runs"
+        }
+      ]
+    },
+    {
+      "id": "design",
+      "kind": "design",
+      "stage": "L4",
+      "branch": "local-demo",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "requirement",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "confirmed",
+          "source": "scenario.md",
+          "actor": "SIMULATED-role-not-real-approval",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "design",
+            "version": 1
+          },
+          "context": "synthetic-input; real local execution only when replay test runs"
+        }
+      ]
+    },
+    {
+      "id": "code-build",
+      "kind": "code-build",
+      "stage": "L5",
+      "branch": "local-demo",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "status.py",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "design",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "executed",
+          "source": "../../../../../scripts/test_lifecycle_delivery.py",
+          "actor": "local-test-runner",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "code-build",
+            "version": 1
+          },
+          "context": "synthetic-input; real local execution only when replay test runs"
+        }
+      ]
+    },
+    {
+      "id": "test",
+      "kind": "test",
+      "stage": "L6",
+      "branch": "local-demo",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "test_status.py",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "code-build",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "executed",
+          "source": "../../../../../scripts/test_lifecycle_delivery.py",
+          "actor": "local-test-runner",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "test",
+            "version": 1
+          },
+          "context": "synthetic-input; real local execution only when replay test runs"
+        }
+      ]
+    },
+    {
+      "id": "uat",
+      "kind": "uat",
+      "stage": "L7",
+      "branch": "local-demo",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "test",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "confirmed",
+          "source": "scenario.md",
+          "actor": "SIMULATED-role-not-real-approval",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "uat",
+            "version": 1
+          },
+          "context": "synthetic-input; real local execution only when replay test runs"
+        }
+      ]
+    },
+    {
+      "id": "release-approval",
+      "kind": "release-approval",
+      "stage": "L8",
+      "branch": "local-demo",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "uat",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "confirmed",
+          "source": "scenario.md",
+          "actor": "SIMULATED-role-not-real-approval",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "release-approval",
+            "version": 1
+          },
+          "context": "synthetic-input; real local execution only when replay test runs"
+        }
+      ]
+    },
+    {
+      "id": "deploy-smoke",
+      "kind": "deploy-smoke",
+      "stage": "L9",
+      "branch": "local-demo",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "../../../../../scripts/test_lifecycle_delivery.py",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "release-approval",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "executed",
+          "source": "../../../../../scripts/test_lifecycle_delivery.py",
+          "actor": "local-test-runner",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "deploy-smoke",
+            "version": 1
+          },
+          "context": "synthetic-input; real local execution only when replay test runs"
+        }
+      ]
+    },
+    {
+      "id": "handover",
+      "kind": "handover",
+      "stage": "L10",
+      "branch": "local-demo",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "deploy-smoke",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "confirmed",
+          "source": "scenario.md",
+          "actor": "SIMULATED-role-not-real-approval",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "handover",
+            "version": 1
+          },
+          "context": "synthetic-input; real local execution only when replay test runs"
+        }
+      ]
+    }
+  ],
+  "next_actions": [
+    {
+      "action": "真实试点另取负责人确认、平台授权和效果基线",
+      "owner": "unassigned",
+      "depends_on": "actual-project",
+      "expected_result": "取得当前权威证据"
+    }
+  ]
+}

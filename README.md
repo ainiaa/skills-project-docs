@@ -1,12 +1,12 @@
 # Project Docs
 
-面向 Codex、Claude Code、ZCode、DeepSeek Harness（DSH）、Gemini CLI、Grok Build、pi 和 OpenCode 的项目文档 Skill 集合。`project-docs` 是统一入口，根据需求选择或组合四个专用能力：`project-docs-product` 梳理产品需求、编写 PRD 并按需生成可点击 HTML 原型，`project-docs-api` 生成接口文档，`project-docs-diagram` 生成和校验技术图，`project-docs-overview` 生成项目介绍、功能说明与开发者上手手册。所有宿主共用同一份仓库与渲染引擎安装。
+面向 Codex、Claude Code、ZCode、DeepSeek Harness（DSH）、Gemini CLI、Grok Build、pi 和 OpenCode 的项目文档 Skill 集合。`project-docs` 是统一入口，根据需求选择或组合五个专用能力：`project-docs-product` 梳理产品需求、编写 PRD 并按需生成可点击 HTML 原型，`project-docs-api` 生成接口文档，`project-docs-diagram` 生成和校验技术图，`project-docs-overview` 生成项目介绍、功能说明与开发者上手手册。`project-docs-lifecycle` 协调从业务痛点到上线及效果跟踪，保留跨角色、版本及证据交接。所有宿主共用同一份仓库与渲染引擎安装。
 
-当前版本：[0.7.0](https://github.com/ainiaa/skills-project-docs/releases/tag/v0.7.0)。改动记录见[变更日志](CHANGELOG.md)。
+当前版本：[0.9.0](https://github.com/ainiaa/skills-project-docs/releases/tag/v0.9.0)。改动记录见[变更日志](CHANGELOG.md)。
 
 ## 快速开始
 
-1. 克隆仓库，一次安装统一入口、四个专用 Skill 与缺失的绘图引擎：
+1. 克隆仓库，一次安装统一入口、五个专用 Skill 与缺失的绘图引擎：
 
    ```bash
    git clone https://github.com/ainiaa/skills-project-docs.git
@@ -26,6 +26,7 @@
 
    ```text
    Codex：使用 $project-docs 介绍这个项目，附上系统架构图、核心流程图和接口文档。
+   Codex：使用 $project-docs-lifecycle 从这个业务痛点推进到功能实现与测试，先复用已有需求和 PRD。
    Codex：使用 $project-docs-product 根据会议纪要写 PRD，并按需生成可点击原型。
    Codex：使用 $project-docs-api 为这个 Spring Controller 生成 API 文档。
    Codex：使用 $project-docs-diagram 根据这个项目的代码生成 draw.io 架构图，并导出 PNG。
@@ -46,6 +47,7 @@
 | 需求 | Skill | 主要交付物 |
 |---|---|---|
 | 统一选择入口，或组合交付说明文档、技术图和接口文档 | [`project-docs`](skills/project-docs/SKILL.md) | 按需求组合下列产物 |
+| 从业务痛点跨阶段推进，或中途接续已有需求 | [`project-docs-lifecycle`](skills/project-docs-lifecycle/SKILL.md) | 阶段交接、最小版本化追踪、真实验证证据；本地校验不替代批准或上线 |
 | 从业务资料梳理需求、创建或修改 PRD，并按需交付交互界面原型 | [`project-docs-product`](skills/project-docs-product/SKILL.md) | PRD、可点击 HTML、必要截图及评审记录 |
 | 从 Spring MVC、Feign 或 FastAPI 源码生成接口文档 | [`project-docs-api`](skills/project-docs-api/SKILL.md) | Markdown、Postman Collection、cURL 示例 |
 | 根据仓库证据绘制架构、流程、时序、ERD 等技术图 | [`project-docs-diagram`](skills/project-docs-diagram/SKILL.md) | 可编辑图源、按需导出的图片或 PDF、验证回执 |
@@ -184,7 +186,7 @@ HTML 是 Archify 的交互展示文件；其余三种引擎的 HTML 不是本项
 
 原有 `UNDERSTAND_PYTHON`、`UNDERSTAND_RENDERER_HOME`、各引擎 CLI 覆盖变量及共享引擎缓存路径继续有效。兼容脚本 `install-arch.sh` 仍只管理 Codex 的绘图入口，目标名称改为 `project-docs-diagram`；完整集合使用 `install.sh`。
 
-[install.sh](install.sh) 默认把统一入口和四个专用 Skill 软链接到 Codex 的 `~/.codex/skills` 和 Claude Code 的 `~/.claude/skills`，补齐三个必要第三方 Skill，并自动安装当前缺失的四个绘图引擎。本集合链接共用仓库文件，更新一次即可同步更新。安装前会检查所有目标路径及必要 Skill，保留无关目录和软链接；本仓库拥有的旧名称链接会迁移。`--uninstall` 只移除本仓库拥有的 Skill 链接，**不会删除**第三方 Skill 或共享引擎。[Claude Code 官方文档](https://code.claude.com/docs/en/skills#choose-where-skills-load)确认个人 Skill 目录与软链接可用；这里支持的是本地 Claude Code，会话之外的 Claude 云端环境不读取本机目录。
+[install.sh](install.sh) 默认把统一入口和五个专用 Skill 软链接到 Codex 的 `~/.codex/skills` 和 Claude Code 的 `~/.claude/skills`，补齐三个必要第三方 Skill，并自动安装当前缺失的四个绘图引擎。本集合链接共用仓库文件，更新一次即可同步更新。安装前会检查所有目标路径及必要 Skill，保留无关目录和软链接；本仓库拥有的旧名称链接会迁移。`--uninstall` 只移除本仓库拥有的 Skill 链接，**不会删除**第三方 Skill 或共享引擎。[Claude Code 官方文档](https://code.claude.com/docs/en/skills#choose-where-skills-load)确认个人 Skill 目录与软链接可用；这里支持的是本地 Claude Code，会话之外的 Claude 云端环境不读取本机目录。
 
 必要 Skill 先检查目标技能目录；Codex 还检查 `~/.agents/skills` 和其配置中启用的插件缓存，Claude Code 检查已启用、用户级插件的注册位置。不会把任意缓存或其他宿主的 Skill 当成已加载。已有入口/资源不完整、同名路径冲突或可见的多份内容不同时，停止并报告，不猜版本或覆盖。仅缺失项需要 Git 和网络：从[安装脚本声明的官方提交](scripts/install_product_dependencies.py)暂存所需 Skill 目录及许可、校验后安装，并记录 `.project-docs-source.json`。文件就绪不等于宿主已经加载或模型行为已验证。
 
@@ -199,7 +201,7 @@ HTML 是 Archify 的交互展示文件；其余三种引擎的 HTML 不是本项
 | `bash install.sh --host all` | 为全部八个宿主安装本集合并补齐必要 Skill；共用绘图引擎 |
 | `bash install.sh --host opencode --no-engines` | 只为 OpenCode 安装本集合与必要 Skill，跳过绘图引擎 |
 | `bash install.sh --doctor` | 只读检查 Skill 链接、必要第三方 Skill 和引擎；缺失返回非零，不安装 |
-| `bash install.sh --update` | 快进更新当前跟踪分支，重新安装集合与四个子 Skill，并升级低于新版集合最低版本的绘图 CLI |
+| `bash install.sh --update` | 快进更新当前跟踪分支，重新安装集合与五个子 Skill，并升级低于新版集合最低版本的绘图 CLI |
 | `bash install.sh --update-deps` | 不拉取本集合仓库，同步绘图 CLI/链接并补齐必要 Skill；已有第三方 Skill 不升级 |
 | `bash install.sh --update --no-engines` | 更新本集合并补齐必要 Skill，保留原有引擎自动安装偏好 |
 | `bash install.sh --uninstall --host all` | 移除本集合链接，保留第三方 Skill 和共享引擎 |
@@ -214,7 +216,7 @@ git remote set-url origin https://github.com/ainiaa/skills-project-docs.git
 
 ### 宿主支持
 
-2026-10-15 核对的官方加载规范如下。每个目标目录下软链接五个 Skill 目录，形成 `<skill-name>/SKILL.md` 布局，解析到本仓库的 `skills/`；脚本、引用和模板仍从真实 Skill 目录解析。安装器不依赖宿主 CLI，也不安装或升级宿主软件。
+2026-10-15 核对的官方加载规范如下。每个目标目录下软链接六个 Skill 目录（统一入口与五个专用能力），形成 `<skill-name>/SKILL.md` 布局，解析到本仓库的 `skills/`；脚本、引用和模板仍从真实 Skill 目录解析。安装器不依赖宿主 CLI，也不安装或升级宿主软件。
 
 | 宿主 / `--host` | 本安装器管理的用户级目录 | 官方规范与加载方式 |
 |---|---|---|
@@ -259,7 +261,7 @@ bash install.sh --uninstall --host pi
 
 统一升级使用 `bash install.sh --update --host <宿主>`，也可在当前宿主中说“使用 project-docs 更新本集合及依赖”，由 Skill 显式传入对应 `--host`。升级读取当前 Git 分支的跟踪上游，不自动切换分支；本地有未提交或未跟踪文件、处于 detached HEAD、未配置上游或无法快进时会停止，不自动暂存、重置或覆盖本地改动。仓库更新成功后，用新版安装器同步链接与依赖；若后续依赖步骤失败，会明确返回失败，并输出可直接执行的 `--update-deps` 重试命令，保留原 `--host`、引擎选择和带空格的仓库路径。
 
-四个子 Skill 随同一仓库更新。四个绘图 CLI 以本集合锁定并验收的版本为最低基线，保留下载校验；更新时保留相同或更高的稳定版本，无法识别版本则报错停止，避免覆盖或降级已有工具。新版准备成功后才切换受管入口，旧版本目录保留。macOS 的 draw.io 更新安装在共享管理目录，Linux 使用现有 apt 安装流程，可能需要系统权限。`*_OFFICIAL_CLI` 显式指定的工具保留原路径并提示由外部管理；管理目录中的自定义入口也不会被强行覆盖。PDLC、understand-anything 和 CodeGraph 属于按需使用的外部能力，不作为本集合必装依赖，也不扫描升级用户的其他全局 Skill 或软件。
+五个子 Skill 随同一仓库更新。四个绘图 CLI 以本集合锁定并验收的版本为最低基线，保留下载校验；更新时保留相同或更高的稳定版本，无法识别版本则报错停止，避免覆盖或降级已有工具。新版准备成功后才切换受管入口，旧版本目录保留。macOS 的 draw.io 更新安装在共享管理目录，Linux 使用现有 apt 安装流程，可能需要系统权限。`*_OFFICIAL_CLI` 显式指定的工具保留原路径并提示由外部管理；管理目录中的自定义入口也不会被强行覆盖。PDLC、understand-anything 和 CodeGraph 属于按需使用的外部能力，不作为本集合必装依赖，也不扫描升级用户的其他全局 Skill 或软件。
 
 `--update`、`--update-deps` 均支持 `--engine mermaid` 等选项限定 CLI 范围；这两个命令中的 `--no-engines` 只跳过本次引擎同步，不改变原有自动安装偏好，仍补齐缺失的必要 Skill。已有第三方 Skill 不自动升级，即使其版本不同或未知也不替换；第三方升级另走其上游机制。普通生成任务不会在运行前自动联网升级。
 
@@ -385,3 +387,9 @@ python3 -m unittest discover -s scripts -p test_native_hosts.py -v
 ## 许可与反馈
 
 [Apache License 2.0](LICENSE) · [GitHub Issues](https://github.com/ainiaa/skills-project-docs/issues)
+
+### 生命周期首个切片
+
+生命周期支持业务有 AI 或无 AI 的组织，沿用已有身份和唯一正式 PRD。按授权推进研发与验证，分开记录测试、UAT、发布授权、部署、冒烟和业务效果。追踪工具提供本地依赖版本检查、影响传播及单写者安全更新；不承担外部审批、权限或平台状态管理。
+
+使用与隔离演练见 [生命周期验证说明](skills/project-docs-lifecycle/references/validation.md)。完整 25 实体模型、真实工单/审批/部署适配与 PDLC 自动接管尚未实现；未指定平台时不自动安装新系统。

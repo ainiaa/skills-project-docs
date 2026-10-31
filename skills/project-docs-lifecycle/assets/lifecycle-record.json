@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "revision": 1,
+  "project_ref": "replace-with-existing-project-reference",
+  "subject_ref": "replace-with-existing-issue-or-requirement-reference",
+  "goal": "替换为本期业务目标",
+  "owner": "unassigned",
+  "updated_at": "2026-10-31T00:00:00+08:00",
+  "assertions": [],
+  "branches": [{"id": "main", "route": "development", "required": ["intake"]}],
+  "artifacts": [{
+    "id": "intake", "kind": "issue", "stage": "L0", "branch": "main", "version": 1,
+    "owner": "unassigned", "source": "replace-with-authorized-source",
+    "status": "not_started", "depends_on": [], "evidence": []
+  }],
+  "next_actions": [{"action": "核对问题来源、身份和责任人", "owner": "unassigned", "depends_on": "none", "expected_result": "明确受理范围和授权，替换所有示意值"}]
+}

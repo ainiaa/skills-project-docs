@@ -17,6 +17,7 @@ from architecture_landscape import check_landscape_geometry
 from architecture_renderers import render_archify, render_drawio, render_mermaid, render_plantuml
 from codegraph_context import load_codegraph
 from diagram_profiles import CAPABILITIES, render_view, validate_companion_views, validate_view
+from drawio_quality import check_drawio_quality
 from engine_paths import find_engine, prepare_runtime
 from python_runtime import require_python
 
@@ -180,6 +181,8 @@ def _deliver_bundle(args, root, ir, detail_paths):
             reports[name] = {"rendererChecks": report["rendererChecks"],
                              "artifacts": [str(Path(item).relative_to(stage))
                                            for item in report["artifacts"]]}
+            if "drawioQuality" in report:
+                reports[name]["drawioQuality"] = report["drawioQuality"]
         coverage_summary = _coverage_summary(ir)
         _write(stage / "manifest.json", json.dumps({"coverageCheck": "pass", "geometryCheck": "pass",
                                                    "coverageSummary": coverage_summary,
@@ -350,6 +353,11 @@ def main(argv=None):
     for kind in selected:
         filename, renderer = native[kind]
         artifacts[filename] = renderer(ir)
+    drawio_quality = check_drawio_quality(artifacts["architecture.drawio"]) if "drawio" in selected else None
+    if drawio_quality and drawio_quality["status"] == "fail":
+        print(json.dumps({"valid": False, "drawioQuality": drawio_quality,
+                          "problems": drawio_quality["problems"]}, ensure_ascii=False))
+        return 1
     desired = set(artifacts)
     desired.update(f"architecture.{kind}.{fmt}" for kind, formats in exports.items() for fmt in formats)
     if "archify" in selected:
@@ -367,6 +375,8 @@ def main(argv=None):
             (output / f"architecture.{kind}.{fmt}").unlink(missing_ok=True)
     result = {"valid": True, "artifacts": [str(output / filename) for filename in artifacts],
               "archifyRendered": False, "rendererChecks": {}}
+    if drawio_quality:
+        result["drawioQuality"] = drawio_quality
     if ir["version"] == 2:
         result["profile"] = ir["profile"]
         result["visualReview"] = "required"
