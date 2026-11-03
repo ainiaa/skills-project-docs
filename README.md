@@ -1,6 +1,25 @@
 # Project Docs
 
-面向 Codex、Claude Code、ZCode、DeepSeek Harness（DSH）、Gemini CLI、Grok Build、pi 和 OpenCode 的项目文档 Skill 集合。`project-docs` 是统一入口，根据需求选择或组合五个专用能力：`project-docs-product` 梳理产品需求、编写 PRD 并按需生成可点击 HTML 原型，`project-docs-api` 生成接口文档，`project-docs-diagram` 生成和校验技术图，`project-docs-overview` 生成项目介绍、功能说明与开发者上手手册。`project-docs-lifecycle` 协调从业务痛点到上线及效果跟踪，保留跨角色、版本及证据交接。所有宿主共用同一份仓库与渲染引擎安装。
+**接手陌生项目，让 AI 先交付带源码依据的上手文档、模块关系图和核心流程图。**
+
+[English](README.en.md) · [看完整案例](docs/examples/petclinic/README.md) · [安装](#快速开始) · [选择其他能力](#选哪个-skill)
+
+先看结果：下面是从公开 **Spring Petclinic** 的实际代码整理出的 Owner 创建链路。它保留了真实的 Controller → Repository 结构、校验失败分支和默认 H2 数据库。
+
+![Spring Petclinic 的 Owner 创建模块关系图](docs/examples/petclinic/architecture.png)
+
+| 你给什么 | 得到什么 | 可以检查什么 |
+| --- | --- | --- |
+| 一个本地项目，说明读者和想了解的功能 | [开发者上手手册](docs/examples/petclinic/developer-guide.md)、[模块关系图](docs/examples/petclinic/architecture.png)、[核心流程图](docs/examples/petclinic/owner-flow.png) | 固定源码版本、逐项来源、可编辑图源、实际验证与未验证项 |
+
+```text
+使用 $project-docs-overview 为首次接触这个 Spring Boot 项目的 Java 开发者写上手手册，
+附模块关系图和一条核心流程；引用具体源码，区分已验证命令和待核实项。
+```
+
+这是对公开示例应用的实际代码走读，不是生产落地或效果承诺。[案例页](docs/examples/petclinic/README.md)保留案例任务说明、固定提交、生成过程和验证边界；你可以直接阅读成品后再决定是否安装。
+
+同一集合还支持 PRD 与可点击原型、Java / FastAPI 接口文档、技术图、项目说明，以及从业务痛点到上线的生命周期交接。统一入口 `project-docs` 按任务组合五个专用 Skill。支持 Codex、Claude Code、ZCode、DSH、Gemini CLI、Grok Build、pi 和 OpenCode，所有宿主复用同一仓库和渲染引擎。
 
 当前版本：[0.10.0](https://github.com/ainiaa/skills-project-docs/releases/tag/v0.10.0)。改动记录见[变更日志](CHANGELOG.md)。
 
@@ -11,16 +30,16 @@
    ```bash
    git clone https://github.com/ainiaa/skills-project-docs.git
    cd skills-project-docs
-   bash install.sh
+   bash install.sh --host codex
    ```
 
 2. 检查 Skill 入口和四个引擎，再重启或刷新宿主的 Skill 发现：
 
    ```bash
-   bash install.sh --doctor
+   bash install.sh --doctor --host codex
    ```
 
-   以上默认管理 Codex、Claude Code。其他宿主在安装和诊断时均加相同的 `--host`，例如 `bash install.sh --host zcode` 和 `bash install.sh --doctor --host zcode`；全部八个宿主使用 `--host all`。完整目录与加载规范见下方[宿主支持](#宿主支持)。
+   以上只安装到 Codex。Claude Code 使用 `--host claude`；省略 `--host` 时默认管理 Codex、Claude Code。其他宿主在安装和诊断时均加相同的 `--host`，例如 `bash install.sh --host zcode` 和 `bash install.sh --doctor --host zcode`；全部八个宿主使用 `--host all`。完整目录与加载规范见下方[宿主支持](#宿主支持)。
 
 3. 直接描述目标，或显式点名 Skill：
 

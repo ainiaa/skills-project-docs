@@ -1,0 +1,112 @@
+{
+  "version": 2,
+  "engine": "mermaid",
+  "diagramType": "flowchart",
+  "claims": [
+    {
+      "statement": "A[\"POST /owners/new\"] --> B{\"Validation errors?\"}",
+      "artifactRef": "line:2",
+      "artifactQuote": "A[\"POST /owners/new\"] --> B{\"Validation errors?\"}",
+      "provenance": "INFERRED",
+      "evidence": [
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 77,
+          "quote": "@PostMapping(\"/owners/new\")"
+        },
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 78,
+          "quote": "public String processCreationForm(@Valid Owner owner, BindingResult result, RedirectAttributes redirectAttributes) {"
+        },
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 79,
+          "quote": "if (result.hasErrors()) {"
+        }
+      ]
+    },
+    {
+      "statement": "B -->|Yes| E[\"Return form / do not save\"]",
+      "artifactRef": "line:3",
+      "artifactQuote": "B -->|Yes| E[\"Return form / do not save\"]",
+      "provenance": "INFERRED",
+      "evidence": [
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 79,
+          "quote": "if (result.hasErrors()) {"
+        },
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 80,
+          "quote": "redirectAttributes.addFlashAttribute(\"error\", \"There was an error in creating the owner.\");"
+        },
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 81,
+          "quote": "return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;"
+        }
+      ]
+    },
+    {
+      "statement": "B -->|No| S[\"Save owner\"]",
+      "artifactRef": "line:4",
+      "artifactQuote": "B -->|No| S[\"Save owner\"]",
+      "provenance": "INFERRED",
+      "evidence": [
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 84,
+          "quote": "this.owners.save(owner);"
+        }
+      ]
+    },
+    {
+      "statement": "S --> R[\"Redirect /owners/id\"]",
+      "artifactRef": "line:5",
+      "artifactQuote": "S --> R[\"Redirect /owners/id\"]",
+      "provenance": "INFERRED",
+      "evidence": [
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 84,
+          "quote": "this.owners.save(owner);"
+        },
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 86,
+          "quote": "return \"redirect:/owners/\" + owner.getId();"
+        }
+      ]
+    },
+    {
+      "statement": "R --> D[\"Load owner / details view\"]",
+      "artifactRef": "line:6",
+      "artifactQuote": "R --> D[\"Load owner / details view\"]",
+      "provenance": "INFERRED",
+      "evidence": [
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 178,
+          "quote": "@GetMapping(\"/owners/{ownerId}\")"
+        },
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 180,
+          "quote": "ModelAndView mav = new ModelAndView(\"owners/ownerDetails\");"
+        },
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 181,
+          "quote": "Optional<Owner> optionalOwner = this.owners.findById(ownerId);"
+        },
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 184,
+          "quote": "mav.addObject(owner);"
+        }
+      ]
+    }
+  ]
+}
