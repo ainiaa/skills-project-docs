@@ -5,7 +5,7 @@ description: 用户要梳理业务需求、创建或修订 PRD、评审产品需
 
 # Project Docs Product
 
-帮助产品与业务人员把问题变成可评审、可交接的需求。按 [产品工作流](references/workflow.md) 组合 Superpowers `brainstorming`、Matt Pocock `grilling` 和 `domain-modeling`；先确定当前阶段，只加载该阶段需要的能力，不能同时运行两个访谈主持流程。
+帮助产品与业务人员把问题变成可评审、可交接的需求。按[读者与用途约定](../../references/audience.md)组织结果，保留同一正式 PRD、版本、规则与 FR/AC，读者摘要引用主文，不改既定业务约束。按 [产品工作流](references/workflow.md) 组合 Superpowers `brainstorming`、Matt Pocock `grilling` 和 `domain-modeling`；先确定当前阶段，只加载该阶段需要的能力，不能同时运行两个访谈主持流程。
 
 先按[工作流的任务路径](references/workflow.md#按需选择阶段)区分评审、整理/修订与探索，只加载当前阶段需要的资源。先解析本 Skill 的真实目录，脚本位于 `../../scripts/`。只在调用上游能力前按[依赖与适配](references/dependencies.md)核查所需能力；缺失不自行安装或伪称已运行。完整探索须具备相应依赖，不以整理路径绕过；安装和全套诊断另行处理。
 

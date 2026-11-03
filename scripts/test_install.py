@@ -15,6 +15,50 @@ API_SKILL = REPOSITORY / "skills" / "project-docs-api"
 
 
 class InstallTests(unittest.TestCase):
+    def test_missing_or_empty_audience_stops_install_before_link_changes(self):
+        collection = self.linked_collection()
+        shutil.copytree(REPOSITORY / "scripts", collection / "scripts")
+        for target in (self.codex_home / "skills").iterdir():
+            target.unlink()
+        audience = collection / "references/audience.md"
+        original = audience.read_bytes()
+        argv = ["bash", str(collection / "install.sh"), "--host", "codex", "--no-engines"]
+        for missing in (True, False):
+            with self.subTest(missing=missing):
+                if missing:
+                    audience.unlink()
+                else:
+                    audience.write_bytes(b"")
+                result = subprocess.run(argv, env=self.environment, capture_output=True, text=True)
+                self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertIn("references/audience.md", result.stderr)
+                self.assertFalse(any((self.codex_home / "skills").iterdir()))
+                self.assertFalse((self.root / "renderers").exists())
+                audience.write_bytes(original)
+
+    def test_doctor_reports_missing_or_empty_audience_without_repairing_it(self):
+        collection = self.linked_collection()
+        shutil.copytree(REPOSITORY / "scripts", collection / "scripts")
+        argv = ["bash", str(collection / "install.sh"), "--host", "codex", "--no-engines"]
+        self.assertEqual(subprocess.run(argv, env=self.environment, capture_output=True).returncode, 0)
+        audience = collection / "references/audience.md"
+        original = audience.read_bytes()
+        links = {p.name: os.readlink(p) for p in (self.codex_home / "skills").iterdir() if p.is_symlink()}
+        for missing in (True, False):
+            with self.subTest(missing=missing):
+                if missing:
+                    audience.unlink()
+                else:
+                    audience.write_bytes(b"")
+                result = subprocess.run([*argv, "--doctor"], env=self.environment, capture_output=True, text=True)
+                self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertIn("references/audience.md", result.stderr)
+                self.assertEqual(audience.exists(), not missing)
+                if not missing:
+                    self.assertEqual(audience.read_bytes(), b"")
+                self.assertEqual(links, {p.name: os.readlink(p) for p in (self.codex_home / "skills").iterdir() if p.is_symlink()})
+                audience.write_bytes(original)
+
     def test_lifecycle_skill_is_installed_and_uninstalled_with_collection(self):
         target = self.codex_home / "skills" / "project-docs-lifecycle"
         first = self.run_installer()
@@ -32,6 +76,7 @@ class InstallTests(unittest.TestCase):
         shutil.copytree(REPOSITORY / "skills", collection / "skills")
         shutil.copytree(REPOSITORY / "scripts", collection / "scripts")
         shutil.copy(INSTALLER, collection / "install.sh")
+        shutil.copytree(REPOSITORY / "references", collection / "references")
         shutil.copy(REPOSITORY / "VERSION", collection / "VERSION")
         (collection / "scripts/lifecycle_record.py").unlink()
         result = subprocess.run(["bash", str(collection / "install.sh"), "--host", "codex", "--no-engines"],
@@ -137,6 +182,7 @@ class InstallTests(unittest.TestCase):
         shutil.copy(INSTALLER, collection / "install.sh")
         shutil.copy(REPOSITORY / "VERSION", collection / "VERSION")
         shutil.copytree(REPOSITORY / "skills", collection / "skills")
+        shutil.copytree(REPOSITORY / "references", collection / "references")
         for directory in self.host_directories().values():
             directory.mkdir(parents=True)
             for source in (collection / "skills").iterdir():

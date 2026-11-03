@@ -163,7 +163,7 @@ if [[ "$ACTION" == install ]]; then
   fi
 fi
 
-lifecycle_status=0
+required_resource_status=0
 if [[ "$ACTION" == install || "$ACTION" == doctor ]]; then
   for relative in scripts/lifecycle_record.py \
                   scripts/lifecycle_quality.py \
@@ -172,11 +172,12 @@ if [[ "$ACTION" == install || "$ACTION" == doctor ]]; then
                   skills/project-docs-lifecycle/references/lifecycle.md \
                   skills/project-docs-lifecycle/references/record-contract.md \
                   skills/project-docs-lifecycle/references/validation.md \
-                  skills/project-docs-lifecycle/assets/lifecycle-record.json; do
+                  skills/project-docs-lifecycle/assets/lifecycle-record.json \
+                  references/audience.md; do
     if [[ ! -f "$SOURCE_DIR/$relative" || ! -r "$SOURCE_DIR/$relative" || ! -s "$SOURCE_DIR/$relative" ]]; then
-      echo "Error: missing, empty, or unreadable lifecycle resource: $SOURCE_DIR/$relative" >&2
+      echo "Error: missing, empty, or unreadable required resource: $SOURCE_DIR/$relative" >&2
       if [[ "$ACTION" == install ]]; then exit 1; fi
-      lifecycle_status=1
+      required_resource_status=1
     fi
   done
 fi
@@ -264,7 +265,7 @@ case "$ACTION" in
     ;;
   doctor)
     status="$renderer_status"
-    if [[ "$lifecycle_status" != 0 ]]; then status=1; fi
+    if [[ "$required_resource_status" != 0 ]]; then status=1; fi
     "$PYTHON_BIN" "$SOURCE_DIR/scripts/install_product_dependencies.py" --check "${dependency_args[@]}" || status=1
     version="$(head -1 "$SOURCE_DIR/VERSION" 2>/dev/null || true)"
     if [[ -z "$version" ]]; then

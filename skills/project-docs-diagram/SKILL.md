@@ -5,6 +5,8 @@ description: Create technical diagrams from repository evidence or a system desc
 
 # Project Docs Diagram
 
+按[读者与用途约定](../../references/audience.md)选择讲解深度、图例与总览/细节视图；保留用户指定记法、必需标签、关系及证据，不因读者层次删改业务含义。
+
 Produce auditable diagrams from repository evidence. A short request such as “根据代码生成架构图” is sufficient; infer scope, view, engine, and export without requiring a reference image or a detailed prompt. The agent interprets architecture and business meaning; scripts validate source anchors and supported diagram semantics. Keep generated files outside the analyzed repository unless the user asks to commit them. Read [the diagram standard](../../docs/DIAGRAM_STANDARD.md) when selecting a profile. The draw.io landscape theme and GitHub template decision are documented in [the template research](../../docs/ARCHITECTURE_TEMPLATE_RESEARCH.md).
 
 Archify `explainer` 是独立的一页文档模式；用户要求项目说明页面时读取 [project-docs-overview](../project-docs-overview/SKILL.md)，不将它作为 typed JSON 图型传入本 Skill 的原生脚本。

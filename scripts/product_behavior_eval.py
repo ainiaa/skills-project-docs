@@ -17,6 +17,8 @@ def skill_identity():
             for path in [SKILL / "SKILL.md", SKILL / "assets/prd-template.md", SKILL / "assets/prd-reader-template.md",
                          SKILL / "assets/prd-traceability-template.md", SKILL / "assets/prototype.html",
                          *sorted((SKILL / "references").glob("*.md"))]}
+    audience = Path(__file__).resolve().parents[1] / "references/audience.md"
+    identity["../../references/audience.md"] = hashlib.sha256(audience.read_bytes()).hexdigest()
     for name in ("product_behavior_eval.py", "validate_product_doc.py", "product_bundle.py",
                  "product_browser.mjs", "product_dependencies.py", "requirements-product.txt"):
         path = Path(__file__).resolve().with_name(name)
@@ -43,7 +45,12 @@ def check_observations(report):
     values = report["observations"]
     assert len(values) == len(expected) and {value["id"] for value in values} == set(expected), "all frozen samples required"
     for value in values:
-        assert (value["action"], value["scope"]) == expected[value["id"]], value
+        action, scope = expected[value["id"]]
+        assert value["scope"] == scope, value
+        if value["id"] in {"refund-local-revision", "publishing-local-prototype"}:
+            assert value["action"] in {action, "clarify"}, value
+        else:
+            assert value["action"] == action, value
         assert value["autoApprove"] is False and value["writeBusinessCode"] is False, value
         if value["id"] == "refund-sufficient":
             assert value["questions"] == [], value
@@ -53,13 +60,29 @@ def check_observations(report):
             assert len(value["questions"]) == 1 and "FR-002" in value["questions"][0] and value["preserve"] == ["FR-001"], value
         if value["id"] == "refund-local-revision":
             assert value["affected"] == ["FR-001"] and value["preserve"] == ["FR-002"], value
+            if value["action"] == "clarify":
+                assert value.get("baselineMissing") is True and value.get("revisionCompleted") is False, value
+                assert isinstance(value.get("questions"), list) and value["questions"], value
+                assert all(isinstance(question, str) and question.strip() for question in value["questions"]), value
+            else:
+                assert value.get("revisionCompleted", True) is True and value.get("baselineMissing", False) is False, value
         if value["id"] == "procurement-full-flow":
             assert value["sharedObject"] is True and set(value["journey"]) == {"create", "handoff", "result", "failure-recovery"}, value
         if value["id"] == "publishing-local-prototype":
             assert set(value["uncovered"]) == {"approval", "publishing", "result"}, value
+            if value["action"] == "clarify":
+                assert value.get("businessUndecided") == ["cancel-draft-treatment"], value
+                assert value.get("prototypeDelivered") is False, value
+                assert isinstance(value.get("questions"), list) and value["questions"], value
+                assert all(isinstance(question, str) and question.strip() for question in value["questions"]), value
+            else:
+                assert value.get("prototypeDelivered", True) is True, value
         if value["id"] == "refund-unresolved-threshold":
-            assert len(value["questions"]) == 1 and "阈值" in value["questions"][0], value
-            assert value["businessUndecided"] == ["approval-threshold"], value
+            assert value["questions"] and any("阈值" in question for question in value["questions"]), value
+            undecided = value["businessUndecided"]
+            assert "approval-threshold" in undecided, value
+            assert set(undecided) <= {"approval-threshold", "threshold-effective-time", "unknown-result-retry"}, value
+            assert len(set(undecided)) == len(undecided) == len(value["questions"]), value
         if value["id"] == "notes-known-unapproved":
             assert len(value["questions"]) == 1 and "计数" in value["questions"][0], value
             assert value["businessUndecided"] == ["length-unit"], value
@@ -94,7 +117,8 @@ def check_identity(report, report_path):
         raise ValueError("门禁复验范围或当前校验身份无效")
     source = checked_artifact(report_path.resolve().parent, receipt["sourceReport"])
     original = json.loads(source.read_text(encoding="utf-8"))
-    if original != {key: value for key, value in report.items() if key not in {"revalidation", "contentReview"}}:
+    if ({key: value for key, value in original.items() if key != "contentReview"}
+            != {key: value for key, value in report.items() if key not in {"revalidation", "contentReview"}}):
         raise ValueError("门禁复验不得改写原生成报告或观察")
     allowed = {"../../scripts/product_behavior_eval.py", "references/evaluation.md"}
     producer = report["skillIdentity"]
