@@ -1,4 +1,4 @@
 interface:
   display_name: "Project Docs Overview"
   short_description: "Write source-backed docs and one-page explainer HTML"
-  default_prompt: "Use $project-docs-overview to write source-backed project, feature, architecture, or onboarding documentation, or an Archify explainer page when requested."
+  default_prompt: "Use $project-docs-overview for source-backed documentation or, when requested, an Archify ELI5 explainer page. Adapt concepts, rules, mechanisms, causes, tradeoffs, changes, training, or customer explanations to the reader and goal."

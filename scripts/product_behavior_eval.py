@@ -17,6 +17,8 @@ def skill_identity():
             for path in [SKILL / "SKILL.md", SKILL / "assets/prd-template.md", SKILL / "assets/prd-reader-template.md",
                          SKILL / "assets/prd-traceability-template.md", SKILL / "assets/prototype.html",
                          *sorted((SKILL / "references").glob("*.md"))]}
+    audience = Path(__file__).resolve().parents[1] / "references/audience.md"
+    identity["../../references/audience.md"] = hashlib.sha256(audience.read_bytes()).hexdigest()
     for name in ("product_behavior_eval.py", "validate_product_doc.py", "product_bundle.py",
                  "product_browser.mjs", "product_dependencies.py", "requirements-product.txt"):
         path = Path(__file__).resolve().with_name(name)

@@ -36,6 +36,24 @@ def clarification_observations():
 
 
 class ProductBehaviorTests(unittest.TestCase):
+    def test_skill_identity_binds_shared_audience_guidance(self):
+        from unittest.mock import patch
+        source = ROOT / 'references/audience.md'
+        key = '../../references/audience.md'
+        before = skill_identity()
+        read_bytes = Path.read_bytes
+
+        def changed(path):
+            data = read_bytes(path)
+            return data + b'\nchanged audience guidance\n' if path == source else data
+
+        with patch.object(Path, 'read_bytes', changed):
+            after = skill_identity()
+        self.assertIn(key, before)
+        self.assertNotEqual(before[key], after[key])
+        self.assertEqual({k: v for k, v in before.items() if k != key},
+                         {k: v for k, v in after.items() if k != key})
+
     def test_stage_trials_keep_inputs_separate_from_blind_review_criteria(self):
         root = CASES.parent / 'stage-routing'
         manifest = json.loads((root / 'cases.json').read_text())
@@ -117,6 +135,8 @@ class ProductBehaviorTests(unittest.TestCase):
                 (skill / name).write_text('baseline')
             scripts = root / 'scripts'
             scripts.mkdir()
+            (root / 'references').mkdir()
+            (root / 'references/audience.md').write_text('baseline audience guidance')
             names = ('product_behavior_eval.py', 'validate_product_doc.py', 'product_bundle.py',
                      'product_browser.mjs', 'product_dependencies.py', 'requirements-product.txt')
             for name in names:
@@ -591,11 +611,12 @@ class ProductBehaviorTests(unittest.TestCase):
                 original = self.artifact_report(root) if kind == 'artifacts' else json.loads(self.behavior_report(root).read_text())
                 original['skillIdentity']['../../scripts/product_behavior_eval.py'] = 'a' * 64
                 source = root / 'original.json'
-                for change in ('valid', 'authoring_drift', 'tool_drift', 'altered_output', 'source_tamper',
+                for change in ('valid', 'authoring_drift', 'audience_drift', 'tool_drift', 'altered_output', 'source_tamper',
                                'stale_validator', 'unsupported_scope', 'no_receipt'):
                     with self.subTest(kind=kind, change=change):
                         old = copy.deepcopy(original)
                         if change == 'authoring_drift': old['skillIdentity']['SKILL.md'] = 'b' * 64
+                        elif change == 'audience_drift': old['skillIdentity']['../../references/audience.md'] = 'b' * 64
                         elif change == 'tool_drift': old['skillIdentity']['../../scripts/validate_product_doc.py'] = 'b' * 64
                         source.write_text(json.dumps(old))
                         report = copy.deepcopy(old)

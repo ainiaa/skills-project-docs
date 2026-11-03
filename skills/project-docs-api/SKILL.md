@@ -5,6 +5,8 @@ description: Generate API documentation from Java Spring MVC, Feign, or Python F
 
 # Project Docs API
 
+按[读者与用途约定](../../references/audience.md)提供必要解读；生成文档及用户要求的逐字接口片段仍保持下方契约，不能因读者不同改字段、必填、枚举或示例。读者提示放交付回复，独立解读按需提供，不重写生成原文。
+
 Generate documentation with the API Savior RESTful Markdown contract from controller/Feign mapping annotations and real DTO declarations. Resolve this skill directory to its real path before using shared scripts or references, including when installed through a symlink. Use Python 3.11 or newer:
 
 ```bash

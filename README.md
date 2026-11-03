@@ -2,7 +2,7 @@
 
 面向 Codex、Claude Code、ZCode、DeepSeek Harness（DSH）、Gemini CLI、Grok Build、pi 和 OpenCode 的项目文档 Skill 集合。`project-docs` 是统一入口，根据需求选择或组合五个专用能力：`project-docs-product` 梳理产品需求、编写 PRD 并按需生成可点击 HTML 原型，`project-docs-api` 生成接口文档，`project-docs-diagram` 生成和校验技术图，`project-docs-overview` 生成项目介绍、功能说明与开发者上手手册。`project-docs-lifecycle` 协调从业务痛点到上线及效果跟踪，保留跨角色、版本及证据交接。所有宿主共用同一份仓库与渲染引擎安装。
 
-当前版本：[0.9.0](https://github.com/ainiaa/skills-project-docs/releases/tag/v0.9.0)。改动记录见[变更日志](CHANGELOG.md)。
+当前版本：[0.10.0](https://github.com/ainiaa/skills-project-docs/releases/tag/v0.10.0)。改动记录见[变更日志](CHANGELOG.md)。
 
 ## 快速开始
 
@@ -52,6 +52,44 @@
 | 从 Spring MVC、Feign 或 FastAPI 源码生成接口文档 | [`project-docs-api`](skills/project-docs-api/SKILL.md) | Markdown、Postman Collection、cURL 示例 |
 | 根据仓库证据绘制架构、流程、时序、ERD 等技术图 | [`project-docs-diagram`](skills/project-docs-diagram/SKILL.md) | 可编辑图源、按需导出的图片或 PDF、验证回执 |
 | 根据源码与需求资料介绍项目、评估架构、描述功能或引导新开发者 | [`project-docs-overview`](skills/project-docs-overview/SKILL.md) | 带来源的项目总览、架构总览、功能说明或上手手册 Markdown；按需交付 explainer HTML |
+
+### 按读者与用途交付
+
+先按任务和交付物选择 Skill，再根据读者对业务、技术的熟悉程度及阅读目的组织结果。技术专家可能不熟悉当前业务，领域专家也不一定了解实现；不按职位套固定等级，也不要求填写读者问卷。信息足够时直接交付，只有缺失信息会实质改变结果时才澄清。
+
+| 读者与用途 | 优先呈现 |
+| --- | --- |
+| 主题新手理解或上手 | 就地解释术语、具体例子、主要关系和必要边界 |
+| 操作人员完成任务 | 入口、步骤、成功信号和异常出口 |
+| 领域专家评审 | 定义与口径、条件组合、临界反例、依据和未决项 |
+| 熟悉技术但不了解业务的研发人员 | 先补业务对象与规则，再给任务所需技术信息 |
+| 决策者比较方案 | 影响、备选、收益、代价与成立条件 |
+
+读者适配改变表达与组织，保留相同的事实、规则和授权边界。同一需求沿用唯一正式 PRD、版本及 FR/AC；API 生成原文和逐字接口片段不重写，必要解读放交付回复或独立说明；图形不删必需关系，生命周期摘要不替代证据或批准。混合读者优先共用主干，再按任务展开细节。统一入口与五个子 Skill 均引用同一份[读者与用途约定](references/audience.md)，直接调用也适用。
+
+```text
+使用 $project-docs-product 把这份已明确的需求整理给业务、研发和测试共阅，保留同一正式 PRD。
+使用 $project-docs-overview 给业务负责人解释订单状态机制，用具体例子说明边界。
+使用 $project-docs-overview 为领域专家写规则评审页，重点列口径、反例、依据和待决项。
+使用 $project-docs-api 生成原始接口文档，并给不熟悉技术的业务同事补一段阅读说明。
+```
+
+### ELI5 与多场景图解
+
+ELI5 用于需要建立基础理解的部分，不把成人当儿童。Overview 按解释目标选择内容：概念用关系或对照，流程用步骤或泳道，规则用决策表，机制用输入/处理/输出，问题用证据链或时间线，方案用取舍对照，变更用前后对照，并支持角色培训与客户说明。可组合相邻方式，不强制流程图或固定三段结构；专家页仍可使用同一 explainer 交付通道。
+
+只要求“通俗解释”或“ELI5 解释”时在当前回答或文档中组织内容；明确要求图解页面或 HTML 时才生成页面。独立图源或图片交给 Diagram，可操作业务原型交给 Product。仅有业务材料时不建仓库、不扫描源码或伪造 Git 版本；嵌入真实代码仍须满足固定提交的取证要求。
+
+以下均为合成材料与可编辑 Archify 草稿，不代表生产业务规则或真人试读结果：
+
+| 示例 | 内容组织 |
+| --- | --- |
+| [报名规则](skills/project-docs-overview/assets/beginner-explainers/registration-rule.archify.md) · [原始材料](skills/project-docs-overview/assets/beginner-explainers/registration-rule.input.md) | 决策表、名额临界值、异常数据与未约定规则 |
+| [同材料的专家评审](skills/project-docs-overview/assets/beginner-explainers/registration-rule-expert.archify.md) | 保留相同判断结果，先列口径、边界与待决问题 |
+| [通知延迟](skills/project-docs-overview/assets/beginner-explainers/notification-delay.archify.md) · [原始材料](skills/project-docs-overview/assets/beginner-explainers/notification-delay.input.md) | 区分记录、用户反馈、执行证据与根因假设 |
+| [报修入口变更](skills/project-docs-overview/assets/beginner-explainers/repair-change.archify.md) · [原始材料](skills/project-docs-overview/assets/beginner-explainers/repair-change.input.md) | 前后对照、角色步骤、保留渠道与拟议状态 |
+
+交付继续使用现有 Archify，按需生成 HTML 和导出，并分别报告结构检查、浏览器检查、内容及视觉复核。固定案例与模型复核不证明所有读者都能稳定理解；独立会话评测和真人试读按实际执行记录说明。写作与交付见 [explainer 规范](skills/project-docs-overview/references/explainer.md)。
 
 ## 为什么会有它
 

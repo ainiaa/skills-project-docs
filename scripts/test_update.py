@@ -28,6 +28,7 @@ class UpdateTests(unittest.TestCase):
         shutil.copy(REPOSITORY / "install.sh", self.seed)
         shutil.copy(REPOSITORY / ".gitignore", self.seed)
         shutil.copytree(REPOSITORY / "skills", self.seed / "skills")
+        shutil.copytree(REPOSITORY / "references", self.seed / "references")
         scripts = self.seed / "scripts"
         scripts.mkdir()
         for name in ("update_project_docs.py", "python_runtime.py", "product_dependencies.py", "install_product_dependencies.py", "lifecycle_record.py",
