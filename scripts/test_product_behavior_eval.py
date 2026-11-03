@@ -214,6 +214,55 @@ class ProductBehaviorTests(unittest.TestCase):
         with self.assertRaises(KeyError):
             check_observations(missing)
 
+    def test_missing_baseline_allows_only_honest_scoped_clarification(self):
+        import copy
+        with tempfile.TemporaryDirectory() as directory:
+            report = json.loads(self.behavior_report(Path(directory)).read_text())
+        item = next(x for x in report['observations'] if x['id'] == 'refund-local-revision')
+        item.update(action='clarify', questions=['请提供原PRD、原型及FR-002确认基线。'],
+                    baselineMissing=True, revisionCompleted=False)
+        check_observations(report)
+        for field, value in [('baselineMissing', False), ('revisionCompleted', True),
+                             ('questions', []), ('affected', ['FR-002']), ('preserve', []),
+                             ('scope', 'partial'), ('autoApprove', True), ('action', 'revise')]:
+            invalid = copy.deepcopy(report)
+            next(x for x in invalid['observations'] if x['id'] == item['id'])[field] = value
+            with self.subTest(field=field), self.assertRaises(AssertionError):
+                check_observations(invalid)
+
+    def test_local_prototype_clarification_requires_business_semantics_not_style(self):
+        import copy
+        with tempfile.TemporaryDirectory() as directory:
+            report = json.loads(self.behavior_report(Path(directory)).read_text())
+        item = next(x for x in report['observations'] if x['id'] == 'publishing-local-prototype')
+        item.update(action='clarify', questions=['取消后保留还是丢弃未保存输入？'],
+                    businessUndecided=['cancel-draft-treatment'], prototypeDelivered=False)
+        check_observations(report)
+        for field, value in [('businessUndecided', []), ('businessUndecided', ['feedback-style']),
+                             ('prototypeDelivered', True), ('questions', []), ('scope', 'full'),
+                             ('action', 'prototype')]:
+            invalid = copy.deepcopy(report)
+            next(x for x in invalid['observations'] if x['id'] == item['id'])[field] = value
+            with self.subTest(field=field, value=value), self.assertRaises(AssertionError):
+                check_observations(invalid)
+
+    def test_threshold_accepts_identified_business_questions_not_arbitrary_extras(self):
+        import copy
+        with tempfile.TemporaryDirectory() as directory:
+            report = json.loads(self.behavior_report(Path(directory)).read_text())
+        item = next(x for x in report['observations'] if x['id'] == 'refund-unresolved-threshold')
+        item.update(questions=['审批阈值是多少？', '变更后同一申请用哪个阈值？', '结果未知时何时可重试？'],
+                    businessUndecided=['approval-threshold', 'threshold-effective-time', 'unknown-result-retry'])
+        check_observations(report)
+        for field, value in [('questions', []), ('questions', item['questions'] + ['喜欢什么颜色？']),
+                             ('businessUndecided', ['unknown-result-retry']),
+                             ('businessUndecided', ['approval-threshold', 'theme-color', 'unknown-result-retry']),
+                             ('businessUndecided', ['approval-threshold'] * 3)]:
+            invalid = copy.deepcopy(report)
+            next(x for x in invalid['observations'] if x['id'] == item['id'])[field] = value
+            with self.subTest(field=field, value=value), self.assertRaises(AssertionError):
+                check_observations(invalid)
+
     def gate(self, *args, optimized=False):
         script = ROOT / "scripts/product_behavior_eval.py"
         self.assertTrue(script.is_file(), "strict behavior gate missing")
@@ -609,6 +658,8 @@ class ProductBehaviorTests(unittest.TestCase):
             root = Path(directory)
             for kind in ('artifacts', 'behavior'):
                 original = self.artifact_report(root) if kind == 'artifacts' else json.loads(self.behavior_report(root).read_text())
+                if kind == 'artifacts':
+                    self.content_review(root, original)
                 original['skillIdentity']['../../scripts/product_behavior_eval.py'] = 'a' * 64
                 source = root / 'original.json'
                 for change in ('valid', 'authoring_drift', 'audience_drift', 'tool_drift', 'altered_output', 'source_tamper',
