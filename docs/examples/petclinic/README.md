@@ -1,5 +1,7 @@
 # 案例：接手 Spring Petclinic，先读懂 Owner 创建链路
 
+[English](README.en.md)
+
 [中文首页](../../../README.zh-CN.md) · [English entry](../../../README.md) · [直接看上手手册](developer-guide.md)
 
 这是 Project Docs Overview 与 Diagram 对一个公开 Java 项目的实际代码走读。目标读者会 Java / Spring，但没接触过该项目。先回答“从哪里开始读、创建主人经过哪些组件、输入不合法会怎样”，再展开安装和测试。

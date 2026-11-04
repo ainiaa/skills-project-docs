@@ -14,6 +14,8 @@ class PublicDocsTests(unittest.TestCase):
     def test_local_links_in_both_languages_and_showcase_resolve(self):
         documents = [ROOT / "README.md", ROOT / "README.en.md", ROOT / "README.zh-CN.md",
                      ROOT / "docs/examples/petclinic/README.md",
+                     ROOT / "docs/examples/petclinic/README.en.md",
+                     ROOT / "docs/examples/petclinic/developer-guide.en.md",
                      ROOT / "docs/examples/petclinic/developer-guide.md",
                      ROOT / "docs/media/README.md",
                      ROOT / "docs/SHARING.md"]
@@ -55,27 +57,43 @@ class PublicDocsTests(unittest.TestCase):
         for count in ("failures", "errors", "skipped"):
             self.assertEqual(summary["counts"][count], 0)
 
-    def test_demo_gif_matches_its_checked_receipt_and_both_readmes(self):
-        folder = ROOT / "docs/media"
-        data = (folder / "petclinic-demo.gif").read_bytes()
-        receipt = json.loads((folder / "petclinic-demo.json").read_text())
-        self.assertEqual(data[:6], b"GIF89a")
-        self.assertEqual(struct.unpack("<HH", data[6:10]), (960, 600))
-        self.assertLessEqual(len(data), 5 * 1024 * 1024)
-        self.assertEqual(len(data), receipt["bytes"])
-        self.assertEqual(hashlib.sha256(data).hexdigest(), receipt["sha256"])
-        self.assertEqual(receipt["frames"], 6)
-        self.assertEqual(receipt["loop"], 0)
-        self.assertIn("docs/examples/petclinic/verification.json", receipt["sources"])
-        self.assertEqual(set(receipt["sources"]), set(receipt["sourceSha256"]))
-        for path, digest in receipt["sourceSha256"].items():
-            self.assertEqual(hashlib.sha256((ROOT / path).read_bytes()).hexdigest(), digest, path)
-        self.assertGreaterEqual(receipt["durationMs"], 15000)
-        self.assertLessEqual(receipt["durationMs"], 25000)
-        self.assertEqual(sum(receipt["frameDurationsMs"]), receipt["durationMs"])
-        for name in ("README.md", "README.zh-CN.md"):
-            content = (ROOT / name).read_text()
-            self.assertIn("](docs/media/petclinic-demo.gif)", content)
+    def test_demo_gifs_match_their_checked_receipts_and_language_readmes(self):
+        for name, stem, locale in (("README.md", "petclinic-demo.en", "en"),
+                                   ("README.zh-CN.md", "petclinic-demo", "zh-CN")):
+            folder = ROOT / "docs/media"
+            data = (folder / (stem + ".gif")).read_bytes()
+            receipt = json.loads((folder / (stem + ".json")).read_text())
+            self.assertEqual(receipt["locale"], locale)
+            self.assertEqual(data[:6], b"GIF89a")
+            self.assertEqual(struct.unpack("<HH", data[6:10]), (960, 600))
+            self.assertLessEqual(len(data), 5 * 1024 * 1024)
+            self.assertEqual(len(data), receipt["bytes"])
+            self.assertEqual(hashlib.sha256(data).hexdigest(), receipt["sha256"])
+            self.assertEqual(receipt["frames"], 6)
+            self.assertEqual(receipt["loop"], 0)
+            self.assertIn("docs/examples/petclinic/verification.json", receipt["sources"])
+            self.assertEqual(set(receipt["sources"]), set(receipt["sourceSha256"]))
+            for path, digest in receipt["sourceSha256"].items():
+                self.assertEqual(hashlib.sha256((ROOT / path).read_bytes()).hexdigest(), digest, path)
+            self.assertGreaterEqual(receipt["durationMs"], 15000)
+            self.assertLessEqual(receipt["durationMs"], 25000)
+            self.assertEqual(sum(receipt["frameDurationsMs"]), receipt["durationMs"])
+            self.assertIn("](docs/media/" + stem + ".gif)", (ROOT / name).read_text())
+
+    def test_english_case_preserves_sources_and_has_no_untranslated_body(self):
+        folder = ROOT / "docs/examples/petclinic"
+        upstream = r"https://github.com/spring-projects/spring-petclinic/(?:blob|tree)/[^\s)]+"
+        for stem in ("README", "developer-guide"):
+            chinese = (folder / (stem + ".md")).read_text()
+            english = (folder / (stem + ".en.md")).read_text()
+            self.assertEqual(set(re.findall(upstream, english)), set(re.findall(upstream, chinese)))
+            self.assertNotRegex(english.replace("中文", ""), r"[\u4e00-\u9fff]")
+            self.assertIn("](verification.json)", english)
+            self.assertIn("](controller-test-results.json)", english)
+        self.assertEqual(len(re.findall(r"^## \d+\.", (folder / "developer-guide.en.md").read_text(), re.M)), 9)
+        homepage = (ROOT / "README.md").read_text()
+        self.assertIn("](docs/examples/petclinic/README.en.md)", homepage)
+        self.assertIn("](docs/examples/petclinic/developer-guide.en.md)", homepage)
 
     def test_language_entrypoints_preserve_legacy_section_links(self):
         english = (ROOT / "README.md").read_text()
