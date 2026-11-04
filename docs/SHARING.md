@@ -6,6 +6,8 @@
 
 本页是可编辑的分享草稿与试用清单。未对外发帖、邀请用户、提交目录或采集试用数据；没有把曝光/转化推断写成已获得的结果。
 
+首发请使用[中英文首发材料包](launch/README.md)，包含对应语言的完整正文、GIF 与案例链接。下方短文保留为简短渠道的参考。
+
 ## 可以直接使用的案例短文
 
 **标题：接手陌生 Spring Boot 项目，先让 AI 整理一条能核对的上手路线**
@@ -48,10 +50,15 @@ The useful part is preserving what is actually there: this path calls the reposi
 - [skills.sh 的创建与发现规则](https://github.com/vercel-labs/skills/blob/main/docs/creating-skills.md)支持 `skills/<name>/SKILL.md` 和 `name` / `description` frontmatter；本仓六个入口已有此结构，无需增加另一份入口清单。
 - 集合依赖 Skill 目录外的共享脚本和资料。发现目录不证明单 Skill 复制可用，继续使用本仓安装器；没有宣称通用 `npx skills add` 已通过完整安装验证，也不为排名生成虚假安装量。
 - [Skills Directory 的说明](https://skillsdirectory.app/about/)称其索引公开的 SKILL.md 仓库，每日重建。本次没有证据证明已收录；该页面未列出 `agent-skills` topic 为硬性条件，不沿用旧推测。
-- 建议仓库简介：`Source-backed project documentation for coding agents: onboarding guides, PRDs, API docs and editable diagrams.`
-- 建议 topics：`agent-skills`、`documentation`、`codex`、`claude-code`、`spring-boot`、`mermaid`。这只是待应用的元数据建议，不代表目录审核或平台背书。
+2026-11-04 已应用并回读确认：
 
-本轮只修改仓库材料；未改变 Skill 路由、运行行为、安装布局或依赖。
+- Description：`Source-backed onboarding guides, PRDs, API docs and diagrams for Codex and Claude Code.`
+- Topics：`agent-skills`、`codex`、`claude-code`、`documentation`、`developer-onboarding`、`spring-boot`、`mermaid`。
+- Social preview：[1280×640 PNG](media/project-docs-social-preview.png) 已上传，并在刷新 GitHub 设置页后确认。保留[可编辑 SVG](media/project-docs-social-preview.svg)。
+
+这些设置不代表目录审核、收录或平台背书。
+
+本轮更新仓库元数据并准备首发材料；未改变 Skill 路由、运行行为、安装布局或依赖，未对外发帖。
 
 ## 小范围真实试用
 

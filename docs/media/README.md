@@ -25,3 +25,9 @@ python3 -m unittest discover -s scripts -p test_public_docs.py
 英文构建读取英文案例与手册，并检查每幕可见文字没有残留中文；两种语言共用原图、源码证据和实际测试记录，不复制测试回执。
 
 中间帧及可检查的 `storyboard.html` 留在指定临时目录；仓库只保存 GIF、回执、构建脚本及本说明，不保存临时截图或外部字体。
+
+## 仓库分享预览图
+
+[PNG](project-docs-social-preview.png) 用于 GitHub Social preview 和静态分享附件；[SVG](project-docs-social-preview.svg) 为独立可编辑源，沿用演示的深绿与纸白色。PNG 为 1280×640、86,422 bytes，不含外部字体或远程资源。已检查图片格式、尺寸、体积、文字边界及实际画面，并在 GitHub 上传后刷新确认。
+
+修改时编辑 SVG，再用现有无界面浏览器以 1280×640、DPR 1 截图为 PNG，检查完整画面后重新上传。参见[首发材料](../launch/README.md)。
