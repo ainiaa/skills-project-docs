@@ -26,7 +26,7 @@ I used Project Docs to trace Owner creation in the public Spring Petclinic sampl
 
 The useful part is preserving what is actually there: this path calls the repository directly, and invalid input returns to the form. The example separates source inspection, rendering checks and tests from steps that were not verified. It is a sample walkthrough, not a production or productivity claim.
 
-[Repository and preview](https://github.com/ainiaa/skills-project-docs). The worked guide is currently in Chinese; the repository has an English introduction and installation instructions. Feedback from developers onboarding to a Java project would be useful, especially installation issues and unsupported claims.
+[Repository and preview](https://github.com/ainiaa/skills-project-docs). The worked case and guide are available in English: [Petclinic walkthrough](https://github.com/ainiaa/skills-project-docs/blob/main/docs/examples/petclinic/README.en.md). A Chinese edition is also available. Feedback from developers onboarding to a Java project would be useful, especially installation issues and unsupported claims.
 
 ## 45 秒演示分镜
 

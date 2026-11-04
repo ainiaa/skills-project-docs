@@ -2,19 +2,19 @@
 
 **Turn an unfamiliar codebase into an onboarding guide, diagrams and a source-backed reading path.**
 
-[中文](README.zh-CN.md) · [See the worked example](docs/examples/petclinic/README.md) · [Install](#quick-start)
+[中文](README.zh-CN.md) · [See the worked example](docs/examples/petclinic/README.en.md) · [Install](#quick-start)
 
 Start with the output. This walkthrough uses a pinned revision of the public **Spring Petclinic** sample: task brief → onboarding guide → source evidence → module map → core flow → test results.
 
-[![Petclinic walkthrough: task, guide, source evidence, diagrams and test results](docs/media/petclinic-demo.gif)](docs/examples/petclinic/README.md)
+[![Petclinic walkthrough: task, guide, source evidence, diagrams and test results](docs/media/petclinic-demo.en.gif)](docs/examples/petclinic/README.en.md)
 
 24-second loop · Edited walkthrough of existing artifacts, not a real-time generation recording. [Static module map](docs/examples/petclinic/architecture.png) · [Static flow](docs/examples/petclinic/owner-flow.png)
 
 | Input | Output | What you can verify |
 | --- | --- | --- |
-| A local repository, intended reader and feature | [Onboarding guide (Chinese)](docs/examples/petclinic/developer-guide.md), [module diagram](docs/examples/petclinic/architecture.png), [flow diagram](docs/examples/petclinic/owner-flow.png) | Pinned source links, editable diagrams, checks performed and remaining gaps |
+| A local repository, intended reader and feature | [Onboarding guide](docs/examples/petclinic/developer-guide.en.md), [module diagram](docs/examples/petclinic/architecture.png), [flow diagram](docs/examples/petclinic/owner-flow.png) | Pinned source links, editable diagrams, checks performed and remaining gaps |
 
-The [case study](docs/examples/petclinic/README.md) includes the request and reproduction steps. This is a code walkthrough of a public sample application, not a production deployment or a claim of measured productivity gains. The example guide is currently in Chinese; this page is the English entry point.
+The [case study](docs/examples/petclinic/README.en.md) includes the request and reproduction steps. This is a code walkthrough of a public sample application, not a production deployment or a claim of measured productivity gains. The case study and guide are available in English, with links to their Chinese counterparts.
 
 ## Quick start
 
