@@ -15,6 +15,34 @@ API_SKILL = REPOSITORY / "skills" / "project-docs-api"
 
 
 class InstallTests(unittest.TestCase):
+    def test_missing_packaged_entry_resource_is_rejected_by_install_and_doctor(self):
+        collection = self.linked_collection()
+        shutil.copytree(REPOSITORY / "scripts", collection / "scripts")
+        argv = ["bash", str(collection / "install.sh"), "--host", "codex", "--no-engines"]
+        initial = subprocess.run(argv, env=self.environment, capture_output=True, text=True)
+        self.assertEqual(initial.returncode, 0, initial.stdout + initial.stderr)
+        missing = collection / "skills/project-docs-api/.bundle/references/audience.md"
+        missing.unlink()
+        doctor = subprocess.run([*argv, "--doctor"], env=self.environment, capture_output=True, text=True)
+        self.assertNotEqual(doctor.returncode, 0, doctor.stdout + doctor.stderr)
+        self.assertIn(str(missing), doctor.stderr, doctor.stdout + doctor.stderr)
+        for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product", "project-docs-lifecycle"):
+            (self.codex_home / "skills" / name).unlink()
+        install = subprocess.run(argv, env=self.environment, capture_output=True, text=True)
+        self.assertNotEqual(install.returncode, 0, install.stdout + install.stderr)
+        self.assertIn(str(missing), install.stderr)
+        self.assertFalse((self.codex_home / "skills/project-docs-api").exists())
+
+    def test_empty_packaged_entry_resource_is_reported(self):
+        collection = self.linked_collection()
+        shutil.copytree(REPOSITORY / "scripts", collection / "scripts")
+        missing = collection / "skills/project-docs-api/.bundle/references/audience.md"
+        missing.write_bytes(b"")
+        result = subprocess.run(["bash", str(collection / "install.sh"), "--host", "codex", "--no-engines"],
+                                env=self.environment, capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(str(missing), result.stderr)
+
     def test_missing_or_empty_audience_stops_install_before_link_changes(self):
         collection = self.linked_collection()
         shutil.copytree(REPOSITORY / "scripts", collection / "scripts")

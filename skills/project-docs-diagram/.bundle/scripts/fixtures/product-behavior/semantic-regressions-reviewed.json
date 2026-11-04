@@ -1,0 +1,99 @@
+{
+  "reviewer": "codex:01a17dd5-411f-7792-ab9e-2f80d2803fb0",
+  "sourceTraceSha256": "2a1fe61d2652d0438bdab19f5d0d08337ee1ce5924727214331858f2c6dd1425",
+  "inputsFingerprint": "b8dc10ca7277430351eabc7b79d6c3dc68bab52d279f5f8cc923b7c64f2deeea",
+  "rulesFingerprint": "fe2617b85f3aa2ec9865aca4a7d4fa228cb8dc278b892854b3698c2ab60cd8e8",
+  "cases": [
+    {
+      "id": "entry-contradiction",
+      "checks": [
+        {
+          "id": "preserve",
+          "verdict": "contradiction",
+          "reason": "明确停用详情查看和返回列表，与两项行为保持不变直接冲突。",
+          "evidence": [
+            {
+              "artifact": "prd",
+              "quote": "删除订单详情的删除草稿按钮，同时停用详情查看和返回列表操作。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "invoice-missing",
+      "checks": [
+        {
+          "id": "fields",
+          "verdict": "missing",
+          "reason": "已写个人/企业及新建默认个人，但未规定企业税号必填、18位大写字母或数字，也未规定个人隐藏且不提交税号；“其他字段按条件必填”和编号18不能证明这些规则。",
+          "evidence": [
+            {
+              "artifact": "prd",
+              "quote": "发票类型新增个人与企业两类，新建默认个人。页面新增企业税号。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "invoice-contradiction",
+      "checks": [
+        {
+          "id": "fields",
+          "verdict": "contradiction",
+          "reason": "将企业税号写为选填且允许任意长度小写字母，并要求个人展示、提交税号，均与原规则相反。",
+          "evidence": [
+            {
+              "artifact": "prd",
+              "quote": "企业税号选填，空值可保存；填写时允许任意长度小写字母。个人申请也展示并提交税号。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "invoice-equivalent",
+      "checks": [
+        {
+          "id": "fields",
+          "verdict": "pass",
+          "reason": "“先选个人”“恰好十八位且每位A–Z或0–9”“控件不可见且请求不带税号”与原规则业务结果等价。",
+          "evidence": [
+            {
+              "artifact": "prd",
+              "quote": "发票只有个人与企业两类，新建先选个人。企业税号不能为空，每个字符只能为A–Z或0–9且长度恰好十八位。切到个人后税号控件不可见，保存的请求里也不带税号。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "entry-equivalent",
+      "checks": [
+        {
+          "id": "preserve",
+          "verdict": "pass",
+          "reason": "“照常查看，仍可回到订单列表”明确保留详情查看及返回，虽措辞不同但业务结果等价。",
+          "evidence": [
+            {
+              "artifact": "prd",
+              "quote": "详情内容照常查看，仍可回到订单列表。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "entry-missing",
+      "checks": [
+        {
+          "id": "preserve",
+          "verdict": "missing",
+          "reason": "仅说明撤下按钮、从列表取消及取消后返回，未说明详情仍可查看、详情返回列表行为保留；列表排序保持不变不能替代这两项约束。",
+          "evidence": []
+        }
+      ]
+    }
+  ]
+}

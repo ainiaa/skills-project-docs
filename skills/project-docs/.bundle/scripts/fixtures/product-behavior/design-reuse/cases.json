@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "input": "prototype.md",
+  "baseline": "baseline.html",
+  "continuation": "revision.md",
+  "cases": [
+    {"id": "baseline-reuse", "checks": ["retain supplied terminology and navigation", "reuse visual hierarchy and component states", "do not claim a synthetic baseline is production evidence"]},
+    {"id": "cross-page-revision", "checks": ["same object and state across list and detail", "apply explicit visual revision across affected views", "retain unrelated warning state and business rules", "rerun journeys and screenshots after revision"]},
+    {"id": "content-layout", "checks": ["long Chinese and unbroken names remain readable", "expanded error retains input and visible recovery action", "desktop and 390px primary actions accessible", "keyboard create submit cancel and return"]},
+    {"id": "review-replay", "checks": ["find and complete declared scenario from delivery entry", "reset restores documented baseline reproducibly", "guide does not silently perform business actions or reset data", "clear simulated roles clock and limitations"]}
+  ]
+}

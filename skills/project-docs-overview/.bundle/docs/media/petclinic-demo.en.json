@@ -1,0 +1,38 @@
+{
+  "sha256": "d7a6faec6d2d733645905a551641d1f8ebc147a753536baf5d5ecba2b182d7e8",
+  "bytes": 243920,
+  "width": 960,
+  "height": 600,
+  "frames": 6,
+  "durationMs": 24000,
+  "frameDurationsMs": [
+    3500,
+    4000,
+    4000,
+    4000,
+    4000,
+    4500
+  ],
+  "loop": 0,
+  "sourceCommit": "500158f732419217507c7656904b8e6aa1bcc0d6",
+  "locale": "en",
+  "mode": "edited-artifact-walkthrough",
+  "sources": [
+    "docs/examples/petclinic/verification.json",
+    "docs/examples/petclinic/README.en.md",
+    "docs/examples/petclinic/developer-guide.en.md",
+    "docs/examples/petclinic/architecture.evidence.json",
+    "docs/examples/petclinic/architecture.png",
+    "docs/examples/petclinic/owner-flow.png",
+    "docs/examples/petclinic/controller-test-results.json"
+  ],
+  "sourceSha256": {
+    "docs/examples/petclinic/verification.json": "9bbf5a614d2039f4966ea64777a0e3b5c67eaf6558c2a4954fa40d196be6a4e4",
+    "docs/examples/petclinic/README.en.md": "40fbccb9bdc6880c8b17724388156c45a43f5aef69f37adc6b6d13be43a50a9d",
+    "docs/examples/petclinic/developer-guide.en.md": "ff9d211744d73154522defe1d7a4f7cfb1b0869be7bac5b6e8f9f8dc102d7eda",
+    "docs/examples/petclinic/architecture.evidence.json": "0ea6dec1cd45cd14be0726b06900439e8a7bcee79d6c8ebb2458da4e521e8b3f",
+    "docs/examples/petclinic/architecture.png": "ce6705a434276df0d81c26f2d4bef6290c78c08043f5c737f86cc25c4b252bba",
+    "docs/examples/petclinic/owner-flow.png": "68c4f1d1423c2e3de5200804da69c8caecac13360971ad2b0f373ce082aaa290",
+    "docs/examples/petclinic/controller-test-results.json": "67a8b27f577d1c59343930c8c3f427e3b6d50c038776c67ff924b84f01a2525f"
+  }
+}

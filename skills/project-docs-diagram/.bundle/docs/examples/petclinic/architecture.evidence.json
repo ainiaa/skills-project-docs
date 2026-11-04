@@ -1,0 +1,112 @@
+{
+  "version": 2,
+  "engine": "mermaid",
+  "diagramType": "flowchart",
+  "claims": [
+    {
+      "statement": "F[\"Owner form / Thymeleaf\"] -->|POST /owners/new| C[\"OwnerController / validation\"]",
+      "artifactRef": "line:2",
+      "artifactQuote": "F[\"Owner form / Thymeleaf\"] -->|POST /owners/new| C[\"OwnerController / validation\"]",
+      "provenance": "INFERRED",
+      "evidence": [
+        {
+          "path": "src/main/resources/templates/owners/createOrUpdateOwnerForm.html",
+          "line": 8,
+          "quote": "<form th:object=\"${owner}\" class=\"form-horizontal\" id=\"add-owner-form\" method=\"post\">"
+        },
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 77,
+          "quote": "@PostMapping(\"/owners/new\")"
+        },
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 78,
+          "quote": "public String processCreationForm(@Valid Owner owner, BindingResult result, RedirectAttributes redirectAttributes) {"
+        }
+      ]
+    },
+    {
+      "statement": "C -->|save owner| R[\"OwnerRepository / Spring Data JPA\"]",
+      "artifactRef": "line:3",
+      "artifactQuote": "C -->|save owner| R[\"OwnerRepository / Spring Data JPA\"]",
+      "provenance": "INFERRED",
+      "evidence": [
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 84,
+          "quote": "this.owners.save(owner);"
+        },
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerRepository.java",
+          "line": 36,
+          "quote": "public interface OwnerRepository extends JpaRepository<Owner, Integer> {"
+        }
+      ]
+    },
+    {
+      "statement": "R -->|default database| D[(\"H2 / in memory\")]",
+      "artifactRef": "line:4",
+      "artifactQuote": "R -->|default database| D[(\"H2 / in memory\")]",
+      "provenance": "INFERRED",
+      "evidence": [
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerRepository.java",
+          "line": 36,
+          "quote": "public interface OwnerRepository extends JpaRepository<Owner, Integer> {"
+        },
+        {
+          "path": "src/main/resources/application.properties",
+          "line": 2,
+          "quote": "database=h2"
+        },
+        {
+          "path": "readme.md",
+          "line": 64,
+          "quote": "In its default configuration, Petclinic uses an in-memory database (H2) which"
+        }
+      ]
+    },
+    {
+      "statement": "C -->|errors| F",
+      "artifactRef": "line:5",
+      "artifactQuote": "C -->|errors| F",
+      "provenance": "INFERRED",
+      "evidence": [
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 79,
+          "quote": "if (result.hasErrors()) {"
+        },
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 81,
+          "quote": "return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;"
+        }
+      ]
+    },
+    {
+      "statement": "C -->|redirect after save| V[\"GET /owners/id / details view\"]",
+      "artifactRef": "line:6",
+      "artifactQuote": "C -->|redirect after save| V[\"GET /owners/id / details view\"]",
+      "provenance": "INFERRED",
+      "evidence": [
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 86,
+          "quote": "return \"redirect:/owners/\" + owner.getId();"
+        },
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 178,
+          "quote": "@GetMapping(\"/owners/{ownerId}\")"
+        },
+        {
+          "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 180,
+          "quote": "ModelAndView mav = new ModelAndView(\"owners/ownerDetails\");"
+        }
+      ]
+    }
+  ]
+}

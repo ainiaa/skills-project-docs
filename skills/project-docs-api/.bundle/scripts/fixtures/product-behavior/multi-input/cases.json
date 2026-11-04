@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "ticket-source",
+      "mode": "source",
+      "input": "ticket-source/input.md"
+    },
+    {
+      "id": "ticket-screenshot",
+      "mode": "screenshot",
+      "input": "ticket-screenshot/input.md"
+    },
+    {
+      "id": "oral-new",
+      "mode": "oral-new",
+      "input": "oral-new/input.md"
+    },
+    {
+      "id": "conflict",
+      "mode": "conflict",
+      "input": "conflict/input.md"
+    }
+  ],
+  "paired": [
+    "ticket-source",
+    "ticket-screenshot"
+  ],
+  "runs": [
+    {
+      "id": "source-1",
+      "case": "ticket-source"
+    },
+    {
+      "id": "screenshot-1",
+      "case": "ticket-screenshot"
+    },
+    {
+      "id": "oral-1",
+      "case": "oral-new"
+    },
+    {
+      "id": "oral-2",
+      "case": "oral-new"
+    },
+    {
+      "id": "conflict-1",
+      "case": "conflict"
+    },
+    {
+      "id": "conflict-2",
+      "case": "conflict"
+    }
+  ]
+}

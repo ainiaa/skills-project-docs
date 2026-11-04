@@ -3,9 +3,11 @@ name: project-docs-api
 description: Generate API documentation from Java Spring MVC, Feign, or Python FastAPI source, without IntelliJ IDEA. Use when asked for Markdown, Postman collections, or cURL examples from routes and request/response declarations.
 ---
 
+若当前 Skill 目录下存在 `.bundle` 且其 `../../` 不是本集合的 Git 检出，先读取 `.bundle/skills/project-docs-api/GUIDE.md` 并以该目录为 Skill 真实目录；其中的共享脚本、资料和其他 Skill 均来自同一快照。通过 `npx skills update <已安装的本集合 Skill 名称>` 更新此类安装，按实际作用域加 `-g` 或 `-p`；不运行快照内依赖 Git 检出的更新命令。
+
 # Project Docs API
 
-按[读者与用途约定](../../references/audience.md)提供必要解读；生成文档及用户要求的逐字接口片段仍保持下方契约，不能因读者不同改字段、必填、枚举或示例。读者提示放交付回复，独立解读按需提供，不重写生成原文。
+按[读者与用途约定](.bundle/references/audience.md)提供必要解读；生成文档及用户要求的逐字接口片段仍保持下方契约，不能因读者不同改字段、必填、枚举或示例。读者提示放交付回复，独立解读按需提供，不重写生成原文。
 
 Generate documentation with the API Savior RESTful Markdown contract from controller/Feign mapping annotations and real DTO declarations. Resolve this skill directory to its real path before using shared scripts or references, including when installed through a symlink. Use Python 3.11 or newer:
 
@@ -17,7 +19,7 @@ python3 <resolved-skill-directory>/../../scripts/generate_api_docs.py \
 It writes `api-docs.md`, `postman-collection.json`, and `curl.sh`.
 
 - Pass one or more source roots with repeated `--source`.
-- The generator is organized as `language adapter → API document IR → renderer`. `java_spring_adapter.py` and `python_fastapi_adapter.py` read source declarations; `api_document_renderers.py` consumes only the language-neutral IR. `generate_api_docs.py` preserves the CLI and existing Python imports. Use `--language python` for FastAPI source. See [the IR contract](../../references/api-document-ir.md) before adding another language or framework.
+- The generator is organized as `language adapter → API document IR → renderer`. `java_spring_adapter.py` and `python_fastapi_adapter.py` read source declarations; `api_document_renderers.py` consumes only the language-neutral IR. `generate_api_docs.py` preserves the CLI and existing Python imports. Use `--language python` for FastAPI source. See [the IR contract](.bundle/references/api-document-ir.md) before adding another language or framework.
 - Require JDK 11 or newer for the current Java adapter. It uses the JDK AST API, not regular expressions, so it distinguishes DTO fields from local variables and supports `@RestController`, `@FeignClient(path = ...)`, class-level mappings, and source-defined composed Spring mappings.
 - The FastAPI adapter handles `APIRouter` prefixes and `include_router`, `response_model`, package/relative imports, and request parameters declared by source-defined `Depends` functions, including route, router, include, and app dependencies. It preserves unresolved or ambiguous types rather than guessing.
 - For Gradle projects, a selected Controller/Feign client automatically includes direct project-module `src/main/java` dependencies from either Groovy or Kotlin Gradle DSL. Pass additional `--source` roots for DTOs outside those modules; pass `--classpath <jar>` to supplement binary-only DTOs.

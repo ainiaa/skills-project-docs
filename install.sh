@@ -165,6 +165,36 @@ fi
 
 required_resource_status=0
 if [[ "$ACTION" == install || "$ACTION" == doctor ]]; then
+  if ! "$PYTHON_BIN" - "${SOURCES[@]}" <<'PY'
+import os
+import re
+import sys
+from pathlib import Path
+from urllib.parse import unquote
+
+valid = True
+for directory in map(Path, sys.argv[1:]):
+    entry = directory / "SKILL.md"
+    try:
+        links = re.findall(r"\]\(([^)]+)\)", entry.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError) as error:
+        print(f"Error: cannot read skill entry {entry}: {error}", file=sys.stderr)
+        valid = False
+        continue
+    for link in links:
+        target = unquote(link.split("#", 1)[0])
+        if not target or re.match(r"^[A-Za-z][A-Za-z0-9+.-]*:", target):
+            continue
+        path = directory / target
+        if not path.is_file() or not os.access(path, os.R_OK) or not path.stat().st_size:
+            print(f"Error: missing, empty, or unreadable skill entry resource: {path}", file=sys.stderr)
+            valid = False
+sys.exit(not valid)
+PY
+  then
+    if [[ "$ACTION" == install ]]; then exit 1; fi
+    required_resource_status=1
+  fi
   for relative in scripts/lifecycle_record.py \
                   scripts/lifecycle_quality.py \
                   scripts/lifecycle_test_runner.py \

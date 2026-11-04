@@ -1,0 +1,560 @@
+{
+  "schema_version": 1,
+  "revision": 1,
+  "project_ref": "SYNTHETIC-local-example",
+  "subject_ref": "SYNTHETIC-delivery-scope",
+  "goal": "结构演示：同一问题的两条需求、共享构建、分批发布与待观察效果",
+  "owner": "synthetic-owner",
+  "updated_at": "2026-10-31T10:00:00+08:00",
+  "validation_scope": {
+    "business_decision": "simulated-structure-only",
+    "business_uat": "simulated-structure-only",
+    "release_approval": "simulated-structure-only",
+    "effect": "simulated-structure-only",
+    "technical_execution": "simulated-structure-only",
+    "production": "simulated-structure-only"
+  },
+  "assertions": [
+    {
+      "text": "所有业务确认均为模拟",
+      "classification": "hypothesis",
+      "source": "scenario.md",
+      "owner": "synthetic-owner",
+      "confirmation": "unconfirmed"
+    }
+  ],
+  "branches": [
+    {
+      "id": "core",
+      "route": "development",
+      "required": [
+        "intake",
+        "investigation",
+        "decision",
+        "requirement",
+        "design",
+        "code-build",
+        "test",
+        "uat",
+        "release-approval",
+        "requirement-notify",
+        "work-query",
+        "work-notify"
+      ]
+    },
+    {
+      "id": "pilot",
+      "route": "development",
+      "required": [
+        "deploy-smoke"
+      ]
+    },
+    {
+      "id": "rollout",
+      "route": "development",
+      "required": [
+        "approval-rollout",
+        "deploy-rollout"
+      ]
+    },
+    {
+      "id": "effects",
+      "route": "development",
+      "required": [
+        "handover"
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "intake",
+      "kind": "intake",
+      "stage": "L0",
+      "branch": "core",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md#分支结构演示",
+      "status": "completed",
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "confirmed",
+          "source": "scenario.md#分支结构演示",
+          "actor": "SIMULATED-role-not-real-approval",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "intake",
+            "version": 1
+          },
+          "context": "synthetic structure fixture; no notification service, UAT or deployment executed"
+        }
+      ]
+    },
+    {
+      "id": "investigation",
+      "kind": "investigation",
+      "stage": "L1",
+      "branch": "core",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md#分支结构演示",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "intake",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "confirmed",
+          "source": "scenario.md#分支结构演示",
+          "actor": "SIMULATED-role-not-real-approval",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "investigation",
+            "version": 1
+          },
+          "context": "synthetic structure fixture; no notification service, UAT or deployment executed"
+        }
+      ]
+    },
+    {
+      "id": "decision",
+      "kind": "decision",
+      "stage": "L2",
+      "branch": "core",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md#分支结构演示",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "investigation",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "confirmed",
+          "source": "scenario.md#分支结构演示",
+          "actor": "SIMULATED-role-not-real-approval",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "decision",
+            "version": 1
+          },
+          "context": "synthetic structure fixture; no notification service, UAT or deployment executed"
+        }
+      ]
+    },
+    {
+      "id": "requirement",
+      "kind": "requirement",
+      "stage": "L3",
+      "branch": "core",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md#分支结构演示",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "decision",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "confirmed",
+          "source": "scenario.md#分支结构演示",
+          "actor": "SIMULATED-role-not-real-approval",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "requirement",
+            "version": 1
+          },
+          "context": "synthetic structure fixture; no notification service, UAT or deployment executed"
+        }
+      ]
+    },
+    {
+      "id": "design",
+      "kind": "design",
+      "stage": "L4",
+      "branch": "core",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md#分支结构演示",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "requirement",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "confirmed",
+          "source": "scenario.md#分支结构演示",
+          "actor": "SIMULATED-role-not-real-approval",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "design",
+            "version": 1
+          },
+          "context": "synthetic structure fixture; no notification service, UAT or deployment executed"
+        }
+      ]
+    },
+    {
+      "id": "code-build",
+      "kind": "code-build",
+      "stage": "L5",
+      "branch": "core",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md#分支结构演示",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "work-query",
+          "version": 1
+        },
+        {
+          "id": "work-notify",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "confirmed",
+          "source": "scenario.md#分支结构演示",
+          "actor": "SIMULATED-role-not-real-approval",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "code-build",
+            "version": 1
+          },
+          "context": "synthetic structure fixture; no notification service, UAT or deployment executed"
+        }
+      ]
+    },
+    {
+      "id": "test",
+      "kind": "test",
+      "stage": "L6",
+      "branch": "core",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md#分支结构演示",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "code-build",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "confirmed",
+          "source": "scenario.md#分支结构演示",
+          "actor": "SIMULATED-role-not-real-approval",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "test",
+            "version": 1
+          },
+          "context": "synthetic structure fixture; no notification service, UAT or deployment executed"
+        }
+      ]
+    },
+    {
+      "id": "uat",
+      "kind": "uat",
+      "stage": "L7",
+      "branch": "core",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md#分支结构演示",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "test",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "confirmed",
+          "source": "scenario.md#分支结构演示",
+          "actor": "SIMULATED-role-not-real-approval",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "uat",
+            "version": 1
+          },
+          "context": "synthetic structure fixture; no notification service, UAT or deployment executed"
+        }
+      ]
+    },
+    {
+      "id": "release-approval",
+      "kind": "release-approval",
+      "stage": "L8",
+      "branch": "core",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md#分支结构演示",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "uat",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "confirmed",
+          "source": "scenario.md#分支结构演示",
+          "actor": "SIMULATED-role-not-real-approval",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "release-approval",
+            "version": 1
+          },
+          "context": "synthetic structure fixture; no notification service, UAT or deployment executed"
+        }
+      ]
+    },
+    {
+      "id": "deploy-smoke",
+      "kind": "deploy-smoke",
+      "stage": "L9",
+      "branch": "pilot",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md#分支结构演示",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "release-approval",
+          "version": 1
+        },
+        {
+          "id": "code-build",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "confirmed",
+          "source": "scenario.md#分支结构演示",
+          "actor": "SIMULATED-role-not-real-approval",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "deploy-smoke",
+            "version": 1
+          },
+          "context": "synthetic structure fixture; no notification service, UAT or deployment executed",
+          "build": "synthetic-shared-build-v1",
+          "environment": "synthetic-pilot",
+          "scope": "pilot-users"
+        }
+      ],
+      "build": "synthetic-shared-build-v1",
+      "environment": "synthetic-pilot",
+      "scope": "pilot-users"
+    },
+    {
+      "id": "handover",
+      "kind": "handover",
+      "stage": "L10",
+      "branch": "effects",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md#分支结构演示",
+      "status": "in_progress",
+      "depends_on": [
+        {
+          "id": "deploy-smoke",
+          "version": 1
+        },
+        {
+          "id": "deploy-rollout",
+          "version": 1
+        }
+      ],
+      "evidence": [],
+      "reason": "观察期尚未结束"
+    },
+    {
+      "id": "requirement-notify",
+      "kind": "requirement",
+      "stage": "L3",
+      "branch": "core",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md#分支结构演示",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "decision",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "confirmed",
+          "source": "scenario.md#分支结构演示",
+          "actor": "SIMULATED-role-not-real-approval",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "requirement-notify",
+            "version": 1
+          },
+          "context": "synthetic structure fixture; no notification service, UAT or deployment executed"
+        }
+      ]
+    },
+    {
+      "id": "work-query",
+      "kind": "requirement",
+      "stage": "L5",
+      "branch": "core",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md#分支结构演示",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "design",
+          "version": 1
+        },
+        {
+          "id": "requirement",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "confirmed",
+          "source": "scenario.md#分支结构演示",
+          "actor": "SIMULATED-role-not-real-approval",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "work-query",
+            "version": 1
+          },
+          "context": "synthetic structure fixture; no notification service, UAT or deployment executed"
+        }
+      ]
+    },
+    {
+      "id": "work-notify",
+      "kind": "requirement",
+      "stage": "L5",
+      "branch": "core",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md#分支结构演示",
+      "status": "completed",
+      "depends_on": [
+        {
+          "id": "design",
+          "version": 1
+        },
+        {
+          "id": "requirement-notify",
+          "version": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "confirmed",
+          "source": "scenario.md#分支结构演示",
+          "actor": "SIMULATED-role-not-real-approval",
+          "at": "2026-10-31T10:00:00+08:00",
+          "result": "passed",
+          "subject": {
+            "id": "work-notify",
+            "version": 1
+          },
+          "context": "synthetic structure fixture; no notification service, UAT or deployment executed"
+        }
+      ]
+    },
+    {
+      "id": "approval-rollout",
+      "kind": "release-approval",
+      "stage": "L8",
+      "branch": "rollout",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md#分支结构演示",
+      "status": "pending_confirmation",
+      "depends_on": [
+        {
+          "id": "uat",
+          "version": 1
+        },
+        {
+          "id": "code-build",
+          "version": 1
+        }
+      ],
+      "evidence": [],
+      "reason": "全量范围授权尚未取得",
+      "recovery": "负责人确认同一构建、环境与范围"
+    },
+    {
+      "id": "deploy-rollout",
+      "kind": "deploy-smoke",
+      "stage": "L9",
+      "branch": "rollout",
+      "version": 1,
+      "owner": "synthetic-owner",
+      "source": "scenario.md#分支结构演示",
+      "status": "blocked",
+      "depends_on": [
+        {
+          "id": "code-build",
+          "version": 1
+        },
+        {
+          "id": "test",
+          "version": 1
+        },
+        {
+          "id": "approval-rollout",
+          "version": 1
+        }
+      ],
+      "evidence": [],
+      "build": "synthetic-shared-build-v1",
+      "environment": "synthetic-full",
+      "scope": "remaining-users",
+      "reason": "依赖全量范围授权",
+      "recovery": "取得授权后再执行本批次部署和冒烟"
+    }
+  ],
+  "next_actions": [
+    {
+      "action": "模拟：取得全量授权，再执行该批次并观察效果",
+      "owner": "synthetic-owner",
+      "depends_on": "approval-rollout",
+      "expected_result": "分别记录各批次与效果，不从试点成功推断全部完成"
+    }
+  ]
+}

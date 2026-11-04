@@ -18,6 +18,20 @@ The [case study](docs/examples/petclinic/README.en.md) includes the request and 
 
 ## Quick start
 
+If this collection was previously installed for Codex with `install.sh`, run the following in the original checkout first. This removes this checkout's Codex links and keeps unrelated Skills and shared dependencies; otherwise Codex can discover both installations:
+
+```bash
+bash install.sh --uninstall --host codex
+```
+
+Install all six Skills for Codex with Node.js and npm:
+
+```bash
+npx skills add ainiaa/skills-project-docs --skill '*' -g -a codex
+```
+
+Each Skill includes its shared scripts and resources. Running them requires Python 3.11+; Product validation also requires the [Markdown parser dependency](scripts/requirements-product.txt) in that Python environment. The npx installation does not install those dependencies, the third-party Product Skills or diagram renderers; when drawing, the Skill may install a missing renderer according to its instructions. To switch to the complete installer below, first run `npx skills remove -g -a codex` and select this collection's entries to avoid path conflicts. Replace `'*'` with a name to install one Skill; use `npx skills update -g <installed-skill-name>` to update selected Skills.
+
 Clone the complete collection and install for Codex:
 
 ```bash
@@ -58,7 +72,7 @@ Specify the audience and purpose: a beginner needs concepts and examples; a doma
 
 Source anchors and successful rendering do not prove that every architectural interpretation is correct. Generated documents identify assumptions and verification gaps. A prototype is simulated interaction, not a deployed service. Lifecycle records do not grant business approval or production release permission.
 
-The complete repository is required: Skills refer to shared scripts, templates and resources outside each Skill directory. Its `skills/<name>/SKILL.md` layout matches [skills.sh discovery rules](https://github.com/vercel-labs/skills/blob/main/docs/creating-skills.md); discovery is not evidence that copying a single directory provides a working installation. Use this repository's installer. Directory inclusion and install counts are not claimed.
+The npx distribution includes a snapshot of the shared scripts, templates and resources in each Skill. External tools and Product dependencies are managed separately; the repository installer can set them up.
 
 ## Try it and share feedback
 
