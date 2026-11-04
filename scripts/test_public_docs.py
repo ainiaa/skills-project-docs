@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class PublicDocsTests(unittest.TestCase):
     def test_local_links_in_both_languages_and_showcase_resolve(self):
-        documents = [ROOT / "README.md", ROOT / "README.en.md",
+        documents = [ROOT / "README.md", ROOT / "README.en.md", ROOT / "README.zh-CN.md",
                      ROOT / "docs/examples/petclinic/README.md",
                      ROOT / "docs/examples/petclinic/developer-guide.md",
                      ROOT / "docs/media/README.md",
@@ -73,9 +73,33 @@ class PublicDocsTests(unittest.TestCase):
         self.assertGreaterEqual(receipt["durationMs"], 15000)
         self.assertLessEqual(receipt["durationMs"], 25000)
         self.assertEqual(sum(receipt["frameDurationsMs"]), receipt["durationMs"])
-        for name in ("README.md", "README.en.md"):
+        for name in ("README.md", "README.zh-CN.md"):
             content = (ROOT / name).read_text()
             self.assertIn("](docs/media/petclinic-demo.gif)", content)
+
+    def test_language_entrypoints_preserve_legacy_section_links(self):
+        english = (ROOT / "README.md").read_text()
+        chinese = (ROOT / "README.zh-CN.md").read_text()
+        legacy = (ROOT / "README.en.md").read_text()
+        self.assertIn("## Quick start", english)
+        self.assertIn("[中文](README.zh-CN.md)", english)
+        self.assertIn("[English](README.md)", chinese)
+        self.assertIn("## 安装与升级", chinese)
+        self.assertIn("## 生命周期首个切片", chinese)
+        for title, slug in (("Quick start", "quick-start"), ("Choose a task", "choose-a-task"),
+                            ("Trust and limits", "trust-and-limits"),
+                            ("Try it and share feedback", "try-it-and-share-feedback")):
+            self.assertIn("## " + title, legacy)
+            self.assertIn("](README.md#" + slug + ")", legacy)
+        slugs = ("快速开始|选哪个-skill|按读者与用途交付|eli5-与多场景图解|为什么会有它|"
+                 "产品需求与可点击原型|prd-与增量需求|可点击原型与实际验收|结构校验与历史修订|"
+                 "上游能力与验证边界|能力与边界|四个渲染引擎分别能画什么|一页说明archify-explainer|"
+                 "安装与升级|宿主支持|渲染引擎要另外安装吗|使用-project-docs-api|使用-project-docs-overview|"
+                 "使用-project-docs-diagram|引擎如何参与生成|文档|开发与验证|参考与鸣谢|许可与反馈|生命周期首个切片")
+        for slug in slugs.split("|"):
+            with self.subTest(legacy_section=slug):
+                self.assertIn(f'<a id="{slug}"></a>', english)
+                self.assertIn("README.zh-CN.md#" + slug, english)
 
 
 if __name__ == "__main__":
