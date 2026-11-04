@@ -27,7 +27,7 @@
   ],
   "sourceSha256": {
     "docs/examples/petclinic/verification.json": "9bbf5a614d2039f4966ea64777a0e3b5c67eaf6558c2a4954fa40d196be6a4e4",
-    "docs/examples/petclinic/README.md": "30813d4f5b0fb4d4468972eb591e9d646fc285c1f46c44beff733d627ccec3dc",
+    "docs/examples/petclinic/README.md": "7afce42ed37f490d6ba6eb42ccb3354bff4a2493a8ca68acff7a29d6103f5be9",
     "docs/examples/petclinic/developer-guide.md": "263e3f32554c42303b1e1be945c659ac8b4fe175d1c3f1c8d9a08d882228fb24",
     "docs/examples/petclinic/architecture.evidence.json": "0ea6dec1cd45cd14be0726b06900439e8a7bcee79d6c8ebb2458da4e521e8b3f",
     "docs/examples/petclinic/architecture.png": "ce6705a434276df0d81c26f2d4bef6290c78c08043f5c737f86cc25c4b252bba",

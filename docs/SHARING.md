@@ -2,7 +2,7 @@
 
 作者：Jeff.Liu
 
-[中文首页](../README.md) · [English](../README.en.md) · [公开案例](examples/petclinic/README.md)
+[中文首页](../README.zh-CN.md) · [English](../README.md) · [公开案例](examples/petclinic/README.md)
 
 本页是可编辑的分享草稿与试用清单。未对外发帖、邀请用户、提交目录或采集试用数据；没有把曝光/转化推断写成已获得的结果。
 
