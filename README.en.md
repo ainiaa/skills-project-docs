@@ -4,9 +4,11 @@
 
 [中文](README.md) · [See the worked example](docs/examples/petclinic/README.md) · [Install](#quick-start)
 
-Start with the output. This diagram was produced from a pinned revision of the public **Spring Petclinic** sample. It preserves the actual Controller → Repository relationship, validation failure path and default H2 database.
+Start with the output. This walkthrough uses a pinned revision of the public **Spring Petclinic** sample: task brief → onboarding guide → source evidence → module map → core flow → test results.
 
-![Spring Petclinic Owner creation module relationships](docs/examples/petclinic/architecture.png)
+[![Petclinic walkthrough: task, guide, source evidence, diagrams and test results](docs/media/petclinic-demo.gif)](docs/examples/petclinic/README.md)
+
+24-second loop · Edited walkthrough of existing artifacts, not a real-time generation recording. [Static module map](docs/examples/petclinic/architecture.png) · [Static flow](docs/examples/petclinic/owner-flow.png)
 
 | Input | Output | What you can verify |
 | --- | --- | --- |

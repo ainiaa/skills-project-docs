@@ -4,9 +4,11 @@
 
 [English](README.en.md) · [看完整案例](docs/examples/petclinic/README.md) · [安装](#快速开始) · [选择其他能力](#选哪个-skill)
 
-先看结果：下面是从公开 **Spring Petclinic** 的实际代码整理出的 Owner 创建链路。它保留了真实的 Controller → Repository 结构、校验失败分支和默认 H2 数据库。
+先看结果：下面用公开 **Spring Petclinic** 的 Owner 创建案例，展示从任务到上手手册、源码依据、模块图、流程图与测试结果的完整走读。
 
-![Spring Petclinic 的 Owner 创建模块关系图](docs/examples/petclinic/architecture.png)
+[![Petclinic 演示：任务、上手手册、源码依据、模块图、流程图和测试结果](docs/media/petclinic-demo.gif)](docs/examples/petclinic/README.md)
+
+24 秒循环 · 已有成果的剪辑演示，非实时生成录像。[查看静态模块图](docs/examples/petclinic/architecture.png) · [静态流程图](docs/examples/petclinic/owner-flow.png)
 
 | 你给什么 | 得到什么 | 可以检查什么 |
 | --- | --- | --- |

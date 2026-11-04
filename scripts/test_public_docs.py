@@ -2,6 +2,7 @@
 import hashlib
 import json
 import re
+import struct
 import unittest
 from pathlib import Path
 from urllib.parse import unquote
@@ -14,6 +15,7 @@ class PublicDocsTests(unittest.TestCase):
         documents = [ROOT / "README.md", ROOT / "README.en.md",
                      ROOT / "docs/examples/petclinic/README.md",
                      ROOT / "docs/examples/petclinic/developer-guide.md",
+                     ROOT / "docs/media/README.md",
                      ROOT / "docs/SHARING.md"]
         for document in documents:
             with self.subTest(document=document.relative_to(ROOT)):
@@ -52,6 +54,27 @@ class PublicDocsTests(unittest.TestCase):
         self.assertEqual(check["status"], "pass")
         for count in ("failures", "errors", "skipped"):
             self.assertEqual(summary["counts"][count], 0)
+
+    def test_demo_gif_matches_its_checked_receipt_and_both_readmes(self):
+        folder = ROOT / "docs/media"
+        data = (folder / "petclinic-demo.gif").read_bytes()
+        receipt = json.loads((folder / "petclinic-demo.json").read_text())
+        self.assertEqual(data[:6], b"GIF89a")
+        self.assertEqual(struct.unpack("<HH", data[6:10]), (960, 600))
+        self.assertLessEqual(len(data), 5 * 1024 * 1024)
+        self.assertEqual(len(data), receipt["bytes"])
+        self.assertEqual(hashlib.sha256(data).hexdigest(), receipt["sha256"])
+        self.assertEqual(receipt["frames"], 6)
+        self.assertEqual(receipt["loop"], 0)
+        self.assertEqual(set(receipt["sources"]), set(receipt["sourceSha256"]))
+        for path, digest in receipt["sourceSha256"].items():
+            self.assertEqual(hashlib.sha256((ROOT / path).read_bytes()).hexdigest(), digest, path)
+        self.assertGreaterEqual(receipt["durationMs"], 15000)
+        self.assertLessEqual(receipt["durationMs"], 25000)
+        self.assertEqual(sum(receipt["frameDurationsMs"]), receipt["durationMs"])
+        for name in ("README.md", "README.en.md"):
+            content = (ROOT / name).read_text()
+            self.assertIn("](docs/media/petclinic-demo.gif)", content)
 
 
 if __name__ == "__main__":
