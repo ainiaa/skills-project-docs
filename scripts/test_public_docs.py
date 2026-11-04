@@ -18,7 +18,10 @@ class PublicDocsTests(unittest.TestCase):
                      ROOT / "docs/examples/petclinic/developer-guide.en.md",
                      ROOT / "docs/examples/petclinic/developer-guide.md",
                      ROOT / "docs/media/README.md",
-                     ROOT / "docs/SHARING.md"]
+                     ROOT / "docs/SHARING.md",
+                     ROOT / "docs/launch/README.md",
+                     ROOT / "docs/launch/first-post.zh-CN.md",
+                     ROOT / "docs/launch/first-post.en.md"]
         for document in documents:
             with self.subTest(document=document.relative_to(ROOT)):
                 self.assertTrue(document.is_file(), document)

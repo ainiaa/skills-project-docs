@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
+  <title id="title">Project Docs — source-backed onboarding for coding agents</title>
+  <desc id="desc">Onboarding guides, diagrams and source evidence for Codex and Claude Code. github.com/ainiaa/skills-project-docs</desc>
+  <rect width="1280" height="640" fill="#f5f1e8"/>
+  <g fill="#173b2d">
+    <text x="64" y="77" font-family="Georgia,serif" font-size="30" font-weight="700" letter-spacing="3">PROJECT DOCS</text>
+    <text x="1216" y="74" text-anchor="end" font-family="Menlo,monospace" font-size="17">CODEX / CLAUDE CODE</text>
+    <path d="M64 112H1216" stroke="#cdd4c7"/>
+    <text x="64" y="227" font-family="Georgia,serif" font-size="64" font-weight="700" letter-spacing="-1.5">Understand a codebase.</text>
+    <text x="64" y="305" font-family="Georgia,serif" font-size="64" font-weight="700" letter-spacing="-1.5">With sources to check.</text>
+    <text x="67" y="375" font-family="Georgia,serif" font-size="26">A clear reading path. Editable diagrams.</text>
+    <text x="67" y="413" font-family="Georgia,serif" font-size="26">Evidence you can open and inspect.</text>
+    <rect x="66" y="462" width="61" height="6" fill="#d99650"/>
+    <text x="145" y="473" font-family="Menlo,monospace" font-size="16">GUIDES · PRDs · API DOCS · DIAGRAMS</text>
+  </g>
+  <rect x="916" y="150" width="300" height="352" fill="#173b2d"/>
+  <g font-family="Georgia,serif" fill="#173b2d">
+    <rect x="937" y="171" width="258" height="92" fill="#fffdf8"/>
+    <text x="956" y="198" font-family="Menlo,monospace" font-size="12" letter-spacing="2" fill="#62715e">01 / GUIDE</text>
+    <text x="956" y="236" font-size="27" font-weight="700">Start here.</text>
+    <rect x="937" y="280" width="258" height="92" fill="#fffdf8"/>
+    <text x="956" y="307" font-family="Menlo,monospace" font-size="12" letter-spacing="2" fill="#62715e">02 / DIAGRAMS</text>
+    <text x="956" y="345" font-size="27" font-weight="700">Follow the flow.</text>
+    <rect x="937" y="389" width="258" height="92" fill="#fffdf8"/>
+    <text x="956" y="416" font-family="Menlo,monospace" font-size="12" letter-spacing="2" fill="#62715e">03 / SOURCES</text>
+    <text x="956" y="454" font-size="27" font-weight="700">Check the code.</text>
+  </g>
+  <path d="M64 542H1216" stroke="#cdd4c7"/>
+  <text x="64" y="594" fill="#173b2d" font-family="Menlo,monospace" font-size="23">github.com/ainiaa/skills-project-docs</text>
+  <text x="1216" y="591" text-anchor="end" fill="#62715e" font-family="Georgia,serif" font-size="18">Open-source agent skills</text>
+</svg>
