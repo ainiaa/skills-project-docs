@@ -1,0 +1,44 @@
+[
+  {
+    "id": "entry-equivalent",
+    "case": "removed-entry",
+    "rule": "preserve",
+    "expected": "pass",
+    "document": "基线为业务页面说明。订单详情的删除草稿控件撤下。详情内容照常查看，仍可回到订单列表。用户到原列表入口取消草稿，取消后照原返回约定回到列表。替代路径已有；仅调整页面入口，技术影响待核实并安排回归。"
+  },
+  {
+    "id": "entry-missing",
+    "case": "removed-entry",
+    "rule": "preserve",
+    "expected": "missing",
+    "document": "基线为业务页面说明。删除订单详情的删除草稿按钮；用户到原列表入口取消草稿，取消后照原约定回到列表。列表排序保持不变。替代路径已有；页面回归与技术影响待核实。"
+  },
+  {
+    "id": "entry-contradiction",
+    "case": "removed-entry",
+    "rule": "preserve",
+    "expected": "contradiction",
+    "document": "基线为业务页面说明。删除订单详情的删除草稿按钮，同时停用详情查看和返回列表操作。列表排序保持不变。替代路径为已有列表取消；取消后回到列表。页面回归与技术影响待核实。"
+  },
+  {
+    "id": "invoice-equivalent",
+    "case": "conditional-invoice",
+    "rule": "fields",
+    "expected": "pass",
+    "document": "发票只有个人与企业两类，新建先选个人。企业税号不能为空，每个字符只能为A–Z或0–9且长度恰好十八位。切到个人后税号控件不可见，保存的请求里也不带税号。"
+  },
+  {
+    "id": "invoice-missing",
+    "case": "conditional-invoice",
+    "rule": "fields",
+    "expected": "missing",
+    "document": "发票类型新增个人与企业两类，新建默认个人。页面新增企业税号。历史角色配置未验证；其他字段按条件必填处理；测试对象编号18。"
+  },
+  {
+    "id": "invoice-contradiction",
+    "case": "conditional-invoice",
+    "rule": "fields",
+    "expected": "contradiction",
+    "document": "发票类型新增个人与企业两类，新建默认个人。企业税号选填，空值可保存；填写时允许任意长度小写字母。个人申请也展示并提交税号。历史角色配置未验证；其他字段按条件必填处理；测试对象编号18。"
+  }
+]

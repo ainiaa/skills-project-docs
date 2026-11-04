@@ -27,6 +27,9 @@ jobs:
         run: python3 scripts/install_renderers.py --engine mermaid
       - name: Product contracts, frozen fixtures and installation regressions
         run: |
+          python3 scripts/build_npx_bundles.py --check
+          npx -y skills@1.7.6 --version
+          PROJECT_DOCS_NPX_TEST=1 python3 -m unittest scripts.test_npx_install
           python3 -m pytest scripts/test_product*.py --cov --cov-fail-under=90
           python3 -m unittest discover -s scripts -p test_install.py
           python3 -m unittest discover -s scripts -p test_update.py

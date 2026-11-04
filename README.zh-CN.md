@@ -27,6 +27,20 @@
 
 ## 快速开始
 
+如果之前用 `install.sh` 为 Codex 安装过本集合，请先在原仓库执行以下命令；它只移除该仓库拥有的 Codex 链接，保留其他 Skill 和共享依赖，避免 Codex 同时发现两套入口：
+
+```bash
+bash install.sh --uninstall --host codex
+```
+
+也可以直接安装到 Codex（需要 Node.js 与 npm）：
+
+```bash
+npx skills add ainiaa/skills-project-docs --skill '*' -g -a codex
+```
+
+此方式附带各 Skill 所需的共享脚本和资料；运行脚本需要 Python 3.11+，Product 校验还需要在该 Python 环境安装 [Markdown 解析依赖](scripts/requirements-product.txt)。安装时不会自动安装这些依赖、Product 的第三方 Skill 或绘图引擎；使用绘图能力时，Skill 会按自身指引检查并可能补装缺失的引擎。需要完整安装时，先用 `npx skills remove -g -a codex` 交互式移除本集合的同名条目，再使用下方的安装器，以免路径冲突。选择单个 Skill 可把 `'*'` 换成名称；更新时用 `npx skills update -g <已安装的本集合 Skill 名称>` 指定名称，更新后刷新宿主的 Skill 发现。
+
 1. 克隆仓库，一次安装统一入口、五个专用 Skill 与缺失的绘图引擎：
 
    ```bash
@@ -410,8 +424,12 @@ Skill 会读取源码和可用的 CodeGraph 信息，选择合适的图型，生
 
 ## 开发与验证
 
+修改已纳入 Git 的共享脚本、资料或 Skill 后，运行 `python3 scripts/build_npx_bundles.py` 更新六份安装快照；`python3 scripts/build_npx_bundles.py --check` 检查快照是否与源码及打包转换一致。快照内入口改名为 `GUIDE.md` 并调整引用，避免宿主重复发现；新增资源需先纳入 Git 跟踪，再生成快照。
+
 ```bash
 python3 -m unittest discover -s scripts -p 'test_*.py'
+# 隔离目录中实际执行 skills CLI，不改用户的全局安装
+PROJECT_DOCS_NPX_TEST=1 python3 -m unittest scripts.test_npx_install
 # 产品 Python 回归与覆盖率（需已有 pytest-cov；只统计四个产品入口，门槛90%）
 python3 -m pytest scripts/test_product_docs.py scripts/test_product_split.py scripts/test_product_dependencies.py scripts/test_product_bundle.py scripts/test_product_behavior_eval.py --cov --cov-fail-under=90
 # 产品运行时及退款真实无界面交互

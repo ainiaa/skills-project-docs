@@ -3,11 +3,13 @@ name: project-docs
 description: 项目文档 Skill 集合的统一入口；当用户点名 project-docs、安装或升级本集合，协调从业务痛点到上线的跨阶段工作，或要组合交付产品 PRD、交互 HTML 原型、项目说明、接口文档与技术图时使用。
 ---
 
+若当前 Skill 目录下存在 `.bundle` 且其 `../../` 不是本集合的 Git 检出，先读取 `.bundle/skills/project-docs/GUIDE.md` 并以该目录为 Skill 真实目录；其中的共享脚本、资料和其他 Skill 均来自同一快照。通过 `npx skills update <已安装的本集合 Skill 名称>` 更新此类安装，按实际作用域加 `-g` 或 `-p`；不运行快照内依赖 Git 检出的更新命令。
+
 # Project Docs
 
-根据任务目标、范围和交付物选择本集合的专用能力，再按读者组织结果。先解析当前 Skill 的真实目录；下表链接均相对该目录。读取选中能力的 `SKILL.md` 后，遵循其取证、生成和验证要求。
+根据任务目标、范围和交付物选择本集合的专用能力，再按读者组织结果。先解析当前 Skill 的真实目录；下表链接均相对该目录。读取选中能力的入口说明后，遵循其取证、生成和验证要求。
 
-文档、图与交接资料按[读者与用途约定](../../references/audience.md)组织：先选任务，再分别判断业务/技术知识与阅读目的；不把专家、普通读者或 HTML 格式等同某种固定写法。安装、升级与诊断无需读者分类。
+文档、图与交接资料按[读者与用途约定](.bundle/references/audience.md)组织：先选任务，再分别判断业务/技术知识与阅读目的；不把专家、普通读者或 HTML 格式等同某种固定写法。安装、升级与诊断无需读者分类。
 
 用户要求更新本集合及依赖时，运行 `bash <真实Skill目录>/../../install.sh --update --host <宿主>`；根据当前实际宿主选 `codex`、`claude`、`zcode`、`dsh`、`gemini`、`grok`、`pi` 或 `opencode`，用户明确要求全部宿主时才用 `all`。只同步依赖时使用 `--update-deps`，仅更新 Skill 时加 `--no-engines`；诊断和卸载也使用同一个 `--host`。不要省略宿主参数后误用默认的 Codex、Claude Code 两端。五个子 Skill 随仓库更新，绘图 CLI 以集合锁定版本为最低基线，保留相同或更高稳定版本，无法识别版本时停止；显式 CLI 覆盖由外部管理。更新保护本地改动，不自动切分支或重置；失败时报告具体阶段，不宣称全部更新成功。普通文档生成不先联网升级，也不升级用户的其他全局 Skill。
 
@@ -15,11 +17,11 @@ description: 项目文档 Skill 集合的统一入口；当用户点名 project-
 
 | 用户需要 | 读取的能力 | 交付物 |
 |---|---|---|
-| 从业务痛点到需求、设计研发、验收上线与效果跟踪，或已有需求跨阶段接续 | [project-docs-lifecycle](../project-docs-lifecycle/SKILL.md) | 同一身份的阶段交接、版本化追踪、实际工作及证据 |
-| 业务需求梳理、PRD、产品评审，或可点击 HTML 界面原型 | [project-docs-product](../project-docs-product/SKILL.md) | 可追溯 PRD、按需交互 HTML 原型及评审记录 |
-| Spring MVC、Feign 或 FastAPI 接口文档 | [project-docs-api](../project-docs-api/SKILL.md) | API Markdown、Postman Collection、cURL 示例 |
-| 架构图、流程图、泳道图、时序图、ERD，或处理 Mermaid、PlantUML、draw.io、Archify 图源 | [project-docs-diagram](../project-docs-diagram/SKILL.md) | 可编辑图源、按需导出文件及验证回执 |
-| 项目介绍、功能说明、架构总览文档或开发者上手手册 | [project-docs-overview](../project-docs-overview/SKILL.md) | 按对应模板生成、带来源的 Markdown；按需交付 explainer 交互 HTML |
+| 从业务痛点到需求、设计研发、验收上线与效果跟踪，或已有需求跨阶段接续 | [project-docs-lifecycle](.bundle/skills/project-docs-lifecycle/GUIDE.md) | 同一身份的阶段交接、版本化追踪、实际工作及证据 |
+| 业务需求梳理、PRD、产品评审，或可点击 HTML 界面原型 | [project-docs-product](.bundle/skills/project-docs-product/GUIDE.md) | 可追溯 PRD、按需交互 HTML 原型及评审记录 |
+| Spring MVC、Feign 或 FastAPI 接口文档 | [project-docs-api](.bundle/skills/project-docs-api/GUIDE.md) | API Markdown、Postman Collection、cURL 示例 |
+| 架构图、流程图、泳道图、时序图、ERD，或处理 Mermaid、PlantUML、draw.io、Archify 图源 | [project-docs-diagram](.bundle/skills/project-docs-diagram/GUIDE.md) | 可编辑图源、按需导出文件及验证回执 |
+| 项目介绍、功能说明、架构总览文档或开发者上手手册 | [project-docs-overview](.bundle/skills/project-docs-overview/GUIDE.md) | 按对应模板生成、带来源的 Markdown；按需交付 explainer 交互 HTML |
 
 “一页项目说明”“explainer”或项目介绍交互 HTML 选择 `project-docs-overview` 的一页说明模式；它可嵌入原生图，但不作为第十一种图型交给图形脚本。表单、弹窗、页面跳转或业务状态演示的“原型 HTML”选择 `project-docs-product`，不能用静态说明页替代。比较 PRD 与代码差异时由产品能力组织需求，Overview 核实现状；无代码的需求也可从产品能力开始。
 

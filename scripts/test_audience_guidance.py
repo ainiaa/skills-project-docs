@@ -23,7 +23,8 @@ class AudienceGuidanceTests(unittest.TestCase):
                     links = re.findall(r"\]\(([^)]+)\)", (installed / "SKILL.md").read_text())
                     targets = {(installed / link.split("#")[0]).resolve() for link in links
                                if not re.match(r"^[A-Za-z][A-Za-z0-9+.-]*:", link)}
-                    self.assertIn(STANDARD.resolve(), targets)
+                    self.assertTrue(any(target.name == "audience.md" and target.is_file()
+                                        and target.read_bytes() == STANDARD.read_bytes() for target in targets))
 
     def test_shared_guidance_examples_are_available(self):
         text = STANDARD.read_text()

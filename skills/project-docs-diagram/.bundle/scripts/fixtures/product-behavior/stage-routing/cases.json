@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "readerTrial": "not_run",
+  "cases": [
+    {"id": "review-existing", "stage": "review", "input": "review.md", "criteria": "review-criteria.md"},
+    {"id": "warehouse-synthesis", "stage": "synthesis", "input": "synthesis.md", "continuations": ["revision.md"], "criteria": "synthesis-criteria.md"},
+    {"id": "explore-borrowing", "stage": "exploration", "input": "exploration.md", "criteria": "exploration-criteria.md"}
+  ]
+}

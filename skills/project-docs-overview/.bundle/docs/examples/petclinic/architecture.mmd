@@ -1,0 +1,6 @@
+flowchart TB
+  F["Owner form / Thymeleaf"] -->|POST /owners/new| C["OwnerController / validation"]
+  C -->|save owner| R["OwnerRepository / Spring Data JPA"]
+  R -->|default database| D[("H2 / in memory")]
+  C -->|errors| F
+  C -->|redirect after save| V["GET /owners/id / details view"]

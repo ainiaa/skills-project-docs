@@ -3,13 +3,15 @@ name: project-docs-diagram
 description: Create technical diagrams from repository evidence or a system description, and validate/export Mermaid, PlantUML, draw.io, and Archify sources; not for endpoint API documentation.
 ---
 
+若当前 Skill 目录下存在 `.bundle` 且其 `../../` 不是本集合的 Git 检出，先读取 `.bundle/skills/project-docs-diagram/GUIDE.md` 并以该目录为 Skill 真实目录；其中的共享脚本、资料和其他 Skill 均来自同一快照。通过 `npx skills update <已安装的本集合 Skill 名称>` 更新此类安装，按实际作用域加 `-g` 或 `-p`；不运行快照内依赖 Git 检出的更新命令。
+
 # Project Docs Diagram
 
-按[读者与用途约定](../../references/audience.md)选择讲解深度、图例与总览/细节视图；保留用户指定记法、必需标签、关系及证据，不因读者层次删改业务含义。
+按[读者与用途约定](.bundle/references/audience.md)选择讲解深度、图例与总览/细节视图；保留用户指定记法、必需标签、关系及证据，不因读者层次删改业务含义。
 
-Produce auditable diagrams from repository evidence. A short request such as “根据代码生成架构图” is sufficient; infer scope, view, engine, and export without requiring a reference image or a detailed prompt. The agent interprets architecture and business meaning; scripts validate source anchors and supported diagram semantics. Keep generated files outside the analyzed repository unless the user asks to commit them. Read [the diagram standard](../../docs/DIAGRAM_STANDARD.md) when selecting a profile. The draw.io landscape theme and GitHub template decision are documented in [the template research](../../docs/ARCHITECTURE_TEMPLATE_RESEARCH.md).
+Produce auditable diagrams from repository evidence. A short request such as “根据代码生成架构图” is sufficient; infer scope, view, engine, and export without requiring a reference image or a detailed prompt. The agent interprets architecture and business meaning; scripts validate source anchors and supported diagram semantics. Keep generated files outside the analyzed repository unless the user asks to commit them. Read [the diagram standard](.bundle/docs/DIAGRAM_STANDARD.md) when selecting a profile. The draw.io landscape theme and GitHub template decision are documented in [the template research](.bundle/docs/ARCHITECTURE_TEMPLATE_RESEARCH.md).
 
-Archify `explainer` 是独立的一页文档模式；用户要求项目说明页面时读取 [project-docs-overview](../project-docs-overview/SKILL.md)，不将它作为 typed JSON 图型传入本 Skill 的原生脚本。
+Archify `explainer` 是独立的一页文档模式；用户要求项目说明页面时读取 [project-docs-overview](.bundle/skills/project-docs-overview/GUIDE.md)，不将它作为 typed JSON 图型传入本 Skill 的原生脚本。
 
 ## Workflow
 
@@ -27,7 +29,7 @@ For all source and native diagrams, allow at most two targeted correction rounds
 
 ## Official native diagrams outside IR v2
 
-Read [the renderer capability audit](../../docs/RENDERER_CAPABILITY_AUDIT.md) and [the native authoring contract](references/native-diagrams.md) when the user requests another diagram type supported by Mermaid, PlantUML, draw.io, or Archify. For an existing native `.mmd`, `.puml`, `.drawio`, or Archify `.json`, run `python3 ../../scripts/render_native_diagram.py --engine <engine> --input <file> --output <dir> --export png` (repeat `--export` for desired formats). The command runs the actual official engine; Archify 3.2.0 accepts all ten official typed modes: architecture, workflow, sequence, dataflow, lifecycle, erd, tree, class, timeline, and waterfall. Follow the native authoring contract for material-item pointers and timing evidence.
+Read [the renderer capability audit](.bundle/docs/RENDERER_CAPABILITY_AUDIT.md) and [the native authoring contract](references/native-diagrams.md) when the user requests another diagram type supported by Mermaid, PlantUML, draw.io, or Archify. For an existing native `.mmd`, `.puml`, `.drawio`, or Archify `.json`, run `python3 ../../scripts/render_native_diagram.py --engine <engine> --input <file> --output <dir> --export png` (repeat `--export` for desired formats). The command runs the actual official engine; Archify 3.2.0 accepts all ten official typed modes: architecture, workflow, sequence, dataflow, lifecycle, erd, tree, class, timeline, and waterfall. Follow the native authoring contract for material-item pointers and timing evidence.
 
 For a **new** diagram outside IR v2, choose the notation, verify source, author official native syntax, and attach a [version 2 evidence manifest](references/native-diagrams.md) when it makes repository claims. Local PlantUML includes are inventoried and packaged. Standard-library or remote includes report `claimCoverage: partial`; disclose that limitation or use a self-contained source before claiming complete coverage. Review inferred claims and the exported image. `claimSemantics: not_proven` remains even when anchors and item coverage pass.
 

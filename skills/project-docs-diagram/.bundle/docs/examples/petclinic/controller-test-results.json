@@ -1,0 +1,104 @@
+{
+  "sourceCommit": "500158f732419217507c7656904b8e6aa1bcc0d6",
+  "suite": "org.springframework.samples.petclinic.owner.OwnerControllerTests",
+  "counts": {
+    "tests": 18,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "tests": [
+    {
+      "name": "processUpdateOwnerFormUnchangedSuccess",
+      "className": "org.springframework.samples.petclinic.owner.OwnerControllerTests",
+      "status": "pass"
+    },
+    {
+      "name": "showOwner",
+      "className": "org.springframework.samples.petclinic.owner.OwnerControllerTests",
+      "status": "pass"
+    },
+    {
+      "name": "processFindFormWithWhitespaceOnlyLastNameReturnsAllOwners",
+      "className": "org.springframework.samples.petclinic.owner.OwnerControllerTests",
+      "status": "pass"
+    },
+    {
+      "name": "processCreationFormRejectsCityLongerThanColumn",
+      "className": "org.springframework.samples.petclinic.owner.OwnerControllerTests",
+      "status": "pass"
+    },
+    {
+      "name": "processUpdateOwnerFormSuccess",
+      "className": "org.springframework.samples.petclinic.owner.OwnerControllerTests",
+      "status": "pass"
+    },
+    {
+      "name": "processUpdateOwnerFormWithIdMismatch",
+      "className": "org.springframework.samples.petclinic.owner.OwnerControllerTests",
+      "status": "pass"
+    },
+    {
+      "name": "processFindFormRedirectsOutOfBoundsPageToFirstPage",
+      "className": "org.springframework.samples.petclinic.owner.OwnerControllerTests",
+      "status": "pass"
+    },
+    {
+      "name": "processCreationFormSuccess",
+      "className": "org.springframework.samples.petclinic.owner.OwnerControllerTests",
+      "status": "pass"
+    },
+    {
+      "name": "processFindFormIgnoresSurroundingWhitespace",
+      "className": "org.springframework.samples.petclinic.owner.OwnerControllerTests",
+      "status": "pass"
+    },
+    {
+      "name": "processFindFormSuccess",
+      "className": "org.springframework.samples.petclinic.owner.OwnerControllerTests",
+      "status": "pass"
+    },
+    {
+      "name": "processUpdateOwnerFormHasErrors",
+      "className": "org.springframework.samples.petclinic.owner.OwnerControllerTests",
+      "status": "pass"
+    },
+    {
+      "name": "initUpdateOwnerForm",
+      "className": "org.springframework.samples.petclinic.owner.OwnerControllerTests",
+      "status": "pass"
+    },
+    {
+      "name": "processFindFormNoOwnersFound",
+      "className": "org.springframework.samples.petclinic.owner.OwnerControllerTests",
+      "status": "pass"
+    },
+    {
+      "name": "processFindFormByLastName",
+      "className": "org.springframework.samples.petclinic.owner.OwnerControllerTests",
+      "status": "pass"
+    },
+    {
+      "name": "initCreationForm",
+      "className": "org.springframework.samples.petclinic.owner.OwnerControllerTests",
+      "status": "pass"
+    },
+    {
+      "name": "processCreationFormHasErrors",
+      "className": "org.springframework.samples.petclinic.owner.OwnerControllerTests",
+      "status": "pass"
+    },
+    {
+      "name": "initFindForm",
+      "className": "org.springframework.samples.petclinic.owner.OwnerControllerTests",
+      "status": "pass"
+    },
+    {
+      "name": "processCreationFormRejectsAddressLongerThanColumn",
+      "className": "org.springframework.samples.petclinic.owner.OwnerControllerTests",
+      "status": "pass"
+    }
+  ],
+  "originalSurefireXmlSha256": "3078e58e40274ab804aa5fdff709323d5d0615a682f885f93461a23f0c44ea83",
+  "note": "Derived from actual Surefire XML. Original XML and execution logs retained outside the repository; system properties and machine paths omitted from this public summary."
+}

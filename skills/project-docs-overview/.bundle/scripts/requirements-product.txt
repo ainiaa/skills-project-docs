@@ -1,0 +1,2 @@
+# Product document validation (CommonMark parsing only; no optional plugins).
+markdown-it-py==4.2.0

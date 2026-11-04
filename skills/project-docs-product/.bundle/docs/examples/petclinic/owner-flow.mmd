@@ -1,0 +1,6 @@
+flowchart TD
+  A["POST /owners/new"] --> B{"Validation errors?"}
+  B -->|Yes| E["Return form / do not save"]
+  B -->|No| S["Save owner"]
+  S --> R["Redirect /owners/id"]
+  R --> D["Load owner / details view"]

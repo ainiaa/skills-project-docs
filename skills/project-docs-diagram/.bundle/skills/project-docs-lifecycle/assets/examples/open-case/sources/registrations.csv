@@ -1,0 +1,8 @@
+record_id,employee_id,session_id,status,source
+R1,E01,S1,confirmed,web
+R2,E01,S1,confirmed,spreadsheet
+R3,E02,S1,confirmed,web
+R4,E01,S2,confirmed,web
+R5,E03,S1,cancelled,web
+R6,E04,S1,confirmed,spreadsheet
+R7,,S1,confirmed,spreadsheet

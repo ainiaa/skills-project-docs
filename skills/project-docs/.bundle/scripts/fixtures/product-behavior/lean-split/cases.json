@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "light-message",
+      "input": "light-message.md"
+    },
+    {
+      "id": "light-threshold",
+      "input": "light-threshold.md"
+    },
+    {
+      "id": "split-rules",
+      "input": "split-rules.md"
+    }
+  ]
+}

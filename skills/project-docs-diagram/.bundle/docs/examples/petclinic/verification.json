@@ -1,0 +1,94 @@
+{
+  "author": "Jeff.Liu",
+  "checkedAt": "2026-11-03T23:38:11.203150+00:00",
+  "sourceRepository": "https://github.com/spring-projects/spring-petclinic",
+  "sourceCommit": "500158f732419217507c7656904b8e6aa1bcc0d6",
+  "scope": "Owner creation, default configuration and developer reading path",
+  "sourceFiles": {
+    ".github/workflows/maven-build.yml": "e3c6fccc37a71e7e3c7f17b7c348c4142c032403461c9a23ab23457b5dabc198",
+    ".mvn/wrapper/maven-wrapper.properties": "488e1b3f2e641779d4636abf9390845f901e64607261bc3c0b0bfe4fe96e6706",
+    "pom.xml": "7e61df0a43d538a5404e8130a55b8085541ec8e841fcf39f81bb6d3d81dcd2f4",
+    "readme.md": "b53440fdf1a73969b7dcf3b3f1801dda2de31d5935439a739971b42f27e4f5bc",
+    "src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java": "9d99b4b59cc6e185e9a27964b24ede04180ca34211a7e19f968249ee3dac9df3",
+    "src/main/java/org/springframework/samples/petclinic/model/Person.java": "a872c368cd5b09a7cb8a3f42e1baff1f6b0adc7cfc5bccf5f426374292ba4244",
+    "src/main/java/org/springframework/samples/petclinic/owner/Owner.java": "a5273cbccaf4993c92cc204c4481d52ebc611b731862f078b203b2a7eefa5f8a",
+    "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java": "611115841f671065ca2796fbb096102d56ce6aafd20bfe9a264f0a6968cca3ff",
+    "src/main/java/org/springframework/samples/petclinic/owner/OwnerRepository.java": "654cc5a38b2806748116caf4fbd6a99010a35605db32a12707078c34ccec2cd9",
+    "src/main/resources/application.properties": "67c1e7e0a0443d290301449110005ab75d223add305ed9c06897437df686de0e",
+    "src/main/resources/templates/owners/createOrUpdateOwnerForm.html": "a4672fd8918978eb6cbc975a202c948f7b1d525b596c7cb54fa7f637a3803c7f",
+    "src/test/java/org/springframework/samples/petclinic/owner/OwnerControllerTests.java": "f9fe569fcfcb91c6bb78e0df52050f95932eb6fd1ac64f909df24a95ce5c9be9"
+  },
+  "checks": {
+    "focusedContext": {
+      "matchedFiles": 5,
+      "warnings": []
+    },
+    "guideValidator": {
+      "status": "pass",
+      "command": "python3 scripts/validate_project_doc.py --kind guide --file docs/examples/petclinic/developer-guide.md --source <pinned-petclinic>"
+    },
+    "diagrams": {
+      "engine": "mermaid",
+      "officialCheck": "pass",
+      "exportCheck": "pass",
+      "sourceEvidence": "anchors_validated",
+      "claimCoverage": "complete",
+      "claimSemantics": "not_proven",
+      "visualReview": "passed",
+      "visualReviewMethod": "Current-session inspection of both exported PNGs: labels, directions, validation branches and scope."
+    },
+    "upstreamControllerTests": {
+      "command": "./mvnw -B -ntp -Dtest=OwnerControllerTests test",
+      "environment": {
+        "JAVA_TOOL_OPTIONS": "-Djava.awt.headless=true -Djava.net.useSystemProxies=false -Dhttp.proxyHost= -Dhttps.proxyHost= -DsocksProxyHost="
+      },
+      "exitCode": 0,
+      "status": "pass",
+      "counts": {
+        "tests": 18,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "results": "controller-test-results.json",
+      "resultsSha256": "67a8b27f577d1c59343930c8c3f427e3b6d50c038776c67ff924b84f01a2525f",
+      "sourceUnmodified": true,
+      "scope": "Controller slice tests with MockMvc and mocked repository; not database integration or real-browser E2E."
+    },
+    "documentationRegression": {
+      "status": "pass",
+      "testsPassed": 26,
+      "suites": [
+        "test_public_docs.py (3)",
+        "test_validate_project_doc.py (23)"
+      ]
+    }
+  },
+  "notRun": [
+    "Petclinic Web application startup",
+    "Full upstream test suite",
+    "Container database integration tests",
+    "Browser E2E against Petclinic",
+    "Human reader trial",
+    "Production deployment"
+  ],
+  "previousAttempts": [
+    {
+      "checkedAt": "2026-11-03T15:23:06.267402+00:00",
+      "command": "./mvnw -q -Dtest=OwnerControllerTests test",
+      "exitCode": 1,
+      "status": "blocked_before_tests",
+      "reason": "Maven build extensions/dependencies could not be resolved: Maven Central TLS handshake terminated. No business test result is claimed."
+    },
+    {
+      "command": "./mvnw -B -ntp -Dtest=OwnerControllerTests test",
+      "exitCode": 143,
+      "status": "stopped_during_dependency_resolution",
+      "reason": "Observed Maven connections to local proxy 127.0.0.1:7897 and prolonged dependency waits; stopped only this task process before rerunning with per-process proxy settings cleared."
+    }
+  ],
+  "recovery": {
+    "action": "Cleared HTTP, HTTPS and SOCKS proxy properties and disabled system-proxy discovery for this process only; retained certificate verification and headless mode. No global settings or upstream source changes.",
+    "diagnosisBoundary": "Direct Java HTTPS probe succeeded; proxied Maven dependency resolution stalled, then the direct Maven run passed. The internal cause of the local proxy failure was not established."
+  }
+}

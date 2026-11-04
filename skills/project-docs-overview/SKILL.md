@@ -3,9 +3,11 @@ name: project-docs-overview
 description: 从代码和资料生成可追溯的项目、功能、架构和上手文档；按需用 Archify explainer 或零基础图解 HTML，帮助不同背景的读者理解概念、业务规则、技术机制、问题、方案取舍及变更影响。
 ---
 
+若当前 Skill 目录下存在 `.bundle` 且其 `../../` 不是本集合的 Git 检出，先读取 `.bundle/skills/project-docs-overview/GUIDE.md` 并以该目录为 Skill 真实目录；其中的共享脚本、资料和其他 Skill 均来自同一快照。通过 `npx skills update <已安装的本集合 Skill 名称>` 更新此类安装，按实际作用域加 `-g` 或 `-p`；不运行快照内依赖 Git 检出的更新命令。
+
 # Project Docs Overview
 
-生成或修订前按[读者与用途约定](../../references/audience.md)确定需要解释的部分；说明页面也可面向领域专家，不默认使用 ELI5。读者适配保留已选模板、来源与事实口径。
+生成或修订前按[读者与用途约定](.bundle/references/audience.md)确定需要解释的部分；说明页面也可面向领域专家，不默认使用 ELI5。读者适配保留已选模板、来源与事实口径。
 
 写给需要理解项目或功能的人，而不是把类名和接口列表改写成段落。介绍业务目标与功能时使用 [项目总览模板](assets/project-overview.md)；介绍某项功能或改造时使用 [功能说明模板](assets/feature-description.md)；评估系统当前架构时使用 [架构总览模板](assets/architecture-overview.md)；为新开发者提供安装、运行、测试和排障说明时使用 [开发者上手手册模板](assets/developer-guide.md)。保留所选模板中全部二级章节及顺序，章节内可增加三级标题。资料不足时写明「待确认」或「暂无已知项」，删除空表格和模板提示。用户明确指定其他结构时按其要求。默认交付一份 Markdown；只有用户要求时才发布到飞书或修改目标项目的文档。明确要求按 PDLC 阶段产出时，使用对应 PDLC Skill 及其模板和状态流程。
 

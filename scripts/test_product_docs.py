@@ -353,7 +353,7 @@ class ProductWorkflowTests(unittest.TestCase):
 
     def test_product_request_has_a_dedicated_route_and_portable_resources(self):
         router = (ROOT / "skills/project-docs/SKILL.md").read_text()
-        self.assertIn("../project-docs-product/SKILL.md", router)
+        self.assertIn(".bundle/skills/project-docs-product/GUIDE.md", router)
         self.assertTrue((PRODUCT / "SKILL.md").is_file(), "missing product authoring capability")
         skill = (PRODUCT / "SKILL.md").read_text()
         self.assertIn("name: project-docs-product", skill)
