@@ -66,6 +66,7 @@ class PublicDocsTests(unittest.TestCase):
         self.assertEqual(hashlib.sha256(data).hexdigest(), receipt["sha256"])
         self.assertEqual(receipt["frames"], 6)
         self.assertEqual(receipt["loop"], 0)
+        self.assertIn("docs/examples/petclinic/verification.json", receipt["sources"])
         self.assertEqual(set(receipt["sources"]), set(receipt["sourceSha256"]))
         for path, digest in receipt["sourceSha256"].items():
             self.assertEqual(hashlib.sha256((ROOT / path).read_bytes()).hexdigest(), digest, path)

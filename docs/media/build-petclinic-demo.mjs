@@ -73,7 +73,7 @@ with Image.open(output) as gif:
 `, work], { encoding: 'utf8' });
 assert.equal(encoded.status, 0, encoded.stderr);
 const receipt = { ...JSON.parse(encoded.stdout), sourceCommit: source.sourceCommit, mode: 'edited-artifact-walkthrough',
-  sources: ['docs/examples/petclinic/README.md', 'docs/examples/petclinic/developer-guide.md', 'docs/examples/petclinic/architecture.evidence.json', 'docs/examples/petclinic/architecture.png', 'docs/examples/petclinic/owner-flow.png', 'docs/examples/petclinic/controller-test-results.json'] };
+  sources: ['docs/examples/petclinic/verification.json', 'docs/examples/petclinic/README.md', 'docs/examples/petclinic/developer-guide.md', 'docs/examples/petclinic/architecture.evidence.json', 'docs/examples/petclinic/architecture.png', 'docs/examples/petclinic/owner-flow.png', 'docs/examples/petclinic/controller-test-results.json'] };
 receipt.sourceSha256 = Object.fromEntries(await Promise.all(receipt.sources.map(async path => [path, createHash('sha256').update(await readFile(join(root, path))).digest('hex')])));
 await copyFile(join(work, 'petclinic-demo.gif'), join(media, 'petclinic-demo.gif'));
 await writeFile(join(media, 'petclinic-demo.json'), JSON.stringify(receipt, null, 2) + '\n');
