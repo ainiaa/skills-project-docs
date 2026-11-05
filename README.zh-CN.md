@@ -23,7 +23,7 @@
 
 同一集合还支持 PRD 与可点击原型、Java / FastAPI 接口文档、技术图、项目说明，以及从业务痛点到上线的生命周期交接。统一入口 `project-docs` 按任务组合五个专用 Skill。支持 Codex、Claude Code、ZCode、DSH、Gemini CLI、Grok Build、pi 和 OpenCode，所有宿主复用同一仓库和渲染引擎。
 
-当前版本：[0.10.0](https://github.com/ainiaa/skills-project-docs/releases/tag/v0.10.0)。改动记录见[变更日志](CHANGELOG.md)。
+当前版本：[0.11.0](https://github.com/ainiaa/skills-project-docs/releases/tag/v0.11.0)。改动记录见[变更日志](CHANGELOG.md)。
 
 ## 快速开始
 
@@ -40,6 +40,16 @@ npx skills add ainiaa/skills-project-docs --skill '*' -g -a codex
 ```
 
 此方式附带各 Skill 所需的共享脚本和资料；运行脚本需要 Python 3.11+，Product 校验还需要在该 Python 环境安装 [Markdown 解析依赖](scripts/requirements-product.txt)。安装时不会自动安装这些依赖、Product 的第三方 Skill 或绘图引擎；使用绘图能力时，Skill 会按自身指引检查并可能补装缺失的引擎。需要完整安装时，先用 `npx skills remove -g -a codex` 交互式移除本集合的同名条目，再使用下方的安装器，以免路径冲突。选择单个 Skill 可把 `'*'` 换成名称；更新时用 `npx skills update -g <已安装的本集合 Skill 名称>` 指定名称，更新后刷新宿主的 Skill 发现。
+
+也可以使用本项目的 GitHub 安装命令，同时安装 Product 需要的三个第三方 Skill：
+
+```bash
+npx github:ainiaa/skills-project-docs --with-deps --agent codex --global
+```
+
+省略 `--with-deps` 只安装本集合；省略 `--global` 安装到当前项目；Claude Code 使用 `--agent claude-code`。更新时重新运行同一命令：本集合的安装记录指向临时 npx 缓存，不应依赖 `skills update` 更新这些条目。命令会从官方上游获取最新依赖。为保护已有内容，遇到已修改或无法确认为相同副本的同名项目 Skill、其他方式安装或安装后被修改的同名第三方 Skill 时会停止并提示，不自动覆盖。需要 Python 3.11+、Git、Node.js、npm 和网络；此命令不安装 Python 包或绘图引擎。
+
+同一用户的安装通过 `~/.agents/.project-docs-install.lock` 串行执行。若进程被强制终止，请先确认没有安装进程运行，并检查目标 Skill 目录旁的 `.project-docs-backup-*` 备份，再移除遗留锁并重试。
 
 1. 克隆仓库，一次安装统一入口、五个专用 Skill 与缺失的绘图引擎：
 

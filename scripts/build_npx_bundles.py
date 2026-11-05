@@ -18,7 +18,8 @@ def sources():
                                       "references", "docs", "audits", "install.sh", "install-arch.sh", "VERSION",
                                       "README.md", "README.en.md", "README.zh-CN.md", "CHANGELOG.md", "LICENSE"], cwd=ROOT)
     paths = {Path(path) for path in output.decode().split("\0") if path and "/.bundle/" not in path}
-    paths.difference_update((Path("scripts/build_npx_bundles.py"), Path("scripts/test_npx_install.py")))
+    paths.difference_update((Path("scripts/build_npx_bundles.py"), Path("scripts/test_npx_install.py"),
+                             Path("scripts/test_product_npx_installer.py")))
     return sorted(paths)
 
 

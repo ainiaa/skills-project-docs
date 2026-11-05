@@ -32,6 +32,10 @@ SCRIPTS = ("generate_api_docs.py", "generate_architecture.py", "lifecycle_record
 
 
 class NpxInstallTests(unittest.TestCase):
+    def test_installer_tests_are_excluded_from_snapshots(self):
+        with patch.object(build_npx_bundles.subprocess, "check_output", return_value=b"scripts/test_product_npx_installer.py\x00scripts/runtime.py\x00"):
+            self.assertEqual(build_npx_bundles.sources(), [Path("scripts/runtime.py")])
+
     def test_generated_snapshots_are_marked_for_review(self):
         paths = ["skills/project-docs-api/.bundle/scripts/generate_api_docs.py",
                  "skills/project-docs-api/SKILL.md"]

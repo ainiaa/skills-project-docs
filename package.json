@@ -1,0 +1,7 @@
+{
+  "name": "project-docs-skills-installer",
+  "version": "0.11.0",
+  "private": true,
+  "bin": {"project-docs-skills": "bin/project-docs.js"},
+  "files": ["bin", "skills", "scripts/product_dependencies.py", "scripts/install_product_dependencies.py"]
+}
