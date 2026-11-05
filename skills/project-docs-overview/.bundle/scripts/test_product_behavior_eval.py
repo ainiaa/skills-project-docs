@@ -263,6 +263,31 @@ class ProductBehaviorTests(unittest.TestCase):
             with self.subTest(field=field, value=value), self.assertRaises(AssertionError):
                 check_observations(invalid)
 
+    def test_threshold_allows_combined_related_decisions_with_explicit_mapping(self):
+        import copy
+        with tempfile.TemporaryDirectory() as directory:
+            report = json.loads(self.behavior_report(Path(directory)).read_text())
+        item = next(x for x in report['observations'] if x['id'] == 'refund-unresolved-threshold')
+        item.update(questions=['审批阈值金额及币种是多少？', '失败重试是否沿用审批，结果未知时如何核实？'],
+                    businessUndecided=['approval-threshold', 'retry-approval', 'unknown-result-retry'],
+                    questionDecisions=[['approval-threshold'], ['retry-approval', 'unknown-result-retry']])
+        check_observations(report)
+        unmapped = copy.deepcopy(report)
+        unmapped_item = next(x for x in unmapped['observations'] if x['id'] == item['id'])
+        unmapped_item['questions'].append('结果未知时如何恢复？')
+        del unmapped_item['questionDecisions']
+        with self.assertRaises(AssertionError):
+            check_observations(unmapped)
+        for mapping in ([['approval-threshold']],
+                        [['approval-threshold'], ['unknown-result-retry']],
+                        [['approval-threshold'], ['retry-approval', 'theme-color']],
+                        [['approval-threshold'], []],
+                        [['approval-threshold'], ['retry-approval', 'retry-approval', 'unknown-result-retry']]):
+            invalid = copy.deepcopy(report)
+            next(x for x in invalid['observations'] if x['id'] == item['id'])['questionDecisions'] = mapping
+            with self.subTest(mapping=mapping), self.assertRaises(AssertionError):
+                check_observations(invalid)
+
     def gate(self, *args, optimized=False):
         script = ROOT / "scripts/product_behavior_eval.py"
         self.assertTrue(script.is_file(), "strict behavior gate missing")

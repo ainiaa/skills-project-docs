@@ -81,8 +81,17 @@ def check_observations(report):
             assert value["questions"] and any("阈值" in question for question in value["questions"]), value
             undecided = value["businessUndecided"]
             assert "approval-threshold" in undecided, value
-            assert set(undecided) <= {"approval-threshold", "threshold-effective-time", "unknown-result-retry"}, value
-            assert len(set(undecided)) == len(undecided) == len(value["questions"]), value
+            assert set(undecided) <= {"approval-threshold", "threshold-effective-time", "unknown-result-retry", "retry-approval"}, value
+            assert len(set(undecided)) == len(undecided), value
+            mapping = value.get("questionDecisions")
+            if mapping is None:
+                assert "retry-approval" not in undecided and len(undecided) == len(value["questions"]), value
+            else:
+                assert isinstance(mapping, list) and len(mapping) == len(value["questions"]), value
+                assert all(isinstance(group, list) and group and all(isinstance(item, str) for item in group)
+                           for group in mapping), value
+                mapped = [item for group in mapping for item in group]
+                assert len(mapped) == len(set(mapped)) and set(mapped) == set(undecided), value
         if value["id"] == "notes-known-unapproved":
             assert len(value["questions"]) == 1 and "计数" in value["questions"][0], value
             assert value["businessUndecided"] == ["length-unit"], value
