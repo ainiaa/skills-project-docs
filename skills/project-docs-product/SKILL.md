@@ -30,6 +30,6 @@ description: 用户要梳理业务需求、创建或修订 PRD、评审产品需
 
 修订前与交付前执行[需求保留与恢复走读](references/workflow.md#需求保留与恢复走读)，逐项核对原始诉求及有效关联约定，并从异常反馈走到可执行下一步；记录实际缺口，不以“已检查”代替。
 
-生成或修订PRD时，重新读取成品，运行 `python3 <本集合>/scripts/validate_product_doc.py --file <交付目录>/prd.md`；外置追踪时显式追加 `--tracking <交付目录>/prd-traceability.md`（须同目录、版本一致且主文有链接）；用户已要求原型或本轮需联动核验已有原型时，追加 `--prototype <交付目录>/prototype.html`。原型缺失须报告未交付，不能因文件未生成省略核验；使用bundle检查时同时传 `--require-prototype`。根据 [评测场景](references/evaluation.md) 核对来源、已决事项、正常/边界/异常验收，以及修改前后的关联内容。校验只证明结构、标识与资源关联，业务含义和浏览器交互另行验证；仅评审不为适配校验器补写或改写原稿。
+生成或修订PRD时，按[结构声明模板](assets/prd-template.md)保留实际需求的三级 FR 标题、所属四级 AC 标题及状态、依据、原型字段；文档状态值单独写“草稿”“待确认”或“已确认”，说明另写，不复制空章节。重新读取成品，运行 `python3 <本集合>/scripts/validate_product_doc.py --file <交付目录>/prd.md`；外置追踪时显式追加 `--tracking <交付目录>/prd-traceability.md`（须同目录、版本一致且主文有链接）；用户已要求原型或本轮需联动核验已有原型时，追加 `--prototype <交付目录>/prototype.html`。原型缺失须报告未交付，不能因文件未生成省略核验；使用bundle检查时同时传 `--require-prototype`。核对来源、已决事项、正常/边界/异常验收，以及修改前后的关联内容。校验失败时按错误修正本次生成的声明并重新校验，无法完成须如实报告。校验只证明结构、标识与资源关联，业务含义和浏览器交互另行验证；仅评审不为适配校验器补写或改写原稿。
 
 按[交付回复与验收汇总](references/reading-and-change.md#正文与交付回复)先说明变化、待决定事项与下一步，提供实际成品及证据；定稿或大改按需要给要点覆盖。产品确认和授权边界统一按[工作流](references/workflow.md#验证与交付)，不同检查结果不能互相代替。

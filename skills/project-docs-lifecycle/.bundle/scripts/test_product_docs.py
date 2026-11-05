@@ -46,6 +46,42 @@ HTML = """<!doctype html><html lang="zh-CN"><head>
 
 
 class ProductWorkflowTests(unittest.TestCase):
+    def test_authoring_guidance_keeps_assessment_oracle_out_and_links_structure(self):
+        entry = (PRODUCT / 'SKILL.md').read_text()
+        self.assertIn('assets/prd-template.md', entry)
+        for path in ('SKILL.md', 'references/workflow.md', 'references/reading-and-change.md'):
+            with self.subTest(path=path):
+                self.assertNotIn('evaluation.md', (PRODUCT / path).read_text())
+        template = re.sub(r'<!--.*?-->', '', (PRODUCT / 'assets/prd-template.md').read_text(), flags=re.S)
+        with tempfile.TemporaryDirectory() as directory:
+            document = Path(directory) / 'prd.md'
+            document.write_text(template)
+            result = subprocess.run([sys.executable, str(ROOT / 'scripts/validate_product_doc.py'),
+                                     '--file', str(document)], text=True, capture_output=True)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_suggestion_without_decision_does_not_imply_deferral(self):
+        workflow = (PRODUCT / 'references/workflow.md').read_text()
+        self.assertIn('建议不等于暂缓', workflow)
+        self.assertIn('直接提出最关键的问题', workflow)
+
+    def test_clarification_round_groups_independent_decisions(self):
+        workflow = (PRODUCT / 'references/workflow.md').read_text()
+        row = next(line for line in workflow.splitlines() if line.startswith('| 业务未决 |'))
+        self.assertIn('同轮问齐', row)
+        self.assertIn('答案取决于前一项', row)
+
+    def test_clarification_is_visible_and_does_not_infer_reapproval(self):
+        workflow = (PRODUCT / 'references/workflow.md').read_text()
+        self.assertIn('最终答复或实际交互请求', workflow)
+        self.assertIn('只在文档中列问题', workflow)
+        self.assertIn('保留原申请或历史审批记录', workflow)
+        self.assertIn('不等于已决定是否重新审批', workflow)
+
+    def test_product_ci_runs_interaction_evidence_regressions(self):
+        workflow = (ROOT / '.github/workflows/product-acceptance.yml').read_text()
+        self.assertIn('python3 -m unittest discover -s evals/product', workflow)
+
     def test_product_ci_discovers_all_product_python_suites(self):
         workflow = (ROOT / '.github/workflows/product-acceptance.yml').read_text()
         command = 'python3 -m pytest scripts/test_product*.py --cov --cov-fail-under=90'
