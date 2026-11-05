@@ -26,6 +26,10 @@ def skill_identity():
     return identity
 
 
+class ObservationUncovered(Exception):
+    """At least one sample has no valid independent observation."""
+
+
 def check_observations(report):
     expected = {
         "refund-sufficient": ("write", "prd"),
@@ -44,7 +48,12 @@ def check_observations(report):
     }
     values = report["observations"]
     assert len(values) == len(expected) and {value["id"] for value in values} == set(expected), "all frozen samples required"
+    uncovered = []
     for value in values:
+        if value.get("status") == "uncovered":
+            uncovered.append(value["id"])
+            continue
+        assert "status" not in value or value["status"] == "pass", value
         action, scope = expected[value["id"]]
         assert value["scope"] == scope, value
         if value["id"] in {"refund-local-revision", "publishing-local-prototype"}:
@@ -111,6 +120,8 @@ def check_observations(report):
             assert len(value["questions"]) == 1 and all(word in value["questions"][0] for word in ("200", "300")), value
             assert value["businessUndecided"] == ["length-limit"], value
             assert set(value["reviewFindings"]) == {"length-conflict", "typo"}, value
+    if uncovered:
+        raise ObservationUncovered("缺少有效独立观察：" + ", ".join(uncovered))
 
 
 def check_identity(report, report_path):
@@ -257,6 +268,8 @@ def evaluate(report=None, artifacts=None):
         try:
             check_behavior_report(report)
             status, code, reason = "pass", 0, "当前冻结样本、Skill 与上游身份匹配"
+        except ObservationUncovered as error:
+            status, code, reason = "uncovered", 2, str(error)
         except (OSError, ValueError, KeyError, TypeError, AssertionError) as error:
             status, code, reason = "invalid", 1, str(error)
     return code, {"status": status, "reason": reason, "semanticCheck": semantic, "browserCheck": "not_run"}

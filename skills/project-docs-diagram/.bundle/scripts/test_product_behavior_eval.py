@@ -36,6 +36,35 @@ def clarification_observations():
 
 
 class ProductBehaviorTests(unittest.TestCase):
+    def test_explicit_failed_or_uncovered_observations_never_pass(self):
+        import copy
+        with tempfile.TemporaryDirectory() as directory:
+            report = json.loads(self.behavior_report(Path(directory)).read_text())
+        check_observations(report)
+        for outcome in ('failed', 'unknown'):
+            candidate = copy.deepcopy(report)
+            candidate['observations'][0]['status'] = outcome
+            with self.subTest(outcome=outcome), self.assertRaises(AssertionError):
+                check_observations(candidate)
+        candidate = copy.deepcopy(report)
+        candidate['observations'][0]['status'] = 'pass'
+        check_observations(candidate)
+
+    def test_uncovered_observation_is_reported_as_uncovered(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = self.behavior_report(Path(directory))
+            report = json.loads(path.read_text())
+            report['observations'][0]['status'] = 'uncovered'
+            path.write_text(json.dumps(report, ensure_ascii=False))
+            code, result = self.gate('--report', str(path))
+            self.assertEqual(code, 2)
+            self.assertEqual(result['status'], 'uncovered')
+            report['observations'][1]['status'] = 'failed'
+            path.write_text(json.dumps(report, ensure_ascii=False))
+            code, result = self.gate('--report', str(path))
+            self.assertEqual(code, 1)
+            self.assertEqual(result['status'], 'invalid')
+
     def test_skill_identity_binds_shared_audience_guidance(self):
         from unittest.mock import patch
         source = ROOT / 'references/audience.md'

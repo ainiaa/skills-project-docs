@@ -45,7 +45,7 @@
 
 ## 复用现有样本与工具
 
-- `scripts/fixtures/product-behavior/cases.json`：十三个下一动作、确认及范围观察样本，包含四个澄清时机对照和三个生成／评审／继承口径对照；新增样本记录 `businessUndecided`，相关样本另记录 `technicalUnverified` 和 `approvalPending`，旧六例观察字段不变。只读评审例另记录 `writePrd=false`，冲突例的 `reviewFindings` 记录冲突及独立文案问题，不能只问问题而漏交独立意见。journey/uncovered使用同一业务阶段词典，保存反馈不等于最终业务结果。观察字段须由实际回复和成品复核填写，声明本身不证明语义。
+- `scripts/fixtures/product-behavior/cases.json`：十三个下一动作、确认及范围观察样本，包含四个澄清时机对照和三个生成／评审／继承口径对照；新增样本记录 `businessUndecided`，相关样本另记录 `technicalUnverified` 和 `approvalPending`，旧六例观察字段不变。只读评审例另记录 `writePrd=false`，冲突例的 `reviewFindings` 记录冲突及独立文案问题，不能只问问题而漏交独立意见。journey/uncovered使用同一业务阶段词典，保存反馈不等于最终业务结果。观察如显式声明 `status`，只有 `pass` 可通过；`uncovered` 返回未覆盖，`failed` 或未知状态返回失败，若两者同时存在则失败优先。未声明状态的旧报告仍按原字段检查。观察字段须由实际回复和成品复核填写，声明本身不证明语义。
 - `artifact-cases.json`及`revision-baseline.md`：实际PRD成品、历史影响及未变确认；`multi-input/cases.json`：同业务多资料条件及冲突的独立试验。输入路径相对上述fixtures目录，不改旧样本含义。
 - `lean-split/cases.json`：轻量文案、阈值规则及显式主文/追踪拆分的定向成品试验；每次只选本轮受影响样本，另保留输入、两个模板及必要引用的身份，独立复核主文能否读懂、附件有无新增规则、链接及版本是否一致。不冒充旧全量样本门禁通过。
 - `delivery-closure/cases.json`：独立交付的来源可移交性及修订后的当前评审／校验回执；使用独立上下文生成，默认资源校验核对前者，实际文件及最新回执核对后者，保留修复前后结果。
