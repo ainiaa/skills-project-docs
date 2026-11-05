@@ -26,6 +26,10 @@ def skill_identity():
     return identity
 
 
+class ObservationUncovered(Exception):
+    """At least one sample has no valid independent observation."""
+
+
 def check_observations(report):
     expected = {
         "refund-sufficient": ("write", "prd"),
@@ -44,7 +48,12 @@ def check_observations(report):
     }
     values = report["observations"]
     assert len(values) == len(expected) and {value["id"] for value in values} == set(expected), "all frozen samples required"
+    uncovered = []
     for value in values:
+        if value.get("status") == "uncovered":
+            uncovered.append(value["id"])
+            continue
+        assert "status" not in value or value["status"] == "pass", value
         action, scope = expected[value["id"]]
         assert value["scope"] == scope, value
         if value["id"] in {"refund-local-revision", "publishing-local-prototype"}:
@@ -81,8 +90,17 @@ def check_observations(report):
             assert value["questions"] and any("阈值" in question for question in value["questions"]), value
             undecided = value["businessUndecided"]
             assert "approval-threshold" in undecided, value
-            assert set(undecided) <= {"approval-threshold", "threshold-effective-time", "unknown-result-retry"}, value
-            assert len(set(undecided)) == len(undecided) == len(value["questions"]), value
+            assert set(undecided) <= {"approval-threshold", "threshold-effective-time", "unknown-result-retry", "retry-approval"}, value
+            assert len(set(undecided)) == len(undecided), value
+            mapping = value.get("questionDecisions")
+            if mapping is None:
+                assert "retry-approval" not in undecided and len(undecided) == len(value["questions"]), value
+            else:
+                assert isinstance(mapping, list) and len(mapping) == len(value["questions"]), value
+                assert all(isinstance(group, list) and group and all(isinstance(item, str) for item in group)
+                           for group in mapping), value
+                mapped = [item for group in mapping for item in group]
+                assert len(mapped) == len(set(mapped)) and set(mapped) == set(undecided), value
         if value["id"] == "notes-known-unapproved":
             assert len(value["questions"]) == 1 and "计数" in value["questions"][0], value
             assert value["businessUndecided"] == ["length-unit"], value
@@ -102,6 +120,8 @@ def check_observations(report):
             assert len(value["questions"]) == 1 and all(word in value["questions"][0] for word in ("200", "300")), value
             assert value["businessUndecided"] == ["length-limit"], value
             assert set(value["reviewFindings"]) == {"length-conflict", "typo"}, value
+    if uncovered:
+        raise ObservationUncovered("缺少有效独立观察：" + ", ".join(uncovered))
 
 
 def check_identity(report, report_path):
@@ -248,6 +268,8 @@ def evaluate(report=None, artifacts=None):
         try:
             check_behavior_report(report)
             status, code, reason = "pass", 0, "当前冻结样本、Skill 与上游身份匹配"
+        except ObservationUncovered as error:
+            status, code, reason = "uncovered", 2, str(error)
         except (OSError, ValueError, KeyError, TypeError, AssertionError) as error:
             status, code, reason = "invalid", 1, str(error)
     return code, {"status": status, "reason": reason, "semanticCheck": semantic, "browserCheck": "not_run"}

@@ -32,6 +32,16 @@ npx skills add ainiaa/skills-project-docs --skill '*' -g -a codex
 
 Each Skill includes its shared scripts and resources. Running them requires Python 3.11+; Product validation also requires the [Markdown parser dependency](scripts/requirements-product.txt) in that Python environment. The npx installation does not install those dependencies, the third-party Product Skills or diagram renderers; when drawing, the Skill may install a missing renderer according to its instructions. To switch to the complete installer below, first run `npx skills remove -g -a codex` and select this collection's entries to avoid path conflicts. Replace `'*'` with a name to install one Skill; use `npx skills update -g <installed-skill-name>` to update selected Skills.
 
+Alternatively, run this project's GitHub installer to install the collection and the three Product Skills together:
+
+```bash
+npx github:ainiaa/skills-project-docs --with-deps --agent codex --global
+```
+
+Omit `--with-deps` to install only the collection, or `--global` for the current project. Use `--agent claude-code` for Claude Code. Run this same command again to update: its project Skill installation record points to the temporary npx cache, so do not rely on `skills update` for those entries. It fetches the latest dependencies from their upstream repositories. To protect existing work, it stops on existing project Skills that are modified or cannot be identified as an identical copy, and on third-party Skills managed elsewhere or modified after installation. Python 3.11+, Git, Node.js, npm and network access are required; diagram engines and Python packages are not installed by this command.
+
+Installations are serialized using `~/.agents/.project-docs-install.lock`. After a forced termination, confirm no installer is running and inspect any `.project-docs-backup-*` directory beside the target Skills before removing a stale lock and retrying.
+
 Clone the complete collection and install for Codex:
 
 ```bash
@@ -113,4 +123,4 @@ The [complete Chinese guide](README.zh-CN.md) retains the detailed installation,
 
 </details>
 
-Current release: [v0.10.0](https://github.com/ainiaa/skills-project-docs/releases/tag/v0.10.0). See the [changelog](CHANGELOG.md), [full documentation (Chinese)](README.zh-CN.md) and [license](LICENSE).
+Current release: [v0.11.0](https://github.com/ainiaa/skills-project-docs/releases/tag/v0.11.0). See the [changelog](CHANGELOG.md), [full documentation (Chinese)](README.zh-CN.md) and [license](LICENSE).

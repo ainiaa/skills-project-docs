@@ -1,0 +1,41 @@
+{
+  "prd.md": {
+    "original_sha256": "edb848e2498eedf19317d476dacce670ca607543711891ca66db0dc51e28e67b",
+    "sha256": "edb848e2498eedf19317d476dacce670ca607543711891ca66db0dc51e28e67b",
+    "redaction": "capsule root replaced; QA PRD reference made relative"
+  },
+  "dev.md": {
+    "original_sha256": "371f3cad2c4d63bdbe1bb98992a5847baed5c8e73c45f749f502729b313a8ec8",
+    "sha256": "371f3cad2c4d63bdbe1bb98992a5847baed5c8e73c45f749f502729b313a8ec8",
+    "redaction": "capsule root replaced; QA PRD reference made relative"
+  },
+  "qa.md": {
+    "original_sha256": "fd8058f2c35889a5b3945881a181e9e308a741300d89a8410ae017f865b501f3",
+    "sha256": "c3942c5aae9daaf6cf97c95c5acf95f06955564403cdfe683b2372053eb2cec2",
+    "redaction": "capsule root replaced; QA PRD reference made relative"
+  },
+  "control-evidence.json": {
+    "original_sha256": "e067685aa155561c7d2304f3e3a2c9278d3282246c11bbfe5c1c84338e2eba2b",
+    "sha256": "e067685aa155561c7d2304f3e3a2c9278d3282246c11bbfe5c1c84338e2eba2b",
+    "redaction": "capsule root replaced; QA PRD reference made relative"
+  },
+  "current-evidence.json": {
+    "original_sha256": "e6fe36769060c7aa94bfa0d54f9fe0d79400e815233df69fd896cd7284dc2b8d",
+    "sha256": "e6fe36769060c7aa94bfa0d54f9fe0d79400e815233df69fd896cd7284dc2b8d",
+    "redaction": "capsule root replaced; QA PRD reference made relative"
+  },
+  "observations.md": {
+    "sha256": "41de3322f5abee30cbaf95f6da71bc307aba94f003cd576ee66e555841ff6e7e",
+    "redaction": "Aggregate summary only; raw local observations excluded."
+  },
+  "input.txt": {
+    "original_sha256": "809b8375586696c152e0f0736f1a048224d85ca441e97c6e3d785cfe1a2c8649",
+    "sha256": "809b8375586696c152e0f0736f1a048224d85ca441e97c6e3d785cfe1a2c8649",
+    "redaction": "capsule root replaced; QA PRD reference made relative"
+  },
+  "follow-up.txt": {
+    "original_sha256": "6f7c9da0d6a7ca6addcc878324d33f2bf4c5aab461d5dd60b39b6b71a3bdbb45",
+    "sha256": "6f7c9da0d6a7ca6addcc878324d33f2bf4c5aab461d5dd60b39b6b71a3bdbb45",
+    "redaction": "capsule root replaced; QA PRD reference made relative"
+  }
+}

@@ -4,6 +4,22 @@
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-05
+
+- Product 澄清业务未决项时，同轮询问前置条件已满足的独立决定，仅将依赖前一项答案的细节留到下一轮。
+
+- 新增交互证据评审脚本及真实调用回归，分别记录实际问句、工具接受与宿主展示；缺失证据保持未知。将评审测试接入 CI，保留跨场景模拟试读报告及可携带证据。
+
+- Product 生成指引明确未决建议的澄清和 PRD 声明格式，并从普通写作路径移除评测答案引用；保留严格校验及未完成检查的如实报告。
+
+- Product 对重试审批未决保持原申请与审批规则的区分，并在面向用户的回复或交互中直接提出需决定的问题。
+
+- 修复 Product 行为门槛忽略样本显式失败或未覆盖状态的问题，避免结构字段齐全时误判通过，兼容未声明状态的历史报告。
+
+- 修复 Product 行为门槛对相关审批问题分类过窄的问题，支持一个问题显式关联多个业务决定，拒绝未知类别或未映射问题；问题的实际语义仍须独立复核，原始失败证据保留。
+
+- 新增通过 GitHub 直接执行的项目 npx 安装命令；可选择同时安装或更新 Product 必要 Skill，保留未受管理或已修改的内容。对安装文件、锁定记录及并发、中断和失败恢复增加验证；说明缓存更新和安装锁恢复边界。
+
 - 支持通过 `npx skills add` 安装六个自包含 Skill，附带共享脚本和资料；快照内的说明使用 GUIDE.md，避免宿主重复发现 Skill；说明从仓库安装迁移至 npx 的去重步骤，仓库安装和诊断检查入口资源，快照构建拒绝符号链接和越界路径；增加一致性、真实宿主发现及 Git 安装更新回归，并说明第三方 Skill 和绘图引擎的安装边界。
 
 - 补齐 GitHub Description、7 个 Topics 与分享预览图，保留 PNG 和可编辑 SVG；基于现有双语 Petclinic 案例及 GIF 准备中英文首发草稿，核对链接与图片，未对外发帖或新增依赖。
@@ -192,7 +208,8 @@
 - 修复 macOS 符号链接环境下 tree-sitter 回退路径未 resolve 导致 narrowed scan 静默失效的问题；`--no-codegraph` 的优先级高于测试钩子环境变量。
 - 文档同步：SKILL.md 与 README 增补发现引擎章节、降级规则与可选依赖安装方式。
 
-[Unreleased]: https://github.com/ainiaa/skills-project-docs/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/ainiaa/skills-project-docs/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/ainiaa/skills-project-docs/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/ainiaa/skills-project-docs/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/ainiaa/skills-project-docs/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/ainiaa/skills-project-docs/compare/v0.7.0...v0.8.0

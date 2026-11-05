@@ -36,6 +36,35 @@ def clarification_observations():
 
 
 class ProductBehaviorTests(unittest.TestCase):
+    def test_explicit_failed_or_uncovered_observations_never_pass(self):
+        import copy
+        with tempfile.TemporaryDirectory() as directory:
+            report = json.loads(self.behavior_report(Path(directory)).read_text())
+        check_observations(report)
+        for outcome in ('failed', 'unknown'):
+            candidate = copy.deepcopy(report)
+            candidate['observations'][0]['status'] = outcome
+            with self.subTest(outcome=outcome), self.assertRaises(AssertionError):
+                check_observations(candidate)
+        candidate = copy.deepcopy(report)
+        candidate['observations'][0]['status'] = 'pass'
+        check_observations(candidate)
+
+    def test_uncovered_observation_is_reported_as_uncovered(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = self.behavior_report(Path(directory))
+            report = json.loads(path.read_text())
+            report['observations'][0]['status'] = 'uncovered'
+            path.write_text(json.dumps(report, ensure_ascii=False))
+            code, result = self.gate('--report', str(path))
+            self.assertEqual(code, 2)
+            self.assertEqual(result['status'], 'uncovered')
+            report['observations'][1]['status'] = 'failed'
+            path.write_text(json.dumps(report, ensure_ascii=False))
+            code, result = self.gate('--report', str(path))
+            self.assertEqual(code, 1)
+            self.assertEqual(result['status'], 'invalid')
+
     def test_skill_identity_binds_shared_audience_guidance(self):
         from unittest.mock import patch
         source = ROOT / 'references/audience.md'
@@ -261,6 +290,31 @@ class ProductBehaviorTests(unittest.TestCase):
             invalid = copy.deepcopy(report)
             next(x for x in invalid['observations'] if x['id'] == item['id'])[field] = value
             with self.subTest(field=field, value=value), self.assertRaises(AssertionError):
+                check_observations(invalid)
+
+    def test_threshold_allows_combined_related_decisions_with_explicit_mapping(self):
+        import copy
+        with tempfile.TemporaryDirectory() as directory:
+            report = json.loads(self.behavior_report(Path(directory)).read_text())
+        item = next(x for x in report['observations'] if x['id'] == 'refund-unresolved-threshold')
+        item.update(questions=['审批阈值金额及币种是多少？', '失败重试是否沿用审批，结果未知时如何核实？'],
+                    businessUndecided=['approval-threshold', 'retry-approval', 'unknown-result-retry'],
+                    questionDecisions=[['approval-threshold'], ['retry-approval', 'unknown-result-retry']])
+        check_observations(report)
+        unmapped = copy.deepcopy(report)
+        unmapped_item = next(x for x in unmapped['observations'] if x['id'] == item['id'])
+        unmapped_item['questions'].append('结果未知时如何恢复？')
+        del unmapped_item['questionDecisions']
+        with self.assertRaises(AssertionError):
+            check_observations(unmapped)
+        for mapping in ([['approval-threshold']],
+                        [['approval-threshold'], ['unknown-result-retry']],
+                        [['approval-threshold'], ['retry-approval', 'theme-color']],
+                        [['approval-threshold'], []],
+                        [['approval-threshold'], ['retry-approval', 'retry-approval', 'unknown-result-retry']]):
+            invalid = copy.deepcopy(report)
+            next(x for x in invalid['observations'] if x['id'] == item['id'])['questionDecisions'] = mapping
+            with self.subTest(mapping=mapping), self.assertRaises(AssertionError):
                 check_observations(invalid)
 
     def gate(self, *args, optimized=False):
