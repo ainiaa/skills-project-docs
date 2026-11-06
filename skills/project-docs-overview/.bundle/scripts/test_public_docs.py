@@ -11,6 +11,34 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class PublicDocsTests(unittest.TestCase):
+    def test_skill_catalog_introductions_are_english_with_chinese_docs(self):
+        skills = sorted((ROOT / "skills").glob("project-docs*/SKILL.md"))
+        self.assertEqual(len(skills), 6)
+        for entry in skills:
+            with self.subTest(skill=entry.parent.name):
+                _, metadata, body = entry.read_text().split("---", 2)
+                description = re.search(r"^description: (.+)$", metadata, re.M)
+                self.assertIsNotNone(description)
+                self.assertNotRegex(description.group(1), r"[\u4e00-\u9fff]")
+                heading, introduction, language_link, _ = body.strip().split("\n\n", 3)
+                self.assertTrue(heading.startswith("# "))
+                self.assertRegex(introduction, r"[A-Za-z]")
+                self.assertNotRegex(introduction, r"[\u4e00-\u9fff]")
+                self.assertIn("](.bundle/README.zh-CN.md)", language_link)
+                self.assertRegex((entry.parent / ".bundle/README.zh-CN.md").read_text(),
+                                 r"[\u4e00-\u9fff]")
+
+    def test_packaged_guides_keep_chinese_documentation_links(self):
+        for bundle in sorted((ROOT / "skills").glob("project-docs*/.bundle")):
+            for guide in sorted((bundle / "skills").glob("project-docs*/GUIDE.md")):
+                with self.subTest(bundle=bundle.parent.name, guide=guide.parent.name):
+                    link = re.search(r"\[中文文档 / Chinese documentation\]\(([^)]+)\)",
+                                     guide.read_text())
+                    self.assertIsNotNone(link)
+                    target = (guide.parent / link.group(1)).resolve()
+                    self.assertEqual(target, (bundle / "README.zh-CN.md").resolve())
+                    self.assertTrue(target.is_file())
+
     def test_local_links_in_both_languages_and_showcase_resolve(self):
         documents = [ROOT / "README.md", ROOT / "README.en.md", ROOT / "README.zh-CN.md",
                      ROOT / "docs/examples/petclinic/README.md",

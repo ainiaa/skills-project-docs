@@ -1,11 +1,15 @@
 ---
 name: project-docs-lifecycle
-description: 围绕同一业务目标协调从痛点诊断、需求决策、设计研发、测试与业务验收到发布及效果跟踪，维护版本、证据和跨角色交接；适用于跨阶段推进或已有需求中途接续。仅写 PRD、接口文档或图时使用对应专用 Skill。
+description: Coordinate work toward one business goal, from problem diagnosis and requirements decisions through design, development, testing, business acceptance, release, and outcome tracking. Maintain versions, evidence, and cross-role handoffs when work spans stages or resumes midstream. Use the dedicated skills for a standalone PRD, API document, or diagram.
 ---
 
-若当前 Skill 目录下存在 `.bundle` 且其 `../../` 不是本集合的 Git 检出，先读取 `.bundle/skills/project-docs-lifecycle/GUIDE.md` 并以该目录为 Skill 真实目录；其中的共享脚本、资料和其他 Skill 均来自同一快照。通过 `npx skills update <已安装的本集合 Skill 名称>` 更新此类安装，按实际作用域加 `-g` 或 `-p`；不运行快照内依赖 Git 检出的更新命令。
-
 # Project Docs Lifecycle
+
+Keep a business goal traceable across requirements, design, development, testing, business acceptance, release, and outcome tracking. Maintain versioned evidence and clear handoffs, including when resuming work partway through the lifecycle. Recorded progress remains distinct from verified delivery.
+
+[中文文档 / Chinese documentation](../../README.zh-CN.md)
+
+若当前 Skill 目录下存在 `.bundle` 且其 `../../` 不是本集合的 Git 检出，先读取 `.bundle/skills/project-docs-lifecycle/GUIDE.md` 并以该目录为 Skill 真实目录；其中的共享脚本、资料和其他 Skill 均来自同一快照。通过 `npx skills update <已安装的本集合 Skill 名称>` 更新此类安装，按实际作用域加 `-g` 或 `-p`；不运行快照内依赖 Git 检出的更新命令。
 
 交接与阶段资料按[读者与用途约定](../../references/audience.md)组织；在已有目标/范围说明中携带接收读者及用途，保留同一身份、版本、证据与缺口，不新增记录字段或改变就绪和人工批准边界。
 

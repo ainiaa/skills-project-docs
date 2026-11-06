@@ -1,11 +1,15 @@
 ---
 name: project-docs
-description: 项目文档 Skill 集合的统一入口；当用户点名 project-docs、安装或升级本集合，协调从业务痛点到上线的跨阶段工作，或要组合交付产品 PRD、交互 HTML 原型、项目说明、接口文档与技术图时使用。
+description: Entry point for the Project Docs skill collection. Use when users name project-docs, install or upgrade the collection, coordinate work from business problems to release, or combine PRDs, interactive HTML prototypes, project overviews, API documentation, and technical diagrams.
 ---
 
-若当前 Skill 目录下存在 `.bundle` 且其 `../../` 不是本集合的 Git 检出，先读取 `.bundle/skills/project-docs/GUIDE.md` 并以该目录为 Skill 真实目录；其中的共享脚本、资料和其他 Skill 均来自同一快照。通过 `npx skills update <已安装的本集合 Skill 名称>` 更新此类安装，按实际作用域加 `-g` 或 `-p`；不运行快照内依赖 Git 检出的更新命令。
-
 # Project Docs
+
+Choose a documentation workflow for your project, from business requirements and clickable prototypes to source-backed onboarding guides, API documentation, and technical diagrams. Use this entry point to combine skills or install and update the collection.
+
+[中文文档 / Chinese documentation](.bundle/README.zh-CN.md)
+
+若当前 Skill 目录下存在 `.bundle` 且其 `../../` 不是本集合的 Git 检出，先读取 `.bundle/skills/project-docs/GUIDE.md` 并以该目录为 Skill 真实目录；其中的共享脚本、资料和其他 Skill 均来自同一快照。通过 `npx skills update <已安装的本集合 Skill 名称>` 更新此类安装，按实际作用域加 `-g` 或 `-p`；不运行快照内依赖 Git 检出的更新命令。
 
 根据任务目标、范围和交付物选择本集合的专用能力，再按读者组织结果。先解析当前 Skill 的真实目录；下表链接均相对该目录。读取选中能力的入口说明后，遵循其取证、生成和验证要求。
 

@@ -44,6 +44,7 @@ def snapshot_bytes(path):
     if path.suffix == ".md":
         text = data.decode("utf-8")
         if snapshot_path(path) != path:
+            text = text.replace("](.bundle/README.zh-CN.md)", "](../../README.zh-CN.md)")
             text = text.replace("](.bundle/references/", "](../../references/")
             text = text.replace("](.bundle/docs/", "](../../docs/")
             text = re.sub(r"\]\(\.bundle/skills/(project-docs(?:-[a-z0-9-]+)?)/", r"](../\1/", text)

@@ -1,9 +1,13 @@
 ---
 name: project-docs-product
-description: 用户要梳理业务需求、创建或修订 PRD、评审产品需求，或同时交付可点击 HTML 原型时使用；支持口述、纪要、业务资料和已有系统增量改造。项目现状说明走 project-docs-overview。
+description: Clarify business requirements; create, revise, or review PRDs; and deliver clickable HTML prototypes when requested. Work from spoken descriptions, meeting notes, business materials, or changes to existing systems. Use project-docs-overview for documentation of the current project.
 ---
 
 # Project Docs Product
+
+Turn business questions into reviewable product requirements, PRD revisions, or requirement reviews, with clickable HTML prototypes when requested. Work from conversations, meeting notes, business materials, and existing systems while keeping business decisions, source evidence, and acceptance criteria traceable.
+
+[中文文档 / Chinese documentation](../../README.zh-CN.md)
 
 若当前 Skill 目录下存在 `.bundle` 且其 `../../` 不是本集合的 Git 检出，先读取 `.bundle/skills/project-docs-product/GUIDE.md` 并以该目录为 Skill 真实目录；其中的共享脚本、资料和其他 Skill 均来自同一快照。通过 `npx skills update <已安装的本集合 Skill 名称>` 更新此类安装，按实际作用域加 `-g` 或 `-p`；不运行快照内依赖 Git 检出的更新命令。 帮助产品与业务人员把问题变成可评审、可交接的需求。按[读者与用途约定](../../references/audience.md)组织结果，保留同一正式 PRD、版本、规则与 FR/AC，读者摘要引用主文，不改既定业务约束。按 [产品工作流](references/workflow.md) 组合 Superpowers `brainstorming`、Matt Pocock `grilling` 和 `domain-modeling`；先确定当前阶段，只加载该阶段需要的能力，不能同时运行两个访谈主持流程。
 
