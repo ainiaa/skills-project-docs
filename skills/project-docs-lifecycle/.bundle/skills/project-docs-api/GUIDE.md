@@ -3,9 +3,13 @@ name: project-docs-api
 description: Generate API documentation from Java Spring MVC, Feign, or Python FastAPI source, without IntelliJ IDEA. Use when asked for Markdown, Postman collections, or cURL examples from routes and request/response declarations.
 ---
 
-若当前 Skill 目录下存在 `.bundle` 且其 `../../` 不是本集合的 Git 检出，先读取 `.bundle/skills/project-docs-api/GUIDE.md` 并以该目录为 Skill 真实目录；其中的共享脚本、资料和其他 Skill 均来自同一快照。通过 `npx skills update <已安装的本集合 Skill 名称>` 更新此类安装，按实际作用域加 `-g` 或 `-p`；不运行快照内依赖 Git 检出的更新命令。
-
 # Project Docs API
+
+Generate Markdown API documentation, Postman collections, and cURL examples from Spring MVC controllers, Feign clients, or FastAPI routes and their request/response declarations. Document fields and constraints from source evidence, and preserve unresolved types rather than guessing.
+
+[中文文档 / Chinese documentation](../../README.zh-CN.md)
+
+若当前 Skill 目录下存在 `.bundle` 且其 `../../` 不是本集合的 Git 检出，先读取 `.bundle/skills/project-docs-api/GUIDE.md` 并以该目录为 Skill 真实目录；其中的共享脚本、资料和其他 Skill 均来自同一快照。通过 `npx skills update <已安装的本集合 Skill 名称>` 更新此类安装，按实际作用域加 `-g` 或 `-p`；不运行快照内依赖 Git 检出的更新命令。
 
 按[读者与用途约定](../../references/audience.md)提供必要解读；生成文档及用户要求的逐字接口片段仍保持下方契约，不能因读者不同改字段、必填、枚举或示例。读者提示放交付回复，独立解读按需提供，不重写生成原文。
 

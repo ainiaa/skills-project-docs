@@ -1,11 +1,15 @@
 ---
 name: project-docs-overview
-description: 从代码和资料生成可追溯的项目、功能、架构和上手文档；按需用 Archify explainer 或零基础图解 HTML，帮助不同背景的读者理解概念、业务规则、技术机制、问题、方案取舍及变更影响。
+description: Create source-backed project, feature, architecture, and onboarding documentation from code and other materials. On request, deliver Archify explainers or beginner-friendly HTML illustrations to explain concepts, business rules, technical mechanisms, problems, tradeoffs, and change impact for different audiences.
 ---
 
-若当前 Skill 目录下存在 `.bundle` 且其 `../../` 不是本集合的 Git 检出，先读取 `.bundle/skills/project-docs-overview/GUIDE.md` 并以该目录为 Skill 真实目录；其中的共享脚本、资料和其他 Skill 均来自同一快照。通过 `npx skills update <已安装的本集合 Skill 名称>` 更新此类安装，按实际作用域加 `-g` 或 `-p`；不运行快照内依赖 Git 检出的更新命令。
-
 # Project Docs Overview
+
+Turn code and project materials into source-backed project overviews, feature explanations, architecture documentation, and developer onboarding guides. On request, create interactive Archify explainers or beginner-friendly HTML illustrations adapted to the reader and purpose.
+
+[中文文档 / Chinese documentation](.bundle/README.zh-CN.md)
+
+若当前 Skill 目录下存在 `.bundle` 且其 `../../` 不是本集合的 Git 检出，先读取 `.bundle/skills/project-docs-overview/GUIDE.md` 并以该目录为 Skill 真实目录；其中的共享脚本、资料和其他 Skill 均来自同一快照。通过 `npx skills update <已安装的本集合 Skill 名称>` 更新此类安装，按实际作用域加 `-g` 或 `-p`；不运行快照内依赖 Git 检出的更新命令。
 
 生成或修订前按[读者与用途约定](.bundle/references/audience.md)确定需要解释的部分；说明页面也可面向领域专家，不默认使用 ELI5。读者适配保留已选模板、来源与事实口径。
 

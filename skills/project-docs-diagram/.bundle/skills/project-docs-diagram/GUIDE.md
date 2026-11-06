@@ -3,9 +3,13 @@ name: project-docs-diagram
 description: Create technical diagrams from repository evidence or a system description, and validate/export Mermaid, PlantUML, draw.io, and Archify sources; not for endpoint API documentation.
 ---
 
-若当前 Skill 目录下存在 `.bundle` 且其 `../../` 不是本集合的 Git 检出，先读取 `.bundle/skills/project-docs-diagram/GUIDE.md` 并以该目录为 Skill 真实目录；其中的共享脚本、资料和其他 Skill 均来自同一快照。通过 `npx skills update <已安装的本集合 Skill 名称>` 更新此类安装，按实际作用域加 `-g` 或 `-p`；不运行快照内依赖 Git 检出的更新命令。
-
 # Project Docs Diagram
+
+Create architecture, workflow, sequence, state, and data diagrams from repository evidence or a system description. Deliver editable sources and validated exports using Mermaid, PlantUML, draw.io, or Archify, while distinguishing implemented behavior from proposed designs.
+
+[中文文档 / Chinese documentation](../../README.zh-CN.md)
+
+若当前 Skill 目录下存在 `.bundle` 且其 `../../` 不是本集合的 Git 检出，先读取 `.bundle/skills/project-docs-diagram/GUIDE.md` 并以该目录为 Skill 真实目录；其中的共享脚本、资料和其他 Skill 均来自同一快照。通过 `npx skills update <已安装的本集合 Skill 名称>` 更新此类安装，按实际作用域加 `-g` 或 `-p`；不运行快照内依赖 Git 检出的更新命令。
 
 按[读者与用途约定](../../references/audience.md)选择讲解深度、图例与总览/细节视图；保留用户指定记法、必需标签、关系及证据，不因读者层次删改业务含义。
 
