@@ -8,11 +8,14 @@ from pathlib import Path
 from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
+IN_SNAPSHOT = ROOT.name == ".bundle"
 
 
 class PublicDocsTests(unittest.TestCase):
     def test_skill_catalog_introductions_are_english_with_chinese_docs(self):
-        skills = sorted((ROOT / "skills").glob("project-docs*/SKILL.md"))
+        entry_name = "GUIDE.md" if IN_SNAPSHOT else "SKILL.md"
+        chinese_readme = "../../README.zh-CN.md" if IN_SNAPSHOT else ".bundle/README.zh-CN.md"
+        skills = sorted((ROOT / "skills").glob(f"project-docs*/{entry_name}"))
         self.assertEqual(len(skills), 6)
         for entry in skills:
             with self.subTest(skill=entry.parent.name):
@@ -24,13 +27,19 @@ class PublicDocsTests(unittest.TestCase):
                 self.assertTrue(heading.startswith("# "))
                 self.assertRegex(introduction, r"[A-Za-z]")
                 self.assertNotRegex(introduction, r"[\u4e00-\u9fff]")
-                self.assertIn("](.bundle/README.zh-CN.md)", language_link)
-                self.assertRegex((entry.parent / ".bundle/README.zh-CN.md").read_text(),
+                self.assertIn(f"]({chinese_readme})", language_link)
+                self.assertRegex((entry.parent / chinese_readme).read_text(),
                                  r"[\u4e00-\u9fff]")
 
     def test_packaged_guides_keep_chinese_documentation_links(self):
-        for bundle in sorted((ROOT / "skills").glob("project-docs*/.bundle")):
-            for guide in sorted((bundle / "skills").glob("project-docs*/GUIDE.md")):
+        bundles = [ROOT]
+        if not IN_SNAPSHOT:
+            bundles = sorted((ROOT / "skills").glob("project-docs*/.bundle"))
+            self.assertEqual(len(bundles), 6)
+        for bundle in bundles:
+            guides = sorted((bundle / "skills").glob("project-docs*/GUIDE.md"))
+            self.assertEqual(len(guides), 6, bundle)
+            for guide in guides:
                 with self.subTest(bundle=bundle.parent.name, guide=guide.parent.name):
                     link = re.search(r"\[中文文档 / Chinese documentation\]\(([^)]+)\)",
                                      guide.read_text())
