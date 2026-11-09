@@ -123,4 +123,4 @@ The [complete Chinese guide](README.zh-CN.md) retains the detailed installation,
 
 </details>
 
-Current release: [v0.11.0](https://github.com/ainiaa/skills-project-docs/releases/tag/v0.11.0). See the [changelog](CHANGELOG.md), [full documentation (Chinese)](README.zh-CN.md) and [license](LICENSE).
+Current release: [v0.11.1](https://github.com/ainiaa/skills-project-docs/releases/tag/v0.11.1). See the [changelog](CHANGELOG.md), [full documentation (Chinese)](README.zh-CN.md) and [license](LICENSE).

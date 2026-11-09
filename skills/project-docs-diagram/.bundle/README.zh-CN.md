@@ -23,7 +23,7 @@
 
 同一集合还支持 PRD 与可点击原型、Java / FastAPI 接口文档、技术图、项目说明，以及从业务痛点到上线的生命周期交接。统一入口 `project-docs` 按任务组合五个专用 Skill。支持 Codex、Claude Code、ZCode、DSH、Gemini CLI、Grok Build、pi 和 OpenCode，所有宿主复用同一仓库和渲染引擎。
 
-当前版本：[0.11.0](https://github.com/ainiaa/skills-project-docs/releases/tag/v0.11.0)。改动记录见[变更日志](CHANGELOG.md)。
+当前版本：[0.11.1](https://github.com/ainiaa/skills-project-docs/releases/tag/v0.11.1)。改动记录见[变更日志](CHANGELOG.md)。
 
 ## 快速开始
 

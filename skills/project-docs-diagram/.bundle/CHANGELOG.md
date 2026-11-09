@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+## [0.11.1] - 2026-11-09
+
+- Product 将仅验证指定原型交互的请求分流到局部可点击原型，先澄清影响结果的未决状态，并明确本次验收范围。
+
 - 六个 Skill 入口统一使用英文介绍并保留中文文档链接。文档测试兼容源码的 `SKILL.md` 和安装快照的 `GUIDE.md`，CI 额外运行一份安装快照的文档回归。
 
 ## [0.11.0] - 2026-11-05
@@ -210,7 +214,8 @@
 - 修复 macOS 符号链接环境下 tree-sitter 回退路径未 resolve 导致 narrowed scan 静默失效的问题；`--no-codegraph` 的优先级高于测试钩子环境变量。
 - 文档同步：SKILL.md 与 README 增补发现引擎章节、降级规则与可选依赖安装方式。
 
-[Unreleased]: https://github.com/ainiaa/skills-project-docs/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/ainiaa/skills-project-docs/compare/v0.11.1...HEAD
+[0.11.1]: https://github.com/ainiaa/skills-project-docs/compare/v0.11.0...v0.11.1
 [0.11.0]: https://github.com/ainiaa/skills-project-docs/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/ainiaa/skills-project-docs/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/ainiaa/skills-project-docs/compare/v0.8.0...v0.9.0
