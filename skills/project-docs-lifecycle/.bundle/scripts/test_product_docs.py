@@ -431,6 +431,20 @@ class ProductWorkflowTests(unittest.TestCase):
         for requirement in ("申请列表", "角色交接", "执行失败", "重试", "操作记录", "流程覆盖表"):
             self.assertIn(requirement, example)
 
+    def test_local_interaction_requests_route_before_prd_and_clarify_state(self):
+        entry_name = "GUIDE.md" if ROOT.name == ".bundle" else "SKILL.md"
+        skill = (PRODUCT / entry_name).read_text()
+        prototype_route = next((line for line in skill.splitlines() if line.startswith("- 原型：")), "")
+        self.assertTrue(prototype_route, "missing the prototype delivery route")
+        self.assertLess(skill.index(prototype_route), skill.index("- 普通需求："))
+        for rule in ("仅验证某个交互", "局部交互验证", "references/prototype.md"):
+            self.assertIn(rule, prototype_route)
+        guide = (PRODUCT / "references/prototype.md").read_text()
+        self.assertIn("## 局部交互验证", guide)
+        local = guide.split("## 局部交互验证", 1)[1].split("\n## ", 1)[0]
+        for rule in ("取消后保留还是丢弃未保存输入", "先直接询问", "可点击 HTML", "未覆盖范围"):
+            self.assertIn(rule, local)
+
 
 class ProductReviewTests(unittest.TestCase):
     def review(self, content):
