@@ -186,6 +186,8 @@ node scripts/product_browser.mjs --directory skills/project-docs-product/assets/
 
 特殊安装可显式指定 `MERMAID_OFFICIAL_CLI`、`PRODUCT_BROWSER_MODULES` 和 `PUPPETEER_EXECUTABLE_PATH`；配置错误会报告，不静默回退或自动安装。可选 `bundle.json` 关联 PRD、追踪、原型、图、测试和截图及其哈希；当前追踪与全部历史文件绑定同一浏览器输入快照，输入变化后须重验。格式及使用方式见[原型规范](skills/project-docs-product/references/prototype.md)。
 
+macOS 本地验收使用独立的 `chrome-headless-shell` 或显式配置的非 `.app` 无界面运行时。环境变量、Mermaid 配置和自动发现指向桌面 `.app` 时，运行器会在启动前拦截。没有可用运行时则记录未验证，可在隔离 CI 中执行浏览器验收。
+
 ### 结构校验与历史修订
 
 普通使用者由 Skill 调用脚本；需要手动检查时，在运行脚本的 Python 环境安装固定 Markdown 解析依赖：
