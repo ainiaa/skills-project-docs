@@ -62,6 +62,8 @@
 
 复用已安装的 Mermaid/Puppeteer 运行时，不为产品工作流安装新的浏览器工具链。运行器复用 engine_paths 的显式 CLI → 受管入口 → PATH 顺序，识别 CLI 软链接及简单 `#!/bin/sh` / `exec node ... -p ...` 包装脚本（只解析，不执行脚本）。`PRODUCT_BROWSER_MODULES` 优先于自动模块发现；浏览器按 `PUPPETEER_EXECUTABLE_PATH` → 包装脚本配置的 executablePath → Puppeteer 缓存 → 已有系统 Chrome/Chromium 查找。显式路径无效不静默回退；复杂包装脚本使用显式模块和浏览器路径。仅继承浏览器路径，不继承包装配置的其他启动参数。启动前汇总缺项，给出修正指引，不安装或下载。先验证宿主可打开浏览器；不可用时如实记为未验证。每次交付生成自己的 `journey.test.mjs`，由测试断言实际业务行为；退款示例不能充当新需求的测试。
 
+macOS 自动发现只从 Puppeteer 缓存或 PATH 寻找独立无界面运行时。启动前解析浏览器真实路径，拒绝桌面 `.app` 及指向它的软链接。显式或 Mermaid 配置指向桌面浏览器时，改用已有的 `chrome-headless-shell` 或在隔离 CI 验收。缺少可用运行时在回执中记为未验证，不启动应用。
+
 通用入口：`node <本集合>/scripts/product_browser.mjs --directory <交付目录> --test journey.test.mjs`。测试从该模块导入 `launchBrowser`、`openPage`、`capture`；通过 `openPage(browser, 'prototype.html', {width:390,height:844})` 打开本次成品，操作并断言后执行 `capture(page, 'mobile.png', {role:'审批人',scenario:'AC-001'})`。测试必须关闭 browser。入口将运行当次 Node 测试，拒绝零用例/跳过/页面错误/测试期间输入变更，在 `evidence/` 写日志、截图和 `browser.json`；旧输出不算本次结果。目录内只放本次交付物，`evidence/` 仅作输出；业务输入不能放进这个目录。
 
 可选 `bundle.json` 只索引已有材料，不复制规则。格式为 `schemaVersion:1`、`version`、`artifacts`、`journeys`、`browser`：

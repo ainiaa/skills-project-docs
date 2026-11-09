@@ -1,7 +1,7 @@
 /** Existing Puppeteer runtime, actual delivery tests, and current-input evidence. */
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { dirname, join, resolve, relative, isAbsolute } from 'node:path';
+import { basename, dirname, join, resolve, relative, isAbsolute } from 'node:path';
 import { mkdir, readdir, readFile, writeFile, appendFile, realpath, stat, lstat } from 'node:fs/promises';
 import { accessSync, constants, readFileSync, realpathSync, statSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -33,9 +33,10 @@ if cli:
                 for flag in ('-p', '--puppeteerConfigFile'):
                     if flag in words:
                         config = str((path.parent / words[words.index(flag)+1]).resolve())
-browsers = [shutil.which(name) for name in ('google-chrome', 'chromium', 'chromium-browser')]
-if sys.platform == 'darwin':
-    browsers += [str(base / 'Google Chrome.app/Contents/MacOS/Google Chrome') for base in (Path('/Applications'), Path.home() / 'Applications')]
+names = ['chrome-headless-shell']
+if sys.platform != 'darwin':
+    names.extend(['google-chrome', 'chromium', 'chromium-browser'])
+browsers = [shutil.which(name) for name in names]
 print(json.dumps({'paths': paths, 'config': config, 'browsers': [p for p in browsers if p]}))
 `, join(runtimeRoot, 'scripts')], { encoding: 'utf8', timeout: 10000 });
   if (probe.error || probe.status !== 0) throw new Error(`Browser discovery failed: ${probe.error?.message || probe.stderr.trim()}. Check python3 and MERMAID_OFFICIAL_CLI.`);
@@ -57,18 +58,38 @@ print(json.dumps({'paths': paths, 'config': config, 'browsers': [p for p in brow
       executablePath = config.executablePath && resolve(dirname(found.config), config.executablePath);
     } catch (error) { errors.push(`Invalid Mermaid browser config ${found.config}: ${error.message}; correct the JSON or set PUPPETEER_EXECUTABLE_PATH.`); }
   }
+  const isDesktopApp = path => path && /\.app(?:[/\\]|$)/i.test(path);
   const executable = path => {
-    try { accessSync(path, constants.X_OK); return statSync(path).isFile(); } catch { return false; }
+    try {
+      const actual = realpathSync(path);
+      accessSync(actual, constants.X_OK);
+      return statSync(actual).isFile() ? actual : undefined;
+    } catch { return undefined; }
   };
-  if (executablePath && !executable(executablePath)) errors.push(`PUPPETEER_EXECUTABLE_PATH / Mermaid executablePath is unavailable: ${executablePath}; correct the browser path.`);
-  if (!executablePath) {
+  if (executablePath) {
+    const configured = executablePath;
+    executablePath = executable(configured);
+    if (isDesktopApp(configured) || isDesktopApp(executablePath)) {
+      errors.push(`Desktop .app browser is blocked: ${executablePath || configured}. Set PUPPETEER_EXECUTABLE_PATH to a standalone headless browser or run in isolated CI.`);
+    } else if (!executablePath) {
+      errors.push(`PUPPETEER_EXECUTABLE_PATH / Mermaid executablePath is unavailable: ${configured}; correct the browser path.`);
+    }
+  } else {
     let cached;
-    try { cached = puppeteer?.executablePath(); } catch { /* Try existing system Chrome next. */ }
-    executablePath = [cached, ...found.browsers].find(path => path && executable(path));
-    if (!executablePath) errors.push('Chrome/Chromium unavailable: set PUPPETEER_EXECUTABLE_PATH to an installed browser.');
+    try { cached = await puppeteer?.executablePath(process.platform === 'darwin' ? { headless: 'shell' } : undefined); } catch { /* Try PATH next. */ }
+    for (const candidate of [cached, ...found.browsers]) {
+      if (!candidate || isDesktopApp(candidate)) continue;
+      const actual = executable(candidate);
+      if (actual && !isDesktopApp(actual)) {
+        executablePath = actual;
+        break;
+      }
+    }
+    if (!executablePath) errors.push('Chrome/Chromium unavailable. Desktop .app browsers are blocked. Set PUPPETEER_EXECUTABLE_PATH to a standalone headless browser or run in isolated CI.');
   }
   if (errors.length) throw new Error(errors.join('\n'));
-  return puppeteer.launch({ headless: true, executablePath, args: process.env.CI === 'true' ? ['--no-sandbox'] : [] });
+  const headless = /^chrome-headless-shell(?:\.exe)?$/i.test(basename(executablePath)) ? 'shell' : true;
+  return puppeteer.launch({ headless, executablePath, args: process.env.CI === 'true' ? ['--no-sandbox'] : [] });
 }
 async function contained(root, path) {
   if (typeof path !== 'string' || !path || isAbsolute(path)) throw new Error('Expected a delivery-relative path');
