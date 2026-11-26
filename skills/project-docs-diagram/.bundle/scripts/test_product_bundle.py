@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 from test_product_docs import PRD, HTML, ROOT
 
@@ -16,6 +17,29 @@ def artifact(path):
 
 
 class ProductBundleTests(unittest.TestCase):
+    def require_browser(self):
+        try:
+            result = subprocess.run(['node', str(ROOT / 'scripts/product_browser.mjs'), '--doctor'],
+                                    capture_output=True, text=True, timeout=15)
+        except (OSError, subprocess.TimeoutExpired) as error:
+            self.skipTest('Browser diagnosis unavailable: ' + str(error))
+        if result.returncode:
+            self.skipTest('Browser runtime unavailable: ' + (result.stderr or result.stdout).strip())
+
+    def test_browser_preflight_uses_diagnostics_and_preserves_unavailable_reason(self):
+        with patch('subprocess.run') as run:
+            run.return_value = subprocess.CompletedProcess([], 0, '{"result":"ready"}', '')
+            self.require_browser()
+            self.assertEqual(run.call_args.args[0][-1], '--doctor')
+            for reason in ('Desktop .app browser is blocked', 'Puppeteer unavailable'):
+                run.return_value = subprocess.CompletedProcess([], 2, '', reason)
+                with self.assertRaisesRegex(unittest.SkipTest, reason):
+                    self.require_browser()
+            for error in (FileNotFoundError('node unavailable'), subprocess.TimeoutExpired('node', 15)):
+                run.side_effect = error
+                with self.assertRaisesRegex(unittest.SkipTest, 'Browser diagnosis unavailable'):
+                    self.require_browser()
+
     def setUp(self):
         temporary = tempfile.TemporaryDirectory(prefix="product bundle ")
         self.addCleanup(temporary.cleanup)
@@ -218,8 +242,8 @@ class ProductBundleTests(unittest.TestCase):
         bundle["diagrams"][0]["scenarios"] = ["AC-004"]
         self.assertFalse(self.check(bundle)["valid"], "An existing AC must belong to a mapped FR")
 
-    @unittest.skipUnless(os.environ.get("PRODUCT_BROWSER_MODULES") or os.environ.get("MERMAID_OFFICIAL_CLI"), "browser runtime is not configured")
     def test_generic_browser_runs_delivery_assertions_and_records_stable_capture(self):
+        self.require_browser()
         runner = ROOT / "scripts/product_browser.mjs"
         self.assertTrue(runner.is_file(), "generic browser runner missing")
         module = runner.as_uri()
@@ -271,8 +295,8 @@ class ProductBundleTests(unittest.TestCase):
             report = json.loads((self.root / "evidence/browser.json").read_text())
             self.assertEqual(report["result"], "fail")
 
-    @unittest.skipUnless(os.environ.get("PRODUCT_BROWSER_MODULES") or os.environ.get("MERMAID_OFFICIAL_CLI"), "browser runtime is not configured")
     def test_browser_refuses_external_output_and_reports_unavailable_runtime(self):
+        self.require_browser()
         runner = ROOT / "scripts/product_browser.mjs"
         evidence = self.root / "evidence"; evidence.mkdir(exist_ok=True)
         outside = self.root.parent / (self.root.name + "-preserve.txt")
@@ -301,8 +325,8 @@ class ProductBundleTests(unittest.TestCase):
                 self.receipt["screenshots"][0]["page"] = artifact(self.root / "prototype.html")
                 self.assertFalse(self.check()["valid"], "Outputs must never supply untracked behavior")
 
-    @unittest.skipUnless(os.environ.get("PRODUCT_BROWSER_MODULES") or os.environ.get("MERMAID_OFFICIAL_CLI"), "browser runtime is not configured")
     def test_browser_rejects_dynamic_loads_of_excluded_outputs(self):
+        self.require_browser()
         runner = ROOT / "scripts/product_browser.mjs"
         (self.root / "evidence/rules.js").write_text("window.threshold = 500")
         (self.root / "prototype.html").write_text(HTML + '<script>const s=document.createElement("script");s.src="evidence/rules.js";document.body.append(s)</script>')

@@ -42,6 +42,27 @@ function desktopBrowser(root) {
   return desktop;
 }
 
+test('doctor discovers a safe runtime without launching a browser or writing evidence', t => {
+  const f = fixture(t);
+  const diagnose = changes => spawnSync(process.execPath, [fileURLToPath(runtime), '--doctor'],
+    { env: { ...f.env, ...changes }, encoding: 'utf8' });
+  const shell = join(f.root, 'chrome-headless-shell');
+  writeFileSync(shell, '#!/bin/sh\nexit 0\n', { mode: 0o755 });
+  const ready = diagnose({ PUPPETEER_EXECUTABLE_PATH: '', TEST_CACHED_BROWSER: shell });
+  assert.equal(ready.status, 0, ready.stderr);
+  assert.deepEqual(JSON.parse(ready.stdout), { result: 'ready', executablePath: shell, headless: 'shell' });
+  for (const executablePath of [join(f.root, 'missing'), desktopBrowser(f.root)]) {
+    const rejected = diagnose({ PUPPETEER_EXECUTABLE_PATH: executablePath });
+    assert.equal(rejected.status, 2);
+    assert.match(rejected.stderr, /unavailable|desktop.*\.app/i);
+  }
+  const badModules = diagnose({ PRODUCT_BROWSER_MODULES: join(f.root, 'missing modules') });
+  assert.equal(badModules.status, 2);
+  assert.match(badModules.stderr, /Puppeteer unavailable/);
+  assert.ok(!existsSync(f.launched));
+  assert.ok(!existsSync(join(f.root, 'evidence')));
+});
+
 test('managed renderer symlink discovers Puppeteer without module configuration', t => {
   const f = fixture(t);
   mkdirSync(join(f.root, 'bin'));
