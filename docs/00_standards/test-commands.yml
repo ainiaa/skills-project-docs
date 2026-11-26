@@ -1,2 +1,7 @@
-# Product-owned Python entrypoints; existing modules are checked by full regression.
-coverage: python3 -m pytest scripts/test_product_docs.py scripts/test_product_split.py scripts/test_product_dependencies.py scripts/test_product_bundle.py scripts/test_product_behavior_eval.py --cov --cov-fail-under=90
+# Canonical Product/Lifecycle Python sources; installed copies are checked separately.
+browser_doctor: node scripts/product_browser.mjs --doctor
+browser: node --test scripts/test_product_browser.mjs
+release_specialties: env PYTHONPATH=scripts python3 -m unittest scripts.test_install scripts.test_update scripts.test_product_npx_installer scripts.test_native_diagrams scripts.test_archify_native_types scripts.test_generate_api_docs
+engineering_handoff: python3 -m unittest discover -s scripts -p test_engineering_handoff.py
+coverage: python3 -m pytest scripts/test_product_docs.py scripts/test_product_split.py scripts/test_product_dependencies.py scripts/test_product_bundle.py scripts/test_product_behavior_eval.py scripts/test_product_handoff.py scripts/test_product_evidence.py scripts/test_product_inputs.py scripts/test_product_revision.py scripts/test_product_npx_installer.py scripts/test_lifecycle_record.py scripts/test_lifecycle_relations.py scripts/test_lifecycle_quality.py scripts/test_lifecycle_handoff.py scripts/test_lifecycle_checklist.py --cov --cov-fail-under=90
+converge_integration: python3 -m pytest scripts/test_product_handoff.py scripts/test_engineering_handoff.py scripts/test_product_evidence.py scripts/test_suite_upgrade.py

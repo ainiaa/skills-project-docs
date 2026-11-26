@@ -16,10 +16,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Check public docs in source and one installation snapshot
-        run: |
-          python3 -m unittest discover -s scripts -p test_public_docs.py
-          python3 -m unittest discover -s skills/project-docs/.bundle/scripts -p test_public_docs.py
+      - name: Check public docs and installation links from the checkout
+        run: python3 -m unittest discover -s scripts -p test_public_docs.py
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -29,23 +27,26 @@ jobs:
         run: python3 -m pip install pytest==8.4.2 pytest-cov==7.0.0
       - name: Reuse the existing Mermaid browser runtime
         run: python3 scripts/install_renderers.py --engine mermaid
+      - name: Diagnose the headless browser before contract tests
+        run: node scripts/product_browser.mjs --doctor
+      - name: Verify release specialties beyond Product and Lifecycle coverage
+        run: env PYTHONPATH=scripts python3 -m unittest scripts.test_install scripts.test_update scripts.test_product_npx_installer scripts.test_native_diagrams scripts.test_archify_native_types scripts.test_generate_api_docs
       - name: Product contracts, frozen fixtures and installation regressions
         run: |
           python3 scripts/build_npx_bundles.py --check
           npx -y skills@1.7.6 --version
           PROJECT_DOCS_NPX_TEST=1 python3 -m unittest scripts.test_npx_install
-          python3 -m pytest scripts/test_product*.py --cov --cov-fail-under=90
+          python3 -m unittest discover -s scripts -p test_coverage_scope.py
+          python3 -m pytest scripts/test_product_docs.py scripts/test_product_split.py scripts/test_product_dependencies.py scripts/test_product_bundle.py scripts/test_product_behavior_eval.py scripts/test_product_handoff.py scripts/test_product_evidence.py scripts/test_product_inputs.py scripts/test_product_revision.py scripts/test_product_npx_installer.py scripts/test_lifecycle_record.py scripts/test_lifecycle_relations.py scripts/test_lifecycle_quality.py scripts/test_lifecycle_handoff.py scripts/test_lifecycle_checklist.py --cov --cov-fail-under=90
           python3 -m unittest discover -s evals/product -p 'test_*.py'
-          python3 -m unittest discover -s scripts -p test_install.py
-          python3 -m unittest discover -s scripts -p test_update.py
-          python3 -m unittest discover -s scripts -p 'test_lifecycle*.py'
+          env PYTHONPATH=scripts python3 -m unittest scripts.test_lifecycle_delivery scripts.test_lifecycle_pilot scripts.test_engineering_handoff
           python3 -m unittest discover -s scripts -p test_install_product_dependencies.py
       - name: Record model behavior verification boundary
         run: |
           python3 - <<'PY'
           import os
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
-              summary.write('Model behavior and actual authored artifact trials: **not run / uncovered** in deterministic CI. Release acceptance requires both fresh reports in their original upstream environment: `python3 scripts/product_behavior_eval.py --release --report <behavior.json> --artifacts <artifacts.json>`. The 90% coverage gate covers the four Product modules declared in `.coveragerc`, not the whole repository.\n')
+              summary.write('Model behavior and actual authored artifact trials: **not run / uncovered** in deterministic CI. Release acceptance requires both fresh reports in their original upstream environment: `python3 scripts/product_behavior_eval.py --release --report <behavior.json> --artifacts <artifacts.json>`. The 90% coverage gate covers the canonical Product and Lifecycle modules declared in `.coveragerc`, not the whole repository.\n')
           PY
       - name: Validate the example PRD and interactive prototype
         run: |

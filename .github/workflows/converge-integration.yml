@@ -1,0 +1,58 @@
+name: Optional Converge integration
+
+on:
+  workflow_dispatch:
+    inputs:
+      converge_ref:
+        description: Full commit SHA of a compatible Converge checkout
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    runs-on: ubuntu-24.04
+    env:
+      PROJECT_DOCS_CONVERGE_TEST_ROOT: ${{ github.workspace }}/../converge-acceptance
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Require a pinned Converge acceptance revision
+        env:
+          CONVERGE_REF: ${{ inputs.converge_ref }}
+        run: |
+          if [[ ! "$CONVERGE_REF" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Provide a full compatible Converge commit SHA" >&2
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+        with:
+          repository: ainiaa/skills-convergent-delivery
+          ref: ${{ inputs.converge_ref }}
+          path: .converge-acceptance
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install existing test dependencies
+        run: python3 -m pip install -r scripts/requirements-product.txt pytest==8.4.2
+      - name: Preflight the selected Converge
+        run: |
+          mv .converge-acceptance "$PROJECT_DOCS_CONVERGE_TEST_ROOT"
+          python3 scripts/product_handoff.py --check-provider --converge-root "$PROJECT_DOCS_CONVERGE_TEST_ROOT" --capability adopt
+          python3 scripts/product_handoff.py --check-provider --converge-root "$PROJECT_DOCS_CONVERGE_TEST_ROOT" --capability revise
+          python3 scripts/product_handoff.py --check-provider --converge-root "$PROJECT_DOCS_CONVERGE_TEST_ROOT" --capability iterate
+          git -C "$PROJECT_DOCS_CONVERGE_TEST_ROOT" cat-file -e '34eaf71f2bce81c051cb220aaa5e11b27d467a2b^{commit}'
+      - name: Verify the selected combination
+        run: |
+          python3 -m pytest scripts/test_product_handoff.py scripts/test_engineering_handoff.py scripts/test_product_evidence.py scripts/test_suite_upgrade.py --junitxml="$RUNNER_TEMP/converge-integration.xml"
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          from xml.etree import ElementTree
+          report = ElementTree.parse(Path(os.environ['RUNNER_TEMP']) / 'converge-integration.xml')
+          if not list(report.iter('testcase')) or any(report.iter('skipped')):
+              raise SystemExit('Converge integration requires executed tests without skips')
+          PY

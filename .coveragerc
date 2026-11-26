@@ -5,7 +5,18 @@ include =
     */scripts/product_dependencies.py
     */scripts/product_bundle.py
     */scripts/product_behavior_eval.py
+    */scripts/product_handoff.py
+    */scripts/provider_test_evidence.py
+    */scripts/product_inputs.py
+    */scripts/product_revision.py
+    */scripts/lifecycle_checklist.py
+    */scripts/lifecycle_quality.py
+    */scripts/lifecycle_relations.py
+    */scripts/lifecycle_record.py
+omit =
+    */.bundle/*
 
 [report]
 fail_under = 90
+precision = 2
 show_missing = True
