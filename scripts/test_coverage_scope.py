@@ -35,6 +35,34 @@ class CoverageScopeTests(unittest.TestCase):
 
 @unittest.skipUnless((ROOT / '.github/workflows/product-acceptance.yml').is_file(), 'source workflow required')
 class WorkflowCoverageTests(unittest.TestCase):
+    def test_product_ci_launches_mermaid_with_runner_browser_config(self):
+        import tempfile
+        import textwrap
+
+        workflow = (ROOT / '.github/workflows/product-acceptance.yml').read_text()
+        section = workflow.split('name: Reuse the existing Mermaid browser runtime\n', 1)[1]
+        step = section.split('      - name:', 1)[0]
+        command = textwrap.dedent(step.partition('run:')[2].removeprefix(' |').lstrip('\n'))
+        with tempfile.TemporaryDirectory(prefix='mermaid ci ') as temporary:
+            root = Path(temporary)
+            mmdc = root / 'bin' / 'mmdc'
+            mmdc.parent.mkdir()
+            mmdc.write_text("#!/bin/sh\nprintf '%s\\n' \"$@\"\n")
+            mmdc.chmod(0o755)
+            wrapper = root / 'mmdc-product'
+            env = dict(os.environ, RUNNER_TEMP=str(root), UNDERSTAND_RENDERER_HOME=str(root),
+                       MERMAID_OFFICIAL_CLI=str(wrapper))
+            result = subprocess.run(['bash', '-e', '-c', 'python3() { :; }\n' + command],
+                                    env=env, capture_output=True, text=True, timeout=10)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue(wrapper.is_file())
+            result = subprocess.run([str(wrapper), '-i', 'input file.mmd'],
+                                    capture_output=True, text=True, check=True, timeout=10)
+            flag, config, *args = result.stdout.splitlines()
+            self.assertEqual(flag, '--puppeteerConfigFile')
+            self.assertEqual(args, ['-i', 'input file.mmd'])
+            self.assertEqual(json.loads(Path(config).read_text()), {'args': ['--no-sandbox']})
+
     def test_browser_and_release_specialties_have_shared_commands(self):
         commands = dict(line.split(': ', 1) for line in
                         (ROOT / 'docs/00_standards/test-commands.yml').read_text().splitlines()

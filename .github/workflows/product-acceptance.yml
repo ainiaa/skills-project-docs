@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       UNDERSTAND_RENDERER_HOME: ${{ github.workspace }}/.renderers/product
-      MERMAID_OFFICIAL_CLI: ${{ github.workspace }}/.renderers/product/bin/mmdc
+      MERMAID_OFFICIAL_CLI: ${{ runner.temp }}/mmdc-product
       PRODUCT_SCREENSHOT_DIR: ${{ github.workspace }}/.product-screenshots
     steps:
       - uses: actions/checkout@v4
@@ -26,7 +26,14 @@ jobs:
       - name: Install the existing coverage test tools
         run: python3 -m pip install pytest==8.4.2 pytest-cov==7.0.0
       - name: Reuse the existing Mermaid browser runtime
-        run: python3 scripts/install_renderers.py --engine mermaid
+        run: |
+          python3 scripts/install_renderers.py --engine mermaid
+          # The hosted Ubuntu runner blocks Chromium's sandbox. Scope the flag to CI.
+          config="$RUNNER_TEMP/mermaid-puppeteer-product.json"
+          printf '%s\n' '{"args":["--no-sandbox"]}' > "$config"
+          printf '#!/bin/sh\nexec "%s" --puppeteerConfigFile "%s" "$@"\n' \
+            "$UNDERSTAND_RENDERER_HOME/bin/mmdc" "$config" > "$MERMAID_OFFICIAL_CLI"
+          chmod +x "$MERMAID_OFFICIAL_CLI"
       - name: Diagnose the headless browser before contract tests
         run: node scripts/product_browser.mjs --doctor
       - name: Verify release specialties beyond Product and Lifecycle coverage
