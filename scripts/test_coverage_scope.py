@@ -50,11 +50,14 @@ class WorkflowCoverageTests(unittest.TestCase):
             mmdc.write_text("#!/bin/sh\nprintf '%s\\n' \"$@\"\n")
             mmdc.chmod(0o755)
             wrapper = root / 'mmdc-product'
+            env_file = root / 'env'
             env = dict(os.environ, RUNNER_TEMP=str(root), UNDERSTAND_RENDERER_HOME=str(root),
-                       MERMAID_OFFICIAL_CLI=str(wrapper))
+                       GITHUB_ENV=str(env_file))
+            env.pop('MERMAID_OFFICIAL_CLI', None)
             result = subprocess.run(['bash', '-e', '-c', 'python3() { :; }\n' + command],
                                     env=env, capture_output=True, text=True, timeout=10)
             self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(env_file.read_text().splitlines(), [f'MERMAID_OFFICIAL_CLI={wrapper}'])
             self.assertTrue(wrapper.is_file())
             result = subprocess.run([str(wrapper), '-i', 'input file.mmd'],
                                     capture_output=True, text=True, check=True, timeout=10)
