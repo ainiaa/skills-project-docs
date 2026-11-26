@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Docs Engineering"
+  short_description: "Design engineering solutions, quality checks and release preparations"
+  default_prompt: "Use $project-docs-engineering to prepare the engineering solution and validation approach for this task, and use the existing Converge task for authorized implementation."

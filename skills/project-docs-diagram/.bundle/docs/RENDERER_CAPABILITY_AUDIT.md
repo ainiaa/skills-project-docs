@@ -21,7 +21,7 @@
 
 Archify 3.2.0 的 `explainer` 已接入 `project-docs-overview`，由统一入口按“一页说明／项目介绍交互 HTML”需求路由。使用独立 `.archify.md` 草稿和官方 `finalize explainer`，支持结论、问题面板、原生图、步骤、表格、图表、固定 Git 提交的代码引用与 `patch explainer` 局部更新；保留官方回执。它不增加 typed 图型或 IR v2 转换器，也不使用 `validate_project_doc.py` 的固定模板检查。
 
-官方 finalize 默认不启动浏览器，需 `--browser-check` 才有浏览器验收。页面长图 PNG/WebP/JPG 与打印 PDF 独立于图 Viewer 的 SVG/WebM 导出；浏览器兼容性及实际 MIME 必须核实。[独立规范与可执行示例](../skills/project-docs-overview/references/explainer.md)随 Skill 安装，不依赖独立 Archify Skill。`test_archify_explainer.py` 验证示例交付、四种样式、来源固定、局部更新和失败保护；设置 `ARCHIFY_EXPLAINER_BROWSER_TEST=1` 后还验证官方浏览器检查、390px／1440px 布局和四种格式的真实导出。2026-10-20 本机启用浏览器后的 9 项专项测试全部通过；另用真实仓库生成 HTML、检查桌面／手机截图和长图，并确认四引擎 doctor 及三个修改的 Skill 元数据校验通过。CI 的 Archify 作业已启用这组测试，远端结果需以实际运行记录为准。
+官方 finalize 默认不启动浏览器，需 `--browser-check` 才有浏览器验收。页面长图 PNG/WebP/JPG 与打印 PDF 独立于图 Viewer 的 SVG/WebM 导出；浏览器兼容性及实际 MIME 必须核实。[独立规范与可执行示例](https://github.com/ainiaa/skills-project-docs/blob/main/skills/project-docs-overview/references/explainer.md)随 Skill 安装，不依赖独立 Archify Skill。`test_archify_explainer.py` 验证示例交付、四种样式、来源固定、局部更新和失败保护；设置 `ARCHIFY_EXPLAINER_BROWSER_TEST=1` 后还验证官方浏览器检查、390px／1440px 布局和四种格式的真实导出。2026-10-20 本机启用浏览器后的 9 项专项测试全部通过；另用真实仓库生成 HTML、检查桌面／手机截图和长图，并确认四引擎 doctor 及三个修改的 Skill 元数据校验通过。CI 的 Archify 作业已启用这组测试，远端结果需以实际运行记录为准。
 
 ## 已实现的补缺与剩余边界
 

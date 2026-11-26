@@ -8,15 +8,22 @@ from pathlib import Path
 from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
-IN_SNAPSHOT = ROOT.name == ".bundle"
+CHINESE_DOCS = "https://github.com/ainiaa/skills-project-docs/blob/main/README.zh-CN.md"
 
 
 class PublicDocsTests(unittest.TestCase):
+    def test_distributed_suite_guides_do_not_publish_local_project_paths(self):
+        for name in ('suite-acceptance.md', 'suite-release.md'):
+            self.assertNotRegex((ROOT / 'docs' / name).read_text(), r'/Users/[^/\s]+/www/')
+
+    def test_current_installation_inventory_does_not_describe_the_old_six_entry_layout(self):
+        text = (ROOT / 'README.zh-CN.md').read_text()
+        self.assertNotRegex(text, r'软链接六个 Skill 目录|统一入口与五个专用能力')
+
     def test_skill_catalog_introductions_are_english_with_chinese_docs(self):
-        entry_name = "GUIDE.md" if IN_SNAPSHOT else "SKILL.md"
-        chinese_readme = "../../README.zh-CN.md" if IN_SNAPSHOT else ".bundle/README.zh-CN.md"
-        skills = sorted((ROOT / "skills").glob(f"project-docs*/{entry_name}"))
-        self.assertEqual(len(skills), 6)
+        self.assertRegex((ROOT / "README.zh-CN.md").read_text(), r"[\u4e00-\u9fff]")
+        skills = sorted((ROOT / "skills").glob("project-docs*/SKILL.md"))
+        self.assertEqual(len(skills), 7)
         for entry in skills:
             with self.subTest(skill=entry.parent.name):
                 _, metadata, body = entry.read_text().split("---", 2)
@@ -27,26 +34,20 @@ class PublicDocsTests(unittest.TestCase):
                 self.assertTrue(heading.startswith("# "))
                 self.assertRegex(introduction, r"[A-Za-z]")
                 self.assertNotRegex(introduction, r"[\u4e00-\u9fff]")
-                self.assertIn(f"]({chinese_readme})", language_link)
-                self.assertRegex((entry.parent / chinese_readme).read_text(),
-                                 r"[\u4e00-\u9fff]")
+                self.assertIn(f"]({CHINESE_DOCS})", language_link)
 
     def test_packaged_guides_keep_chinese_documentation_links(self):
-        bundles = [ROOT]
-        if not IN_SNAPSHOT:
-            bundles = sorted((ROOT / "skills").glob("project-docs*/.bundle"))
-            self.assertEqual(len(bundles), 6)
+        bundles = sorted((ROOT / "skills").glob("project-docs*/.bundle"))
+        self.assertEqual(len(bundles), 7)
         for bundle in bundles:
             guides = sorted((bundle / "skills").glob("project-docs*/GUIDE.md"))
-            self.assertEqual(len(guides), 6, bundle)
+            self.assertIn(bundle / "skills" / bundle.parent.name / "GUIDE.md", guides)
             for guide in guides:
                 with self.subTest(bundle=bundle.parent.name, guide=guide.parent.name):
                     link = re.search(r"\[中文文档 / Chinese documentation\]\(([^)]+)\)",
                                      guide.read_text())
                     self.assertIsNotNone(link)
-                    target = (guide.parent / link.group(1)).resolve()
-                    self.assertEqual(target, (bundle / "README.zh-CN.md").resolve())
-                    self.assertTrue(target.is_file())
+                    self.assertEqual(link.group(1), CHINESE_DOCS)
 
     def test_local_links_in_both_languages_and_showcase_resolve(self):
         documents = [ROOT / "README.md", ROOT / "README.en.md", ROOT / "README.zh-CN.md",
@@ -56,6 +57,21 @@ class PublicDocsTests(unittest.TestCase):
                      ROOT / "docs/examples/petclinic/developer-guide.md",
                      ROOT / "docs/media/README.md",
                      ROOT / "docs/SHARING.md",
+                     ROOT / "docs/pdlc-capability-map.md",
+                     ROOT / "docs/engineering-ownership.md",
+                     ROOT / "docs/suite-acceptance.md",
+                     ROOT / "docs/suite-release.md",
+                     ROOT / "skills/project-docs-product/references/ui-design.md",
+                     ROOT / "skills/project-docs-lifecycle/references/coordination.md",
+                     *sorted((ROOT / "skills/project-docs-engineering/references").glob("*.md")),
+                     ROOT / "references/third-party-notices.md",
+                     ROOT / "skills/project-docs-product/references/engineering.md",
+                     ROOT / "skills/project-docs-product/references/revision.md",
+                     ROOT / "skills/project-docs-product/references/iterations.md",
+                     *sorted((ROOT / "skills/project-docs-engineering/assets/examples/iteration-handoff").rglob("*.md")),
+                     ROOT / "skills/project-docs-product/references/pdlc.md",
+                     *sorted((ROOT / "skills/project-docs-lifecycle/references").glob("engineering*.md")),
+                     *sorted((ROOT / "skills/project-docs-lifecycle/references/engineering").glob("*.md")),
                      ROOT / "docs/launch/README.md",
                      ROOT / "docs/launch/first-post.zh-CN.md",
                      ROOT / "docs/launch/first-post.en.md"]
@@ -69,6 +85,21 @@ class PublicDocsTests(unittest.TestCase):
                     path = unquote(target.split("#", 1)[0])
                     with self.subTest(target=target):
                         self.assertTrue((document.parent / path).exists(), target)
+
+    def test_capability_inventory_has_unique_entries_and_resolvable_owned_methods(self):
+        inventory = json.loads((ROOT / 'docs/pdlc-capability-map.json').read_text())
+        self.assertEqual(inventory['entry_count'], 38)
+        entries = inventory['entries']
+        self.assertEqual(len(entries), 38)
+        self.assertEqual(len({entry['name'] for entry in entries}), 38)
+        for entry in entries:
+            with self.subTest(capability=entry['name']):
+                method = (ROOT / 'docs' / entry['owned_reference']).resolve()
+                self.assertTrue(method.is_relative_to(ROOT))
+                self.assertTrue(method.is_file())
+                self.assertRegex(entry['sha256'], r'^[a-f0-9]{64}$')
+                self.assertTrue(entry['owner'])
+                self.assertTrue(entry['limit'])
 
     def test_showcase_preview_is_a_real_png_and_has_editable_sources(self):
         folder = ROOT / "docs/examples/petclinic"

@@ -3,6 +3,7 @@
 作者：Jeff.Liu
 """
 import argparse
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from glob import escape
 from fractions import Fraction
@@ -14,6 +15,12 @@ import tempfile
 
 STATES = ("not_started", "in_progress", "blocked", "pending_confirmation", "completed", "not_applicable", "cancelled")
 ROUTES = ("development", "guidance", "permission", "configuration", "data")
+RELATION_TYPES = ('extends', 'depends_on', 'supersedes', 'resolves', 'conflicts_with', 'relates_to')
+SYMMETRIC_RELATIONS = ('conflicts_with', 'relates_to')
+
+
+def _same_json(left, right):
+    return json.dumps(left, sort_keys=True) == json.dumps(right, sort_keys=True)
 
 
 def _observation_time(value):
@@ -38,6 +45,59 @@ def _observation_time(value):
             offset = -offset
     return (parsed.toordinal() * 86400 + parsed.hour * 3600 + parsed.minute * 60 + parsed.second
             + fraction - offset)
+
+
+def validate_relations(data):
+    """Inspect declared edges only; absence of an edge is not proof of completeness."""
+    errors, edges, dangling, stale = [], [], [], []
+    artifacts = data.get('artifacts', []) if isinstance(data, dict) else []
+    if not isinstance(artifacts, list):
+        artifacts = []
+    nodes = {n['id']: n for n in artifacts if isinstance(n, dict) and isinstance(n.get('id'), str)}
+    seen = set()
+    dependencies = {key:set() for key in nodes}
+    for source, node in nodes.items():
+        extra = node.get('relations', {})
+        if not isinstance(extra, dict) or any(kind not in RELATION_TYPES or kind == 'depends_on' for kind in extra):
+            errors.append(f'{source}: invalid relations; depends_on must use its original field')
+            extra = {}
+        for kind, refs in [('depends_on', node.get('depends_on')) , *extra.items()]:
+            if not isinstance(refs, list):
+                errors.append(f'{source}.{kind}: expected array')
+                continue
+            for ref in refs:
+                if (not isinstance(ref, dict) or (kind != 'depends_on' and set(ref) != {'id','version'})
+                        or not isinstance(ref.get('id'), str) or not ref['id'].strip()
+                        or type(ref.get('version')) is not int or ref['version'] <= 0):
+                    errors.append(f'{source}.{kind}: invalid relation reference')
+                    continue
+                target = ref['id']
+                edge = dict(source=source, type=kind, target=target, version=ref['version'])
+                edges.append(edge)
+                pair = tuple(sorted((source,target))) if kind in SYMMETRIC_RELATIONS else (source,target)
+                key = (kind,*pair)
+                if key in seen:
+                    errors.append(f'{source}.{kind}: duplicate relation to {target}')
+                seen.add(key)
+                if source == target:
+                    errors.append(f'{source}.{kind}: self relation')
+                if target not in nodes:
+                    errors.append(f'{source}.{kind}: missing endpoint {target}')
+                    dangling.append(edge)
+                else:
+                    if ref['version'] != nodes[target].get('version'):
+                        stale.append(edge)
+                    if kind == 'depends_on':
+                        dependencies[source].add(target)
+    pending = set(nodes)
+    while pending:
+        ready = {key for key in pending if not dependencies[key].intersection(pending)}
+        if not ready:
+            errors.append('dependency cycle')
+            break
+        pending -= ready
+    return dict(valid=not errors, errors=errors, edges=sorted(edges,key=lambda e:(e['source'],e['type'],e['target'],e['version'])),
+                dangling=dangling, stale=stale)
 
 
 def check_record(data):
@@ -167,6 +227,9 @@ def check_record(data):
         if node.get("status") == "completed" and not valid_evidence:
             review.setdefault(identity, []).append("completion lacks current executed/confirmed evidence")
 
+    relations = validate_relations(data)
+    errors.extend(relations['errors'])
+
     dependencies = {}
     for identity, node in nodes.items():
         dependencies[identity] = []
@@ -194,6 +257,10 @@ def check_record(data):
             if any(target in review for target in dependencies[identity]):
                 review.setdefault(identity, []).append("upstream needs review")
         pending -= ready
+    # Context binding review is local; only dependency/evidence review propagates.
+    for edge in relations['stale']:
+        if edge['type'] != 'depends_on':
+            review.setdefault(edge['source'], []).append(f"relation version changed: {edge['type']} {edge['target']}")
     statuses = {}
     for identity, branch in branches.items():
         required = branch.get("required")
@@ -218,15 +285,62 @@ def check_record(data):
             "branches": statuses, "verification": "local_consistency_only"}
 
 
-def update_record(path, candidate, expected_revision):
-    """Single local writer, CAS revision, exclusive lock, immutable previous snapshot."""
-    path = Path(path).resolve(strict=True)
+@contextmanager
+def _record_lock(path):
     lock = path.with_name(path.name + ".lock")
-    # Never remove another writer's lock when exclusive acquisition fails.
-    descriptor = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    if os.name != 'posix':
+        descriptor = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        os.close(descriptor)
+        try:
+            yield
+        finally:
+            lock.unlink()
+        return
+    import fcntl
+    descriptor = os.open(path.with_name(f'.{path.name}.writer.lock'), os.O_CREAT | os.O_RDWR, 0o600)
+    marker = None
+    acquired = False
+    guard = b'project-docs-lifecycle-writer-v1\n'
+    try:
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as error:
+            raise FileExistsError(f'record writer is active: {path}') from error
+        if lock.exists() or lock.is_symlink():
+            if lock.is_symlink() or lock.read_bytes() != guard:
+                raise FileExistsError(f'unknown legacy lock requires owner verification: {lock}')
+            lock.unlink()
+        # Publish a complete guard atomically; old O_EXCL writers still cannot enter.
+        with tempfile.NamedTemporaryFile(mode='wb', dir=path.parent, delete=False) as output:
+            marker = Path(output.name)
+            output.write(guard)
+            output.flush()
+            os.fsync(output.fileno())
+        os.link(marker, lock)
+        acquired = True
+        marker.unlink()
+        marker = None
+        yield
+    finally:
+        try:
+            if acquired:
+                lock.unlink()
+            if marker is not None:
+                marker.unlink(missing_ok=True)
+        finally:
+            os.close(descriptor)
+
+
+def update_record(path, candidate, expected_revision):
+    """Single local writer, CAS revision and immutable previous snapshot."""
+    path = Path(path).resolve(strict=True)
+    with _record_lock(path):
+        _update_record_locked(path, candidate, expected_revision)
+
+
+def _update_record_locked(path, candidate, expected_revision):
     temporary = None
     try:
-        os.close(descriptor)
         current_bytes = path.read_bytes()
         current = json.loads(current_bytes)
         if not check_record(current)["valid"] or not check_record(candidate)["valid"]:
@@ -261,27 +375,37 @@ def update_record(path, candidate, expected_revision):
         for node in candidate["artifacts"]:
             old = previous.get(node["id"])
             if old:
-                if node['version'] == old['version'] and any(e not in node['evidence'] for e in old['evidence']):
+                if node['version'] == old['version'] and any(
+                        not any(_same_json(prior, evidence) for evidence in node['evidence'])
+                        for prior in old['evidence']):
                     raise ValueError(f"same-version evidence cannot be rewritten or removed: {node['id']}")
             for evidence in node['evidence']:
                 for prior in known_evidence.get(node['id'], []):
                     if (all(evidence[key] == prior[key] for key in ('kind', 'source', 'actor'))
                             and _observation_time(evidence['at']) == _observation_time(prior['at'])
-                            and evidence != prior):
+                            and not _same_json(evidence, prior)):
                         raise ValueError(f"existing observation cannot be rewritten or rebound: {node['id']}")
             observations = ("status", "evidence", "owner", "reason", "recovery")
             content = {key: value for key, value in node.items() if key not in observations}
             old_content = {key: value for key, value in (old or {}).items() if key not in observations}
             if old and (node["version"] < old["version"] or
-                        (content != old_content and node["version"] == old["version"])):
+                        (not _same_json(content, old_content) and node["version"] == old["version"])):
                 raise ValueError(f"changed artifact requires a newer version: {node['id']}")
         history = path.with_name(f"{path.name}.rev-{expected_revision}.json")
         if history.exists():
             if history.read_bytes() != current_bytes:
                 raise ValueError("history conflicts with current revision")
         else:
-            with os.fdopen(os.open(history, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600), "wb") as output:
+            descriptor, name = tempfile.mkstemp(dir=path.parent)
+            temporary = Path(name)
+            with os.fdopen(descriptor, "wb") as output:
                 output.write(current_bytes)
+                output.flush()
+                os.fsync(output.fileno())
+            # Publish only complete bytes without replacing any existing history.
+            os.link(temporary, history)
+            temporary.unlink()
+            temporary = None
         with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent, delete=False) as output:
             temporary = Path(output.name)
             json.dump(candidate, output, ensure_ascii=False, indent=2)
@@ -292,7 +416,6 @@ def update_record(path, candidate, expected_revision):
     finally:
         if temporary is not None:
             temporary.unlink(missing_ok=True)
-        lock.unlink()
 
 
 def main():

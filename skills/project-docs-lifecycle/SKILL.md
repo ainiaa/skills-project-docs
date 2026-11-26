@@ -1,13 +1,13 @@
 ---
 name: project-docs-lifecycle
-description: Coordinate work toward one business goal, from problem diagnosis and requirements decisions through design, development, testing, business acceptance, release, and outcome tracking. Maintain versions, evidence, and cross-role handoffs when work spans stages or resumes midstream. Use the dedicated skills for a standalone PRD, API document, or diagram.
+description: Coordinate work toward one business goal, from problem diagnosis and requirements decisions through design, development, testing, business acceptance, release, and outcome tracking. Maintain versions, evidence, and cross-role handoffs when work spans stages or resumes midstream. Use Engineering for specialist engineering methods and Converge for authorized implementation. Use the dedicated skills for a standalone PRD, API document, or diagram.
 ---
 
 # Project Docs Lifecycle
 
 Keep a business goal traceable across requirements, design, development, testing, business acceptance, release, and outcome tracking. Maintain versioned evidence and clear handoffs, including when resuming work partway through the lifecycle. Recorded progress remains distinct from verified delivery.
 
-[中文文档 / Chinese documentation](.bundle/README.zh-CN.md)
+[中文文档 / Chinese documentation](https://github.com/ainiaa/skills-project-docs/blob/main/README.zh-CN.md)
 
 若当前 Skill 目录下存在 `.bundle` 且其 `../../` 不是本集合的 Git 检出，先读取 `.bundle/skills/project-docs-lifecycle/GUIDE.md` 并以该目录为 Skill 真实目录；其中的共享脚本、资料和其他 Skill 均来自同一快照。通过 `npx skills update <已安装的本集合 Skill 名称>` 更新此类安装，按实际作用域加 `-g` 或 `-p`；不运行快照内依赖 Git 检出的更新命令。
 
@@ -23,7 +23,9 @@ Keep a business goal traceable across requirements, design, development, testing
 
 从新痛点跨阶段推进时，在 PRD 前保存问题受理、现状调查/证据与方案分流决定，说明如何由原始反馈得出本期范围。原始输入保留原样，不能仅用它替代分析产物。复用已有资料，可合并清晰章节；仅写 PRD 或中途接续时不强制补造历史。具体内容见[PRD 前置资料](references/lifecycle.md#prd-前置资料)。
 
-按需读取 [阶段与交接](references/lifecycle.md)，识别当前阶段、必要门禁与独立可继续的工作。进入记录建立、变更或恢复时读取 [记录契约](references/record-contract.md)。需要演练时读取 [隔离案例与验证](references/validation.md)。不为单阶段请求创建全套目录。
+按需读取 [阶段与交接](references/lifecycle.md)，识别当前阶段、必要门禁与独立可继续的工作。进入记录建立、变更或恢复时读取 [记录契约](references/record-contract.md)。需要演练时到源码仓库查看[隔离案例与验证](https://github.com/ainiaa/skills-project-docs/blob/main/skills/project-docs-lifecycle/references/validation.md)。不为单阶段请求创建全套目录。
+
+开始当前阶段前读取[执行检查点](references/quality-and-trace.md#执行检查点)，在调用专业能力时带上本阶段两个检查问题；接回后核对当前产物的实际回答、正文引用、失败出口及复验。交付或把本次产物记为completed前执行该检查点；只有文件、标题或状态声明时保留gap，不能标为内容审查通过。修订或恢复继续核对来源新鲜度，只阻断实际依赖缺口的工作。 详细检查的来源、适用性和验证映射按该节逐项落实，新任务机器验收使用checkpoint并冻结--target；项目检查绑定冻结输入，必要独立复核/旅程要求随原verification执行，见该节。
 
 ## 组织专业能力
 
@@ -31,14 +33,21 @@ Keep a business goal traceable across requirements, design, development, testing
 
 | 工作 | 使用的能力 |
 |---|---|
-| 现状与源码取证 | [project-docs-overview](.bundle/skills/project-docs-overview/GUIDE.md) |
+| 现状与源码取证 | 复用 Overview 的聚焦取证工具，按[现状调查](references/lifecycle.md#prd-前置资料)保存事实、来源和未决项 |
 | 业务分析、规则、FR/AC、正式 PRD、按需原型 | [project-docs-product](.bundle/skills/project-docs-product/GUIDE.md) |
-| 接口资料、技术图 | [project-docs-api](.bundle/skills/project-docs-api/GUIDE.md)、[project-docs-diagram](.bundle/skills/project-docs-diagram/GUIDE.md) |
-| 技术设计、实现、测试、评审及发布 | 目标项目已有规范和实际可用研发 Skill/工具；无专用 Skill 时用已有工程命令完成授权工作 |
+| 接口设计、技术图 | [Engineering 设计约定](.bundle/skills/project-docs-engineering/references/design.md)、[project-docs-diagram](.bundle/skills/project-docs-diagram/GUIDE.md) |
+| 项目接入、技术/数据库/UI设计、脚手架、质量、安全、性能及发布准备 | [project-docs-engineering](.bundle/skills/project-docs-engineering/GUIDE.md)，复用项目规范及实际工具 |
+| 计划、TDD、实现、修复、重构、评审与执行闭环 | 已安装Converge显式选择native-v1；无专用能力时沿项目规范完成授权工作，不声称Converge托管已验收 |
+
+有目标代码仓库时，先用现有图谱或源码定位入口，再用 `python3 <集合目录>/scripts/project_doc_context.py --source <目标仓库> --focus <业务对象或入口> --output <工作目录>/focus.json` 查文件、路由、配置和表候选。复核实际源码与测试，证据不足时扩大查找范围并保留缺口。
+
+当前阶段另需从源码生成 API 文档或交付完整项目说明时，分别使用 [API 指南](https://github.com/ainiaa/skills-project-docs/blob/main/skills/project-docs-api/SKILL.md) 或 [Overview 指南](https://github.com/ainiaa/skills-project-docs/blob/main/skills/project-docs-overview/SKILL.md)，先读当前快照附带的指南，未随包提供时使用宿主已安装的对应 Skill。各专业产物沿本阶段的业务身份、版本和证据引用接回。
 
 每次交接携带目标与范围、身份、输入及版本、已决/未决、预期产物、输出位置和授权范围；接回实际结果、验证及后续负责人。复用已知上下文，不重复主持访谈或新建正式 PRD；不把一次子能力成功等同全链路通过。失败保留有效产物，停止依赖步骤，继续可独立工作；不递归回调统一入口。
 
-PDLC 当前仅 `handoff_only`：需要时读取 Product 的 [PDLC 契约](.bundle/skills/project-docs-product/references/pdlc.md)，交接同一 ID/PRD 和版本，不猜测接管参数、不写 `docs/.pdlc-state`。自动接管适配尚未实现。
+选择Converge联动时，正式PRD经Product的[自有接管](.bundle/skills/project-docs-product/references/engineering.md)显式绑定Converge原生工作项，沿用业务身份和版本；登记不等于启动实现。第三方PDLC只保留可选人工交接，不是主路径依赖。工程结果按[原始测试证据关联](references/engineering-evidence.md)回传，不伪造本地unittest回执。
+
+六类业务关系的set/query/impact/orphans/validate由`lifecycle_relations.py`复用原记录与CAS；依赖唯一真源仍为depends_on。任务状态汇总、业务关系、复盘及效果按需读取[协调资料](references/coordination.md)。专项工程方法由Engineering维护；本入口只协调必要阶段，不重新主持已有需求或原工程任务。
 
 ## 角色、事实与授权
 

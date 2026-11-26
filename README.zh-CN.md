@@ -21,7 +21,7 @@
 
 这是对公开示例应用的实际代码走读，不是生产落地或效果承诺。[案例页](docs/examples/petclinic/README.md)保留案例任务说明、固定提交、生成过程和验证边界；你可以直接阅读成品后再决定是否安装。
 
-同一集合还支持 PRD 与可点击原型、Java / FastAPI 接口文档、技术图、项目说明，以及从业务痛点到上线的生命周期交接。统一入口 `project-docs` 按任务组合五个专用 Skill。支持 Codex、Claude Code、ZCode、DSH、Gemini CLI、Grok Build、pi 和 OpenCode，所有宿主复用同一仓库和渲染引擎。
+同一集合还支持 PRD 与可点击原型、Java / FastAPI 接口文档、技术图、项目说明，以及从业务痛点到上线的生命周期交接。统一入口 `project-docs` 按任务组合六个专用 Skill。支持 Codex、Claude Code、ZCode、DSH、Gemini CLI、Grok Build、pi 和 OpenCode，所有宿主复用同一仓库和渲染引擎。
 
 当前版本：[0.11.1](https://github.com/ainiaa/skills-project-docs/releases/tag/v0.11.1)。改动记录见[变更日志](CHANGELOG.md)。
 
@@ -51,7 +51,7 @@ npx github:ainiaa/skills-project-docs --with-deps --agent codex --global
 
 同一用户的安装通过 `~/.agents/.project-docs-install.lock` 串行执行。若进程被强制终止，请先确认没有安装进程运行，并检查目标 Skill 目录旁的 `.project-docs-backup-*` 备份，再移除遗留锁并重试。
 
-1. 克隆仓库，一次安装统一入口、五个专用 Skill 与缺失的绘图引擎：
+1. 克隆仓库，一次安装统一入口、六个专用 Skill 与缺失的绘图引擎：
 
    ```bash
    git clone https://github.com/ainiaa/skills-project-docs.git
@@ -92,6 +92,7 @@ npx github:ainiaa/skills-project-docs --with-deps --agent codex --global
 | 需求 | Skill | 主要交付物 |
 |---|---|---|
 | 统一选择入口，或组合交付说明文档、技术图和接口文档 | [`project-docs`](skills/project-docs/SKILL.md) | 按需求组合下列产物 |
+| 项目工程、技术/数据库方案、Mock/迁移、测试策略、质量/安全/性能与发布准备 | [`project-docs-engineering`](skills/project-docs-engineering/SKILL.md) | 工程专项方案、实际验证与交接依据 |
 | 从业务痛点跨阶段推进，或中途接续已有需求 | [`project-docs-lifecycle`](skills/project-docs-lifecycle/SKILL.md) | 阶段交接、最小版本化追踪、真实验证证据；本地校验不替代批准或上线 |
 | 从业务资料梳理需求、创建或修改 PRD，并按需交付交互界面原型 | [`project-docs-product`](skills/project-docs-product/SKILL.md) | PRD、可点击 HTML、必要截图及评审记录 |
 | 从 Spring MVC、Feign 或 FastAPI 源码生成接口文档 | [`project-docs-api`](skills/project-docs-api/SKILL.md) | Markdown、Postman Collection、cURL 示例 |
@@ -110,7 +111,7 @@ npx github:ainiaa/skills-project-docs --with-deps --agent codex --global
 | 熟悉技术但不了解业务的研发人员 | 先补业务对象与规则，再给任务所需技术信息 |
 | 决策者比较方案 | 影响、备选、收益、代价与成立条件 |
 
-读者适配改变表达与组织，保留相同的事实、规则和授权边界。同一需求沿用唯一正式 PRD、版本及 FR/AC；API 生成原文和逐字接口片段不重写，必要解读放交付回复或独立说明；图形不删必需关系，生命周期摘要不替代证据或批准。混合读者优先共用主干，再按任务展开细节。统一入口与五个子 Skill 均引用同一份[读者与用途约定](references/audience.md)，直接调用也适用。
+读者适配改变表达与组织，保留相同的事实、规则和授权边界。同一需求沿用唯一正式 PRD、版本及 FR/AC；API 生成原文和逐字接口片段不重写，必要解读放交付回复或独立说明；图形不删必需关系，生命周期摘要不替代证据或批准。混合读者优先共用主干，再按任务展开细节。统一入口与六个子 Skill 均引用同一份[读者与用途约定](references/audience.md)，直接调用也适用。
 
 ```text
 使用 $project-docs-product 把这份已明确的需求整理给业务、研发和测试共阅，保留同一正式 PRD。
@@ -216,11 +217,17 @@ python3 scripts/product_dependencies.py --skill-root /path/to/upstream/skills
 
 结构检查证明编号、版本、确认记录、文件与资源关联；不证明业务语义、批准真实性或 JavaScript 行为。浏览器旅程、实际审图、模型内容评审及真人确认分别报告，示例与有限试验不能推导任意需求的成功率。
 
-CI 执行确定性与无界面浏览器检查，明确标记模型行为未执行。发布前须在报告原执行环境运行 `python3 scripts/product_behavior_eval.py --release --report <模型观察报告.json> --artifacts <成品报告.json>`，要求两类报告同时通过当前身份、冻结输入与修订保留检查，并提供覆盖全部既有规则、引用实际成品的独立内容复核记录。单独结构通过或关键词齐全均不能放行发布。开发中仍可分别使用 `--report` 或 `--artifacts` 定向检查。普通 CI 实际执行 `.coveragerc` 声明的四个 Product 模块 90% 行覆盖率门槛；该数字不代表全仓覆盖率。缺报告返回 `uncovered`，陈旧或失败报告返回 `invalid`；普通测试的跳过不计为这两项通过。成品报告可显式提供同结构的 `prd`、`tracking` 文件引用，仍须独立阅读实际成品核对业务含义。详见[评测约定](skills/project-docs-product/references/evaluation.md)。
+CI 执行确定性与无界面浏览器检查，明确标记模型行为未执行。发布前须在报告原执行环境运行 `python3 scripts/product_behavior_eval.py --release --report <模型观察报告.json> --artifacts <成品报告.json>`，要求两类报告同时通过当前身份、冻结输入与修订保留检查，并提供覆盖全部既有规则、引用实际成品的独立内容复核记录。单独结构通过或关键词齐全均不能放行发布。开发中仍可分别使用 `--report` 或 `--artifacts` 定向检查。普通 CI 实际执行 `.coveragerc` 声明的 Product 生产模块 90% 行覆盖率门槛；该数字不代表全仓覆盖率。缺报告返回 `uncovered`，陈旧或失败报告返回 `invalid`；普通测试的跳过不计为这两项通过。成品报告可显式提供同结构的 `prd`、`tracking` 文件引用，仍须独立阅读实际成品核对业务含义。详见[评测约定](skills/project-docs-product/references/evaluation.md)。
 
 补充的[多轮回放与已知反例回归](scripts/fixtures/product-behavior/replay-closure/README.md)保留维修三轮原始输入及独立评审要点。生成者与评审资料分开，按轮释放；这组人工／模型回归不计入标准 13 案例发布门槛。
 
 ## 能力与边界
+
+[四方职责与完整能力归属](docs/engineering-ownership.md)：Product独占正式PRD及UI产品设计，Engineering维护工程专项方法，Lifecycle协调跨阶段版本/证据与结果，显式选择Converge时由它独立负责工程执行。Engineering可单独交付方案，Converge局部任务无需先运行Product或Lifecycle；普通请求不依赖第三方PDLC。
+
+研发接管与[显式修订/恢复](skills/project-docs-product/references/revision.md)支持主文、追踪及本地附件完整冻结，比较FR/AC差异并沿声明依赖失效关联证据，续接同一native工作项。远程资料需提供本地快照；不透明附件的内部外链须另外声明。保留失败记录与历史，旧成功不能完成新修订；真实Java、CI/CD、部署和效果仍按实际环境验收。
+
+恢复核对记录身份和物理位置，兼容已支持的旧native state原始/规范化摘要。POSIX本地writer支持进程退出后重放，不回收活动writer或未知旧锁；非POSIX强退、网络文件系统及断电持久性不由此认证。
 
 | 能力 | 当前实现 |
 |---|---|
@@ -271,7 +278,7 @@ HTML 是 Archify 的交互展示文件；其余三种引擎的 HTML 不是本项
 
 原有 `UNDERSTAND_PYTHON`、`UNDERSTAND_RENDERER_HOME`、各引擎 CLI 覆盖变量及共享引擎缓存路径继续有效。兼容脚本 `install-arch.sh` 仍只管理 Codex 的绘图入口，目标名称改为 `project-docs-diagram`；完整集合使用 `install.sh`。
 
-[install.sh](install.sh) 默认把统一入口和五个专用 Skill 软链接到 Codex 的 `~/.codex/skills` 和 Claude Code 的 `~/.claude/skills`，补齐三个必要第三方 Skill，并自动安装当前缺失的四个绘图引擎。本集合链接共用仓库文件，更新一次即可同步更新。安装前会检查所有目标路径及必要 Skill，保留无关目录和软链接；本仓库拥有的旧名称链接会迁移。`--uninstall` 只移除本仓库拥有的 Skill 链接，**不会删除**第三方 Skill 或共享引擎。[Claude Code 官方文档](https://code.claude.com/docs/en/skills#choose-where-skills-load)确认个人 Skill 目录与软链接可用；这里支持的是本地 Claude Code，会话之外的 Claude 云端环境不读取本机目录。
+[install.sh](install.sh) 默认把统一入口和六个专用 Skill 软链接到 Codex 的 `~/.codex/skills` 和 Claude Code 的 `~/.claude/skills`，补齐三个必要第三方 Skill，并自动安装当前缺失的四个绘图引擎。本集合链接共用仓库文件，更新一次即可同步更新。安装前会检查所有目标路径及必要 Skill，保留无关目录和软链接；本仓库拥有的旧名称链接会迁移。`--uninstall` 只移除本仓库拥有的 Skill 链接，**不会删除**第三方 Skill 或共享引擎。[Claude Code 官方文档](https://code.claude.com/docs/en/skills#choose-where-skills-load)确认个人 Skill 目录与软链接可用；这里支持的是本地 Claude Code，会话之外的 Claude 云端环境不读取本机目录。
 
 必要 Skill 先检查目标技能目录；Codex 还检查 `~/.agents/skills` 和其配置中启用的插件缓存，Claude Code 检查已启用、用户级插件的注册位置。不会把任意缓存或其他宿主的 Skill 当成已加载。已有入口/资源不完整、同名路径冲突或可见的多份内容不同时，停止并报告，不猜版本或覆盖。仅缺失项需要 Git 和网络：从[安装脚本声明的官方提交](scripts/install_product_dependencies.py)暂存所需 Skill 目录及许可、校验后安装，并记录 `.project-docs-source.json`。文件就绪不等于宿主已经加载或模型行为已验证。
 
@@ -286,7 +293,7 @@ HTML 是 Archify 的交互展示文件；其余三种引擎的 HTML 不是本项
 | `bash install.sh --host all` | 为全部八个宿主安装本集合并补齐必要 Skill；共用绘图引擎 |
 | `bash install.sh --host opencode --no-engines` | 只为 OpenCode 安装本集合与必要 Skill，跳过绘图引擎 |
 | `bash install.sh --doctor` | 只读检查 Skill 链接、必要第三方 Skill 和引擎；缺失返回非零，不安装 |
-| `bash install.sh --update` | 快进更新当前跟踪分支，重新安装集合与五个子 Skill，并升级低于新版集合最低版本的绘图 CLI |
+| `bash install.sh --update` | 快进更新当前跟踪分支，重新安装集合与六个子 Skill，并升级低于新版集合最低版本的绘图 CLI |
 | `bash install.sh --update-deps` | 不拉取本集合仓库，同步绘图 CLI/链接并补齐必要 Skill；已有第三方 Skill 不升级 |
 | `bash install.sh --update --no-engines` | 更新本集合并补齐必要 Skill，保留原有引擎自动安装偏好 |
 | `bash install.sh --uninstall --host all` | 移除本集合链接，保留第三方 Skill 和共享引擎 |
@@ -301,7 +308,7 @@ git remote set-url origin https://github.com/ainiaa/skills-project-docs.git
 
 ### 宿主支持
 
-2026-10-15 核对的官方加载规范如下。每个目标目录下软链接六个 Skill 目录（统一入口与五个专用能力），形成 `<skill-name>/SKILL.md` 布局，解析到本仓库的 `skills/`；脚本、引用和模板仍从真实 Skill 目录解析。安装器不依赖宿主 CLI，也不安装或升级宿主软件。
+2026-10-15 核对的官方加载规范如下。每个目标目录下软链接七个 Skill 目录（统一入口与六个专用能力），形成 `<skill-name>/SKILL.md` 布局，解析到本仓库的 `skills/`；脚本、引用和模板仍从真实 Skill 目录解析。安装器不依赖宿主 CLI，也不安装或升级宿主软件。
 
 | 宿主 / `--host` | 本安装器管理的用户级目录 | 官方规范与加载方式 |
 |---|---|---|
@@ -344,9 +351,9 @@ bash install.sh --update-deps --host pi --no-engines
 bash install.sh --uninstall --host pi
 ```
 
-统一升级使用 `bash install.sh --update --host <宿主>`，也可在当前宿主中说“使用 project-docs 更新本集合及依赖”，由 Skill 显式传入对应 `--host`。升级读取当前 Git 分支的跟踪上游，不自动切换分支；本地有未提交或未跟踪文件、处于 detached HEAD、未配置上游或无法快进时会停止，不自动暂存、重置或覆盖本地改动。仓库更新成功后，用新版安装器同步链接与依赖；若后续依赖步骤失败，会明确返回失败，并输出可直接执行的 `--update-deps` 重试命令，保留原 `--host`、引擎选择和带空格的仓库路径。
+通过源码检出安装时，使用 `bash install.sh --update --host <宿主>`，也可在当前宿主中说“使用 project-docs 更新本集合及依赖”，由 Skill 显式传入对应 `--host`。升级读取当前 Git 分支的跟踪上游，不自动切换分支；本地有未提交或未跟踪文件、处于 detached HEAD、未配置上游或无法快进时会停止，不自动暂存、重置或覆盖本地改动。仓库更新成功后，用新版安装器同步链接与依赖；若后续依赖步骤失败，会明确返回失败，并输出可直接执行的 `--update-deps` 重试命令，保留原 `--host`、引擎选择和带空格的仓库路径。
 
-五个子 Skill 随同一仓库更新。四个绘图 CLI 以本集合锁定并验收的版本为最低基线，保留下载校验；更新时保留相同或更高的稳定版本，无法识别版本则报错停止，避免覆盖或降级已有工具。新版准备成功后才切换受管入口，旧版本目录保留。macOS 的 draw.io 更新安装在共享管理目录，Linux 使用现有 apt 安装流程，可能需要系统权限。`*_OFFICIAL_CLI` 显式指定的工具保留原路径并提示由外部管理；管理目录中的自定义入口也不会被强行覆盖。PDLC、understand-anything 和 CodeGraph 属于按需使用的外部能力，不作为本集合必装依赖，也不扫描升级用户的其他全局 Skill 或软件。
+六个子 Skill 随同一仓库更新。四个绘图 CLI 以本集合锁定并验收的版本为最低基线，保留下载校验；更新时保留相同或更高的稳定版本，无法识别版本则报错停止，避免覆盖或降级已有工具。新版准备成功后才切换受管入口，旧版本目录保留。macOS 的 draw.io 更新安装在共享管理目录，Linux 使用现有 apt 安装流程，可能需要系统权限。`*_OFFICIAL_CLI` 显式指定的工具保留原路径并提示由外部管理；管理目录中的自定义入口也不会被强行覆盖。PDLC、understand-anything 和 CodeGraph 属于按需使用的外部能力，不作为本集合必装依赖，也不扫描升级用户的其他全局 Skill 或软件。
 
 `--update`、`--update-deps` 均支持 `--engine mermaid` 等选项限定 CLI 范围；这两个命令中的 `--no-engines` 只跳过本次引擎同步，不改变原有自动安装偏好，仍补齐缺失的必要 Skill。已有第三方 Skill 不自动升级，即使其版本不同或未知也不替换；第三方升级另走其上游机制。普通生成任务不会在运行前自动联网升级。
 
@@ -381,7 +388,7 @@ Skill 会定位源码并运行生成器；完整交付物包括 Markdown、Postm
 
 ## 使用 Project Docs Overview
 
-在目标项目中描述读者和范围即可。Skill 根据[项目总览模板](skills/project-docs-overview/assets/project-overview.md)、[功能说明模板](skills/project-docs-overview/assets/feature-description.md)、[架构总览模板](skills/project-docs-overview/assets/architecture-overview.md)或[开发者上手手册模板](skills/project-docs-overview/assets/developer-guide.md)起稿，核对需求资料、代码、测试与实际命令，再生成带来源的 Markdown。默认保留所选模板的二级章节及顺序，资料不足的地方明确标为待确认；只有用户要求其他框架时才调整。架构总览吸收 PDLC 的系统全景、通信、数据、可观测性、扩展性与改进建议结构，并要求系统全景图和核心流程图；跨系统关系复杂时再补系统上下文图。图可嵌入本地图片并链接可编辑图源，或在支持 Mermaid 的交付环境中嵌入经过渲染检查的源码。评分需要逐项依据，缺少运行资料时写待评估。开发者手册包含从入口到关键规则与复杂模块的推荐阅读路线。默认写到目标仓库之外，除非明确要求更新仓库文档或发布到飞书。明确要求按 PDLC 阶段产出时，沿用 PDLC 自己的模板、目录与状态流程。
+在目标项目中描述读者和范围即可。Skill 根据[项目总览模板](skills/project-docs-overview/assets/project-overview.md)、[功能说明模板](skills/project-docs-overview/assets/feature-description.md)、[架构总览模板](skills/project-docs-overview/assets/architecture-overview.md)或[开发者上手手册模板](skills/project-docs-overview/assets/developer-guide.md)起稿，核对需求资料、代码、测试与实际命令，再生成带来源的 Markdown。默认保留所选模板的二级章节及顺序，资料不足的地方明确标为待确认；只有用户要求其他框架时才调整。架构总览吸收 PDLC 的系统全景、通信、数据、可观测性、扩展性与改进建议结构，并要求系统全景图和核心流程图；跨系统关系复杂时再补系统上下文图。图可嵌入本地图片并链接可编辑图源，或在支持 Mermaid 的交付环境中嵌入经过渲染检查的源码。评分需要逐项依据，缺少运行资料时写待评估。开发者手册包含从入口到关键规则与复杂模块的推荐阅读路线。默认写到目标仓库之外，除非明确要求更新仓库文档或发布到飞书。按研发阶段（含泛指“PDLC 阶段”）产出时使用本集合的[自有工程方法](skills/project-docs-engineering/SKILL.md)；只有明确选择第三方 PDLC 项目或命令时才进入[可选交接](skills/project-docs-product/references/pdlc.md)。
 
 ```text
 使用 $project-docs-overview 为这个项目写一份给新同事看的介绍：业务目标、主要功能、端到端链路和模块职责。
@@ -436,7 +443,9 @@ Skill 会读取源码和可用的 CodeGraph 信息，选择合适的图型，生
 
 ## 开发与验证
 
-修改已纳入 Git 的共享脚本、资料或 Skill 后，运行 `python3 scripts/build_npx_bundles.py` 更新六份安装快照；`python3 scripts/build_npx_bundles.py --check` 检查快照是否与源码及打包转换一致。快照内入口改名为 `GUIDE.md` 并调整引用，避免宿主重复发现；新增资源需先纳入 Git 跟踪，再生成快照。
+修改已纳入 Git 的运行脚本、资料或 Skill 后，运行 `python3 scripts/build_npx_bundles.py` 更新七份安装快照，使用 `--check` 检查一致性。专用入口按实际依赖打包。Product 保留聚焦取证、原生图、阶段检查和原型旅程，Overview 保留架构交付所用的 Diagram，Engineering 保留阶段检查与证据交接。Lifecycle 自带阶段取证、Product、Engineering 和 Diagram，独立的 API 文档及 Overview 交付由对应 Skill 或统一入口提供。统一入口保留全部专业路由。原型演练样例随 Product 专包分发。安装包外的说明链接到源码仓库。开发回归、发布评测、案例库和审计归档集中在源码仓库。快照内入口改名为 `GUIDE.md`，避免宿主重复发现。新增资源需先纳入 Git 跟踪，再生成快照。
+
+`npx skills add --skill <名称>` 复制所选 Skill 目录，因此单独安装的入口各自携带其运行文件。整套使用时，源码检出运行 `bash install.sh --host <宿主>`，各入口通过软链接复用同一检出的脚本和资料。
 
 ```bash
 python3 -m unittest discover -s scripts -p 'test_*.py'
@@ -481,4 +490,14 @@ python3 -m unittest discover -s scripts -p test_native_hosts.py -v
 
 生命周期支持业务有 AI 或无 AI 的组织，沿用已有身份和唯一正式 PRD。按授权推进研发与验证，分开记录测试、UAT、发布授权、部署、冒烟和业务效果。追踪工具提供本地依赖版本检查、影响传播及单写者安全更新；不承担外部审批、权限或平台状态管理。
 
-使用与隔离演练见 [生命周期验证说明](skills/project-docs-lifecycle/references/validation.md)。完整 25 实体模型、真实工单/审批/部署适配与 PDLC 自动接管尚未实现；未指定平台时不自动安装新系统。
+使用与隔离演练见 [生命周期验证说明](skills/project-docs-lifecycle/references/validation.md)。完整 25 实体模型、真实工单/审批/部署适配尚未实现；第三方 PDLC 仅保留显式兼容交接，不作为自有主路径的建设前置。未指定平台时不自动安装新系统。
+
+## 产品发现与原生研发交接
+
+Product 支持按需[产品发现与投入决定](skills/project-docs-product/references/discovery.md)，已明确需求跳过发现。选择联动时按[自有接管约定](skills/project-docs-product/references/engineering.md)显式绑定同一正式PRD到Converge原生工作项；第三方PDLC仅可选人工交接，不再依赖定制补丁。按[工程测试证据](skills/project-docs-lifecycle/references/engineering-evidence.md)关联原始回执，不把测试通过当作业务批准、实际部署或效果达成。
+
+Project Docs 与 Converge 可分别使用、验证和发布。用户可显式选择 native-v1 交接。按需读取[工程方法](skills/project-docs-engineering/SKILL.md)；[38项能力盘点](docs/pdlc-capability-map.md)逐项列出承接、重叠和实际缺口。方法完备不等于真实项目自动化全部验收，迁入资料保留[第三方MIT版权](references/third-party-notices.md)。
+
+原生完成档案支持[写前兼容预检与显式后继迭代](skills/project-docs-product/references/iterations.md)，旧任务不复活，下一轮沿同一业务身份建立新执行目标。Engineering资料冻结及演练见[交接示例](skills/project-docs-engineering/assets/examples/iteration-handoff/README.md)。
+
+套件收口见[真实任务与角色交接验收](docs/suite-acceptance.md)和[协调发布、兼容升级及回退](docs/suite-release.md)。本地机制、真实模型、真人岗位及生产验收分别记录；当前未执行发布。

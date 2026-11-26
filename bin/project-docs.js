@@ -9,7 +9,7 @@ const { spawnSync } = require("node:child_process");
 
 const source = path.resolve(__dirname, "..");
 const dependencies = [["brainstorming", "obra/superpowers"], ["grilling", "mattpocock/skills"], ["domain-modeling", "mattpocock/skills"]];
-const projectSkills = ["project-docs", "project-docs-api", "project-docs-diagram", "project-docs-lifecycle", "project-docs-overview", "project-docs-product"];
+const projectSkills = ["project-docs", "project-docs-api", "project-docs-diagram", "project-docs-lifecycle", "project-docs-overview", "project-docs-product", "project-docs-engineering"];
 const marker = ".project-docs-managed.json";
 
 // Keep the parent alive long enough to restore backups when the child is interrupted.

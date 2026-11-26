@@ -1,0 +1,1166 @@
+{
+  "schema_version": 1,
+  "author": "Jeff.Liu",
+  "version": "2026-11-16.2",
+  "scope": "本仓方法基线；不证明行业标准穷尽、项目适用性判断正确或真实业务批准。",
+  "items": [
+    {
+      "id": "L0-SOURCE",
+      "stage": "L0",
+      "check": "problem_source",
+      "question": "原话、反馈人、时点和可查来源是否保留，整理内容是否仍能回到原始问题？",
+      "when": "本期受理必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "受理正文和原始来源的对应位置",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/lifecycle.md",
+          "sha256": "26b4f690e800a89c5ad6dcfff38511245b613140ded4c74d4a544749110d4abc",
+          "quote": "原始输入和阶段分析各自保留来源"
+        }
+      ]
+    },
+    {
+      "id": "L0-CONTEXT",
+      "stage": "L0",
+      "check": "problem_source",
+      "question": "场景、现象和影响分别有什么依据，是否将反馈或推测误写成事实？",
+      "when": "本期受理必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "场景及事实/未知的具体陈述",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/lifecycle.md",
+          "sha256": "26b4f690e800a89c5ad6dcfff38511245b613140ded4c74d4a544749110d4abc",
+          "quote": "区分事实/反馈/假设/技术未知"
+        }
+      ]
+    },
+    {
+      "id": "L0-OWNER",
+      "stage": "L0",
+      "check": "scope_impact",
+      "question": "范围、授权边界、负责人和下一调查动作能否确定？",
+      "when": "本期受理必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "受理范围、Owner和下一动作",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/lifecycle.md",
+          "sha256": "26b4f690e800a89c5ad6dcfff38511245b613140ded4c74d4a544749110d4abc",
+          "quote": "目标与授权范围是什么、由谁接手"
+        }
+      ]
+    },
+    {
+      "id": "L1-CURRENT",
+      "stage": "L1",
+      "check": "current_state",
+      "question": "实际入口、对象和操作链如何运行，证据对应哪个版本及环境？",
+      "when": "本期调查必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "现状链及证据适用范围",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/lifecycle.md",
+          "sha256": "26b4f690e800a89c5ad6dcfff38511245b613140ded4c74d4a544749110d4abc",
+          "quote": "当前业务如何运转、断点在哪"
+        }
+      ]
+    },
+    {
+      "id": "L1-CAUSE",
+      "stage": "L1",
+      "check": "causes_evidence",
+      "question": "每个候选原因有什么支持或反证，如何区分尚未验证的解释？",
+      "when": "本期调查必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "复现、支持/反证及未核实原因",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/lifecycle.md",
+          "sha256": "26b4f690e800a89c5ad6dcfff38511245b613140ded4c74d4a544749110d4abc",
+          "quote": "候选原因如何验证"
+        }
+      ]
+    },
+    {
+      "id": "L1-UNKNOWN",
+      "stage": "L1",
+      "check": "causes_evidence",
+      "question": "已有知识、权限、配置或数据缺口怎样取得证据，不确定性是否被隐去？",
+      "when": "本期调查必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "未知项、Owner和取证动作",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/lifecycle.md",
+          "sha256": "26b4f690e800a89c5ad6dcfff38511245b613140ded4c74d4a544749110d4abc",
+          "quote": "已有能力/知识/权限/配置/数据缺口是什么"
+        }
+      ]
+    },
+    {
+      "id": "L2-OPTIONS",
+      "stage": "L2",
+      "check": "options_decision",
+      "question": "是否比较研发、配置、指导、数据处理、流程调整或不做，选择和排除依据是什么？",
+      "when": "本期分流必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "方案与排除理由、决定来源",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/lifecycle.md",
+          "sha256": "26b4f690e800a89c5ad6dcfff38511245b613140ded4c74d4a544749110d4abc",
+          "quote": "为何选本期方案、排除哪些范围、谁决定"
+        }
+      ]
+    },
+    {
+      "id": "L2-VALUE",
+      "stage": "L2",
+      "check": "value_scope",
+      "question": "目标、价值依据和可观察的成功结果是否明确，没有数据时是否避免编造收益？",
+      "when": "本期分流必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "价值依据、范围和效果证据缺口",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-product/references/input-and-quality.md",
+          "sha256": "b76eea71a400c4a5e782ec6f01a3699a8fc4e72467e4caa9a53a51e753c81ff7",
+          "quote": "目标没有量化依据时用可验证的业务结果"
+        }
+      ]
+    },
+    {
+      "id": "L2-DECISION",
+      "stage": "L2",
+      "check": "options_decision",
+      "question": "业务决定是否有适用范围和来源，仍未决的选择是否明确阻塞部分？",
+      "when": "本期分流必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "决定/未决与进入PRD范围的对应",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/lifecycle.md",
+          "sha256": "26b4f690e800a89c5ad6dcfff38511245b613140ded4c74d4a544749110d4abc",
+          "quote": "决定来源及状态、目标与边界"
+        }
+      ]
+    },
+    {
+      "id": "L3-RETENTION",
+      "stage": "L3",
+      "check": "acceptance",
+      "question": "原始独立诉求、有效决定和保留约定是否逐项落入当前规则及验收？",
+      "when": "生成、修订、评审PRD必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "原始诉求→正文规则→FR/AC或原有位置",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-product/references/workflow.md",
+          "sha256": "de5c1bf94e53c37435cdbf8b73232456bf452645b9941dd3b7e82891e0e5fc9d",
+          "quote": "原始诉求→正文规则→FR/AC"
+        },
+        {
+          "kind": "local_regression",
+          "path": "scripts/test_lifecycle_quality.py",
+          "sha256": "c5c4a2c08f585066f135084ceb5692062803c3cf5a92116effdbb628090147a6",
+          "quote": "test_supporting_sources_do_not_replace_even_an_identical_other_artifact"
+        }
+      ]
+    },
+    {
+      "id": "L3-RULES",
+      "stage": "L3",
+      "check": "rules_exceptions",
+      "question": "角色、输入、前提、状态转换和结束结果能否确定，建议/假设是否与决定分开？",
+      "when": "本期PRD必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "具体对象按规则得到的结果及未决",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-product/references/input-and-quality.md",
+          "sha256": "b76eea71a400c4a5e782ec6f01a3699a8fc4e72467e4caa9a53a51e753c81ff7",
+          "quote": "触发条件、状态与结束结果"
+        }
+      ]
+    },
+    {
+      "id": "L3-AC",
+      "stage": "L3",
+      "check": "acceptance",
+      "question": "给定前提和操作后是否有可观察预期，正常、边界和非法输入如何验收？",
+      "when": "本期PRD必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "可推导的场景输入与预期，不只列标题",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-product/references/input-and-quality.md",
+          "sha256": "b76eea71a400c4a5e782ec6f01a3699a8fc4e72467e4caa9a53a51e753c81ff7",
+          "quote": "正常、边界、异常及相关历史场景的可观察预期"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "skills/project-docs-product/references/design-basis.md",
+          "sha256": "b32d191e8c76cba1b472a5183b011e490c19748724a01b6adf1e46ec0c61e0e9",
+          "quote": "以前提、操作和可观察结果表达验收"
+        }
+      ]
+    },
+    {
+      "id": "L3-RECOVERY",
+      "stage": "L3",
+      "check": "rules_exceptions",
+      "question": "成功、确定失败、结果未知和部分成功如何区分；核实对象、入口、角色及重试条件是什么？",
+      "when": "涉及执行、外部依赖、取消、重试或结果未知时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "逐出口推导、保持项和可执行恢复动作",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-product/references/workflow.md",
+          "sha256": "de5c1bf94e53c37435cdbf8b73232456bf452645b9941dd3b7e82891e0e5fc9d",
+          "quote": "区分成功、确定失败与结果未知"
+        }
+      ]
+    },
+    {
+      "id": "L3-CALCULATION",
+      "stage": "L3",
+      "check": "rules_exceptions",
+      "question": "输入、单位、公式、精度与阈值边界能否复算，是否混用来源总额和本次结果？",
+      "when": "涉及计算、金额、配额或累计值时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "同组具体输入及逐步数值/边界结果",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-product/references/workflow.md",
+          "sha256": "de5c1bf94e53c37435cdbf8b73232456bf452645b9941dd3b7e82891e0e5fc9d",
+          "quote": "涉及计算才复算数值"
+        }
+      ]
+    },
+    {
+      "id": "L3-HISTORY",
+      "stage": "L3",
+      "check": "rules_exceptions",
+      "question": "旧数据、在途对象和既有规则如何适用，改变与保持项有无对应回归？",
+      "when": "改造已有系统或存在历史/在途数据时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "前后对照、兼容限制和历史场景",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-product/references/input-and-quality.md",
+          "sha256": "b76eea71a400c4a5e782ec6f01a3699a8fc4e72467e4caa9a53a51e753c81ff7",
+          "quote": "历史/在途适用性和验收"
+        }
+      ]
+    },
+    {
+      "id": "L3-PERMISSION",
+      "stage": "L3",
+      "check": "rules_exceptions",
+      "question": "角色权限、可见性和跨角色接手的前提是否明确，非法操作结果是什么？",
+      "when": "涉及多角色、敏感数据或权限变化时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "角色/状态组合与非法访问预期",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-product/references/input-and-quality.md",
+          "sha256": "b76eea71a400c4a5e782ec6f01a3699a8fc4e72467e4caa9a53a51e753c81ff7",
+          "quote": "角色与权限要求"
+        }
+      ]
+    },
+    {
+      "id": "L3-PROTOTYPE",
+      "stage": "L3",
+      "check": "acceptance",
+      "question": "图、页面和原型是否覆盖本期任务且与规则/AC一致，模拟边界及未覆盖怎样说明？",
+      "when": "要求图、原型或UI交互变更时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "实际页面及连续旅程、对应FR/AC和缺口",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-product/references/prototype.md",
+          "sha256": "93354edfb99bad4c971d66ac778a21ec4ef4c17276fd29f8dd3143e0a382fac4",
+          "quote": "覆盖表中每个本期关键任务必须有实际浏览器结果"
+        }
+      ]
+    },
+    {
+      "id": "L4-TRACE",
+      "stage": "L4",
+      "check": "design_dependencies",
+      "question": "设计决定和组件职责如何覆盖已确认需求，现状与拟议方案是否分开？",
+      "when": "本期设计必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "需求→设计决定→验证落点",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/design.md",
+          "sha256": "164d018c44927716668921d51837eef0d282810f46ff7f298d3ac953be16f737",
+          "quote": "设计评审检查需求覆盖、前后兼容、可实现性和验证方式"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L4-CONTRACT",
+      "stage": "L4",
+      "check": "design_dependencies",
+      "question": "接口、数据归属、调用依赖和兼容边界是否有实际依据？",
+      "when": "本期设计必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "接口/数据模型及依赖的来源和限制",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/design.md",
+          "sha256": "164d018c44927716668921d51837eef0d282810f46ff7f298d3ac953be16f737",
+          "quote": "组件职责、调用链、接口/数据模型"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L4-RECOVERY",
+      "stage": "L4",
+      "check": "failure_recovery",
+      "question": "失败是否区分本地记录和外部事实，如何核实、补偿或回退，谁负责？",
+      "when": "涉及写入、外部调用或不可逆影响时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "失败路径、数据/外部影响与恢复责任",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/quality-and-trace.md",
+          "sha256": "4125b9a09a6c0258aacb2b1e657bea2b560bbacb15d062a11cf3e7903f1976c8",
+          "quote": "失败、恢复、数据/外部影响和回退责任是否清楚"
+        }
+      ]
+    },
+    {
+      "id": "L4-DATABASE",
+      "stage": "L4",
+      "check": "design_dependencies",
+      "question": "表/字段、约束、索引及查询模式是否支持业务对象、规模和一致性要求？",
+      "when": "涉及数据库结构或查询变化时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "实体/约束/索引与查询、规模假设",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/design.md",
+          "sha256": "164d018c44927716668921d51837eef0d282810f46ff7f298d3ac953be16f737",
+          "quote": "主外键/唯一约束、索引及对应查询"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L4-MIGRATION",
+      "stage": "L4",
+      "check": "failure_recovery",
+      "question": "迁移顺序、数据兼容和备份/撤销边界是否明确，是否把脚本准备冒充执行？",
+      "when": "涉及存量数据、DDL/DML或切换迁移时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "现有工具、脚本顺序、可逆性和执行缺口",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/design.md",
+          "sha256": "164d018c44927716668921d51837eef0d282810f46ff7f298d3ac953be16f737",
+          "quote": "注明顺序与可逆性"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L4-CONCURRENCY",
+      "stage": "L4",
+      "check": "failure_recovery",
+      "question": "事务、锁、并发、重复请求和部分提交的边界如何验证？",
+      "when": "涉及共享写入、并发或重复执行时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "竞争/失败场景及事务幂等约束",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/design.md",
+          "sha256": "164d018c44927716668921d51837eef0d282810f46ff7f298d3ac953be16f737",
+          "quote": "评审写事务、并发、重复请求、锁"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L4-SECURITY",
+      "stage": "L4",
+      "check": "design_dependencies",
+      "question": "鉴权、数据权限、敏感信息与安全边界是否明确并有验证落点？",
+      "when": "涉及身份、权限、敏感数据或外部信任边界时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "设计约束和相应安全验证计划",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/design.md",
+          "sha256": "164d018c44927716668921d51837eef0d282810f46ff7f298d3ac953be16f737",
+          "quote": "异常、权限、并发幂等、事务、可观测性与测试落点"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L4-RETENTION",
+      "stage": "L4",
+      "check": "design_dependencies",
+      "question": "删除、保留和历史可追溯要求会影响哪些数据及兼容边界？",
+      "when": "涉及新增数据、删除、留存或归档时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "数据生命周期规则与设计对应",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/design.md",
+          "sha256": "164d018c44927716668921d51837eef0d282810f46ff7f298d3ac953be16f737",
+          "quote": "删除/保留策略及兼容边界"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L4-PERFORMANCE",
+      "stage": "L4",
+      "check": "design_dependencies",
+      "question": "容量/性能目标有何依据，数据量、并发和测量方法是否可重复？",
+      "when": "存在吞吐、响应时间、容量或性能改动时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "目标、测量环境、数据量和验证方案",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/quality.md",
+          "sha256": "cbc53e12392e54fb575fedb78cc920ec969945e1ea6ec9138723fd2126c08c86",
+          "quote": "数据量、并发、机器和版本"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L4-UI",
+      "stage": "L4",
+      "check": "design_dependencies",
+      "question": "组件、接口、响应式和无障碍约束是否覆盖产品交互并能验证？",
+      "when": "涉及UI技术实现时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "组件/API及显示、键盘等适用验证落点",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/design.md",
+          "sha256": "164d018c44927716668921d51837eef0d282810f46ff7f298d3ac953be16f737",
+          "quote": "前端组件、接口、响应式及无障碍实现和测试落点"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L4-I18N",
+      "stage": "L4",
+      "check": "design_dependencies",
+      "question": "locale、占位符、复数、日期金额格式和回退是否保持一致？",
+      "when": "涉及多语言或国际化改造时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "资源和引用、占位符/回退的验证计划",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/design.md",
+          "sha256": "164d018c44927716668921d51837eef0d282810f46ff7f298d3ac953be16f737",
+          "quote": "保持占位符、复数、日期/金额格式与回退"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L4-OBSERVABILITY",
+      "stage": "L4",
+      "check": "failure_recovery",
+      "question": "错误、健康和业务状态如何被发现，诊断与恢复需要什么可观测证据？",
+      "when": "涉及运行中的服务或发布变更时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "告警/诊断/恢复所需数据及责任",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/design.md",
+          "sha256": "164d018c44927716668921d51837eef0d282810f46ff7f298d3ac953be16f737",
+          "quote": "可观测性与测试落点"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L5-TDD",
+      "stage": "L5",
+      "check": "test_first",
+      "question": "是否先取得目标行为缺失的断言红灯，再实现绿灯，而非环境错误？",
+      "when": "本期实施/修复必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "实际红绿命令、失败原因及回归",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/quality.md",
+          "sha256": "cbc53e12392e54fb575fedb78cc920ec969945e1ea6ec9138723fd2126c08c86",
+          "quote": "编译失败、依赖不可用、收集不到测试不证明TDD红灯"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L5-REVIEW",
+      "stage": "L5",
+      "check": "change_build",
+      "question": "变更是否限定范围且核对断言、需求和异常，评审意见是否处理并复验？",
+      "when": "本期实施/评审必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "变更、FR/AC、评审问题与复验链",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/quality.md",
+          "sha256": "cbc53e12392e54fb575fedb78cc920ec969945e1ea6ec9138723fd2126c08c86",
+          "quote": "不能用测试数、覆盖率或一次绿灯替代断言语义和FR/AC核对"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L5-BUILD",
+      "stage": "L5",
+      "check": "change_build",
+      "question": "被测代码与构建身份能否追溯，实际检查与未执行项是否分开？",
+      "when": "本期实施必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "源码/构建/环境/命令和逐测试结果",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/quality.md",
+          "sha256": "cbc53e12392e54fb575fedb78cc920ec969945e1ea6ec9138723fd2126c08c86",
+          "quote": "源码、构建、环境、范围、命令、退出码与逐测试结果"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L5-COMPATIBILITY",
+      "stage": "L5",
+      "check": "change_build",
+      "question": "公共契约、历史行为和已有调用方是否保持或有明确迁移/回归？",
+      "when": "改动既有行为或公共契约时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "前后行为和受影响调用方回归",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/design.md",
+          "sha256": "164d018c44927716668921d51837eef0d282810f46ff7f298d3ac953be16f737",
+          "quote": "前后兼容、可实现性和验证方式"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L6-AC",
+      "stage": "L6",
+      "check": "ac_coverage",
+      "question": "每项必需AC是否有适用自动或人工场景，断言是否验证其含义？",
+      "when": "本期测试必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "完整AC范围及断言/人工场景对应",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/quality-and-trace.md",
+          "sha256": "4125b9a09a6c0258aacb2b1e657bea2b560bbacb15d062a11cf3e7903f1976c8",
+          "quote": "审查者仍须核对AC含义与测试断言"
+        }
+      ]
+    },
+    {
+      "id": "L6-RESULTS",
+      "stage": "L6",
+      "check": "execution_results",
+      "question": "测试结果是否绑定当前构建、环境、范围和来源，未执行是否如实保留？",
+      "when": "本期测试必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "当前实际报告和逐测试结果及局限",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/quality.md",
+          "sha256": "cbc53e12392e54fb575fedb78cc920ec969945e1ea6ec9138723fd2126c08c86",
+          "quote": "缺映射、测试消失、失败、跳过、未执行和孤儿映射分别列出"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L6-AUTOMATED",
+      "stage": "L6",
+      "check": "execution_results",
+      "question": "已声明自动化测试是否在当前trace下实际通过，是否有缺失/跳过/失败？",
+      "when": "本期包含本采集器适配的自动验证子集时",
+      "required": false,
+      "verification": "test",
+      "evidence_expected": "当前trace/execution及具体测试ID",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/quality-and-trace.md",
+          "sha256": "4125b9a09a6c0258aacb2b1e657bea2b560bbacb15d062a11cf3e7903f1976c8",
+          "quote": "每项必需AC的所有声明测试均须实际通过"
+        }
+      ]
+    },
+    {
+      "id": "L6-REGRESSION",
+      "stage": "L6",
+      "check": "ac_coverage",
+      "question": "历史、边界、非法输入与依赖变化是否纳入适用回归？",
+      "when": "变更既有行为或存在相应风险时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "回归场景、输入及观察结果",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/quality.md",
+          "sha256": "cbc53e12392e54fb575fedb78cc920ec969945e1ea6ec9138723fd2126c08c86",
+          "quote": "正常、边界、异常与非法参数均考虑"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L6-E2E",
+      "stage": "L6",
+      "check": "ac_coverage",
+      "question": "关键用户旅程是否有实际连续执行结果，模拟/未覆盖边界是否明确？",
+      "when": "涉及跨组件或跨角色完整任务时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "关键流→测试选择器→当前结果",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/quality.md",
+          "sha256": "cbc53e12392e54fb575fedb78cc920ec969945e1ea6ec9138723fd2126c08c86",
+          "quote": "将每条流映射到实际测试选择器"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L6-SECURITY",
+      "stage": "L6",
+      "check": "execution_results",
+      "question": "依赖/密钥扫描及鉴权、越权、注入、敏感数据检查是否实际执行？",
+      "when": "涉及安全边界、依赖或数据风险时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "工具版本、原始报告及人工/模型审阅区分",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/quality.md",
+          "sha256": "cbc53e12392e54fb575fedb78cc920ec969945e1ea6ec9138723fd2126c08c86",
+          "quote": "先运行已有依赖漏洞与密钥扫描工具"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L6-PERFORMANCE",
+      "stage": "L6",
+      "check": "execution_results",
+      "question": "是否有相同条件的可重复基线和复测，没有实测时是否避免性能结论？",
+      "when": "涉及性能目标、优化或容量验收时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "同环境同命令的基线/复测及数据量",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/quality.md",
+          "sha256": "cbc53e12392e54fb575fedb78cc920ec969945e1ea6ec9138723fd2126c08c86",
+          "quote": "同一命令至少3次取中位数作为基线"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L6-MANUAL",
+      "stage": "L6",
+      "check": "ac_coverage",
+      "question": "人工或未适配AC是否仍在PRD并有真实场景记录，而非被删除或伪造自动通过？",
+      "when": "存在人工AC或未适配框架/报告时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "AC/版本、步骤、观察结果、人员和来源",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/quality-and-trace.md",
+          "sha256": "4125b9a09a6c0258aacb2b1e657bea2b560bbacb15d062a11cf3e7903f1976c8",
+          "quote": "人工AC仍保留在唯一PRD中"
+        }
+      ]
+    },
+    {
+      "id": "L7-SCENARIOS",
+      "stage": "L7",
+      "check": "business_scenarios",
+      "question": "业务角色是否核对完整实际场景及边界，模拟与实际结果怎样区分？",
+      "when": "本期UAT必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "实际输入、步骤、结果和适用构建",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/quality-and-trace.md",
+          "sha256": "4125b9a09a6c0258aacb2b1e657bea2b560bbacb15d062a11cf3e7903f1976c8",
+          "quote": "业务场景及结果是否由对应角色核对"
+        }
+      ]
+    },
+    {
+      "id": "L7-CONFIRMATION",
+      "stage": "L7",
+      "check": "confirmation_scope",
+      "question": "谁在何时确认了哪些版本和范围，仍待批的内容是否独立保留？",
+      "when": "本期UAT必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "真实确认及其版本/范围/来源",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/quality-and-trace.md",
+          "sha256": "4125b9a09a6c0258aacb2b1e657bea2b560bbacb15d062a11cf3e7903f1976c8",
+          "quote": "确认绑定了哪些内容版本和范围"
+        }
+      ]
+    },
+    {
+      "id": "L7-AUTHORITY",
+      "stage": "L7",
+      "check": "confirmation_scope",
+      "question": "是否将模型意见、技术单测或局部认可误当业务确认或发布授权？",
+      "when": "本期UAT必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "确认角色及未获批准部分",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/quality-and-trace.md",
+          "sha256": "4125b9a09a6c0258aacb2b1e657bea2b560bbacb15d062a11cf3e7903f1976c8",
+          "quote": "模型审查不能代签"
+        }
+      ]
+    },
+    {
+      "id": "L8-BUILD",
+      "stage": "L8",
+      "check": "build_environment",
+      "question": "被测与待发布制品、环境、配置、范围和批次是否一致或已重新验证？",
+      "when": "本期发布准备必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "制品摘要、测试范围和目标环境对应",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/lifecycle.md",
+          "sha256": "26b4f690e800a89c5ad6dcfff38511245b613140ded4c74d4a544749110d4abc",
+          "quote": "被测包与待发布包一致或重新验证"
+        }
+      ]
+    },
+    {
+      "id": "L8-AUTHORIZATION",
+      "stage": "L8",
+      "check": "authorization_recovery",
+      "question": "必要授权、负责人、窗口与恢复执行条件是否实际具备？",
+      "when": "本期发布准备必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "真实授权范围与执行责任，缺口单列",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/lifecycle.md",
+          "sha256": "26b4f690e800a89c5ad6dcfff38511245b613140ded4c74d4a544749110d4abc",
+          "quote": "必要批准绑定构建、范围、环境及有效期"
+        }
+      ]
+    },
+    {
+      "id": "L8-ROLLBACK",
+      "stage": "L8",
+      "check": "authorization_recovery",
+      "question": "迁移、备份、回退或补偿是否适用于真实数据和部署方式？",
+      "when": "有数据/配置/兼容变化或回退要求时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "恢复条件、步骤、数据兼容和执行缺口",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/release.md",
+          "sha256": "77677fa2fc34e40dad79d2aa35f9be88e4962cf23253703352a10655d88bce43",
+          "quote": "回滚先评估数据兼容与恢复条件"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L8-SUPPORT",
+      "stage": "L8",
+      "check": "authorization_recovery",
+      "question": "冒烟、监控、支持和通知是否有责任人与具体执行落点？",
+      "when": "本期发布准备必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "检查步骤、支持责任与通知安排",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/release.md",
+          "sha256": "77677fa2fc34e40dad79d2aa35f9be88e4962cf23253703352a10655d88bce43",
+          "quote": "冒烟/监控、回滚条件、恢复步骤和已知限制"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L8-BATCH",
+      "stage": "L8",
+      "check": "build_environment",
+      "question": "依赖、环境或分批顺序变化会影响哪些测试/授权和剩余范围？",
+      "when": "多环境、分批、依赖或切换时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "分批依赖与复核清单",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/lifecycle.md",
+          "sha256": "26b4f690e800a89c5ad6dcfff38511245b613140ded4c74d4a544749110d4abc",
+          "quote": "构建、环境、配置、迁移或发布范围变化则重新检查"
+        }
+      ]
+    },
+    {
+      "id": "L9-IDENTITY",
+      "stage": "L9",
+      "check": "deployed_checks",
+      "question": "实际部署的是哪个制品、环境和批次，是否有权威执行回执？",
+      "when": "本期部署核验必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "真实部署身份及各范围结果",
+      "sources": [
+        {
+          "kind": "adapted_method",
+          "path": "skills/project-docs-engineering/references/release.md",
+          "sha256": "77677fa2fc34e40dad79d2aa35f9be88e4962cf23253703352a10655d88bce43",
+          "quote": "记录每环境/区域/实例范围的结果"
+        },
+        {
+          "kind": "lineage_record",
+          "path": "references/third-party-notices.md",
+          "sha256": "81e57659ce30a5365da0b9f44952e94c7febc6eb9e014926bc8ca240deb9b979",
+          "quote": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb"
+        }
+      ]
+    },
+    {
+      "id": "L9-SMOKE",
+      "stage": "L9",
+      "check": "deployed_checks",
+      "question": "实际健康与业务冒烟证明了哪些结果，哪些尚未验证？",
+      "when": "本期部署核验必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "当前健康/业务核验及未覆盖",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/lifecycle.md",
+          "sha256": "26b4f690e800a89c5ad6dcfff38511245b613140ded4c74d4a544749110d4abc",
+          "quote": "实际部署回执、健康检查和业务冒烟"
+        }
+      ]
+    },
+    {
+      "id": "L9-FAILURE",
+      "stage": "L9",
+      "check": "failure_result",
+      "question": "部分成功、失败与未知怎样隔离，恢复是否验证，是否停止扩大影响？",
+      "when": "本期部署核验必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "失败/恢复、剩余影响和再次发布责任",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/lifecycle.md",
+          "sha256": "26b4f690e800a89c5ad6dcfff38511245b613140ded4c74d4a544749110d4abc",
+          "quote": "上线失败先停止扩大影响"
+        }
+      ]
+    },
+    {
+      "id": "L10-HANDOVER",
+      "stage": "L10",
+      "check": "handover_owner",
+      "question": "接收人能否据现有操作、配置和支持知识处理问题，责任是否明确？",
+      "when": "本期交接必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "接收人、知识材料和下一动作",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/lifecycle.md",
+          "sha256": "26b4f690e800a89c5ad6dcfff38511245b613140ded4c74d4a544749110d4abc",
+          "quote": "接收人可据资料处理"
+        }
+      ]
+    },
+    {
+      "id": "L10-METRICS",
+      "stage": "L10",
+      "check": "outcome_observation",
+      "question": "指标口径、基线、数据来源和观察期是否足以判断效果？",
+      "when": "本期需要验证业务效果时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "口径/基线/数据/观察期与限制",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/lifecycle.md",
+          "sha256": "26b4f690e800a89c5ad6dcfff38511245b613140ded4c74d4a544749110d4abc",
+          "quote": "指标口径/基线/观察期"
+        }
+      ]
+    },
+    {
+      "id": "L10-OBSERVATION",
+      "stage": "L10",
+      "check": "outcome_observation",
+      "question": "效果已实现、待观察或未达标分别有什么依据，谁在何时继续观察？",
+      "when": "本期效果/交接必查",
+      "required": true,
+      "verification": "review",
+      "evidence_expected": "实际数据或明确待观察的Owner/触发条件",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/quality-and-trace.md",
+          "sha256": "4125b9a09a6c0258aacb2b1e657bea2b560bbacb15d062a11cf3e7903f1976c8",
+          "quote": "效果指标、数据、观察期和Owner是否落实，未达标后做什么"
+        }
+      ]
+    },
+    {
+      "id": "L10-FOLLOWUP",
+      "stage": "L10",
+      "check": "handover_owner",
+      "question": "缺陷、恢复经验和未达标项怎样交接并回到后续工作，是否重复执行已完成动作？",
+      "when": "有后续支持、缺陷或待观察事项时",
+      "required": false,
+      "verification": "review",
+      "evidence_expected": "跟进责任和不重复执行的接续依据",
+      "sources": [
+        {
+          "kind": "local_method",
+          "path": "skills/project-docs-lifecycle/references/quality-and-trace.md",
+          "sha256": "4125b9a09a6c0258aacb2b1e657bea2b560bbacb15d062a11cf3e7903f1976c8",
+          "quote": "不能宣称效果已达成或重跑已完成部署"
+        }
+      ]
+    }
+  ]
+}

@@ -84,7 +84,12 @@ class ProductWorkflowTests(unittest.TestCase):
 
     def test_product_ci_discovers_all_product_python_suites(self):
         workflow = (ROOT / '.github/workflows/product-acceptance.yml').read_text()
-        command = 'python3 -m pytest scripts/test_product*.py --cov --cov-fail-under=90'
+        import shlex
+        command = next(line.partition(':')[2].strip() for line in
+                       (ROOT / 'docs/00_standards/test-commands.yml').read_text().splitlines()
+                       if line.startswith('coverage:'))
+        expected = {str(path.relative_to(ROOT)) for path in (ROOT / 'scripts').glob('test_product*.py')}
+        self.assertTrue(expected <= set(shlex.split(command)))
         self.assertIn(command, workflow)
         self.assertLess(workflow.index('run: python3 scripts/install_renderers.py --engine mermaid'),
                         workflow.index(command))
@@ -497,6 +502,18 @@ class ProductReviewTests(unittest.TestCase):
         workflow = (PRODUCT / "references/workflow.md").read_text()
         for signal in ("草稿", "真实记录", "模型不能授予批准"):
             self.assertIn(signal, workflow)
+
+    def test_review_prompts_request_concrete_walkthrough_and_recovery_evidence(self):
+        code, report = self.review(PRD)
+        self.assertEqual(code, 0, report)
+        questions = report['review']['handoffReview']['questions']
+        self.assertTrue(any('原始诉求' in question and '正文' in question for question in questions['business']))
+        self.assertTrue(any(all(term in question for term in ('确定失败', '结果未知', '对象标识', '入口', '角色'))
+                            for question in questions['engineering']))
+        self.assertTrue(any(all(term in question for term in ('具体输入', '操作顺序', '预期结果', '反例'))
+                            for question in questions['qa']))
+        self.assertEqual(report['review']['handoffReview']['status'], 'not_run')
+        self.assertEqual(report['semanticCheck'], 'not_proven')
 
     def test_review_does_not_hide_invalid_or_missing_document(self):
         for content in (None, "# 没有需求的文档"):
@@ -1026,6 +1043,66 @@ class ProductValidationTests(unittest.TestCase):
         self.addCleanup(outside.unlink)
         (self.directory / "escape.pdf").symlink_to(outside)
         self.assertFalse(self.validate(html=HTML.replace("</main>", '<object data="escape.pdf"></object></main>'))["valid"])
+
+
+class StageReviewExecutionContractTests(unittest.TestCase):
+    """Static execution contracts; these checks do not simulate model compliance."""
+    def test_entrypoints_read_the_shared_stage_review_procedure(self):
+        entry = 'GUIDE.md' if ROOT.name == '.bundle' else 'SKILL.md'
+        for name in ('project-docs', 'project-docs-product', 'project-docs-engineering', 'project-docs-lifecycle'):
+            with self.subTest(skill=name):
+                path = ROOT / 'skills' / name / entry
+                content = path.read_text()
+                links = re.findall(r'\]\(([^)]+quality-and-trace\.md#执行检查点)\)', content)
+                self.assertTrue(links, name)
+                for link in links:
+                    target = (path.parent / link.split('#')[0]).resolve()
+                    self.assertTrue(target.is_file(), target)
+                    self.assertIn('## 执行检查点', target.read_text())
+
+    def test_detailed_checklist_provenance_applicability_and_verification_are_in_execution(self):
+        entry = 'GUIDE.md' if ROOT.name == '.bundle' else 'SKILL.md'
+        for name in ('project-docs', 'project-docs-product', 'project-docs-engineering', 'project-docs-lifecycle'):
+            content = (ROOT / 'skills' / name / entry).read_text()
+            line = next(line for line in content.splitlines() if 'quality-and-trace.md#执行检查点' in line)
+            self.assertIn('详细检查', line, name)
+        procedure = (ROOT / 'skills/project-docs-lifecycle/references/quality-and-trace.md').read_text()
+        for term in ('checklist-catalog.json', 'lifecycle_checklist.py --stage', '--require-details',
+                     'catalog_sha256', 'PROJECT-', 'not_applicable', 'undecided', 'trace', 'execution',
+                     '来源', '验证映射'):
+            self.assertIn(term, procedure)
+        workflow = (PRODUCT / 'references/workflow.md').read_text()
+        self.assertIn('详细检查ID', workflow)
+        self.assertIn('适用性', workflow)
+
+    def test_stage_procedure_covers_questions_evidence_recheck_and_recovery(self):
+        from lifecycle_quality import STAGE_CHECKS
+        content = (ROOT / 'skills/project-docs-lifecycle/references/quality-and-trace.md').read_text()
+        self.assertIn('## 执行检查点', content)
+        for stage, identities in STAGE_CHECKS.items():
+            row = next(line for line in content.splitlines() if line.startswith('| ' + stage + ' |'))
+            self.assertTrue(all(identity in row for identity in identities), stage)
+        for instruction in ('开始当前阶段前', '交付或标记完成前', '修改后或接续时',
+                            '当前产物的正文', '缺口→处理→复验', '不新增全生命周期目录'):
+            self.assertIn(instruction, content)
+
+    def test_prd_paths_require_evidence_beyond_heading_observations(self):
+        workflow = (PRODUCT / 'references/workflow.md').read_text()
+        self.assertIn('## 内容走读执行与评审留痕', workflow)
+        section = workflow.split('## 内容走读执行与评审留痕', 1)[1].split('\n## ', 1)[0]
+        for instruction in ('生成、修订和仅评审', '原始诉求→正文规则→FR/AC', '具体对象', '逐步结果',
+                            '确定失败', '结果未知', '核实入口', '允许重试', '实际审查者', '当前版本',
+                            '原文引用', '缺口→处理→复验', '不能', 'not_run'):
+            self.assertIn(instruction, section)
+
+    def test_detailed_checklist_recovery_does_not_hide_inactive_or_failed_mapping(self):
+        procedure = (ROOT / 'skills/project-docs-lifecycle/references/quality-and-trace.md').read_text()
+        for instruction in ('不适用或待判断的当前记录不携带verification',
+                            'failed/not_run也须校验测试ID', '工具发现的测试缺口',
+                            '保留owner/next_action', '新回执'):
+            self.assertIn(instruction, procedure)
+        workflow = (PRODUCT / 'references/workflow.md').read_text()
+        self.assertIn('改变适用性不能隐藏旧验证', workflow)
 
 
 if __name__ == "__main__":

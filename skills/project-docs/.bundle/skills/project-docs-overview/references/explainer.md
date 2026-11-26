@@ -30,7 +30,7 @@ explainer 可面向新手、领域专家或混合读者；先按[读者与用途
 
 类比可帮助入门，但须说明与真实机制的对应及失效之处；没有合适类比时直接用真实例子。简化保留权限、异常、状态和适用范围，业务事实继续附来源，推测和示意明确标注。无需真实数据时不编造性能、收益或生产成功记录。
 
-按目标参考小型案例：[报名规则](../assets/beginner-explainers/registration-rule.archify.md)使用决策表，[通知延迟](../assets/beginner-explainers/notification-delay.archify.md)区分观察与原因假设，[报修入口变更](../assets/beginner-explainers/repair-change.archify.md)使用前后对照及角色步骤。每个案例旁的 `.input.md` 保留合成材料；随交付保留原材料，不将这些规则套到实际项目。已有的[安装升级图解](../assets/beginner-explainer.archify.md)仍可解释本集合的软链接机制。其他主题按实际证据重写，统一走下方 `finalize explainer`，不增加工具或独立 Skill。
+按目标参考小型案例：[报名规则](https://github.com/ainiaa/skills-project-docs/blob/main/skills/project-docs-overview/assets/beginner-explainers/registration-rule.archify.md)使用决策表，[通知延迟](https://github.com/ainiaa/skills-project-docs/blob/main/skills/project-docs-overview/assets/beginner-explainers/notification-delay.archify.md)区分观察与原因假设，[报修入口变更](https://github.com/ainiaa/skills-project-docs/blob/main/skills/project-docs-overview/assets/beginner-explainers/repair-change.archify.md)使用前后对照及角色步骤。每个案例旁的 `.input.md` 保留合成材料；随交付保留原材料，不将这些规则套到实际项目。已有的[安装升级图解](../assets/beginner-explainer.archify.md)仍可解释本集合的软链接机制。其他主题按实际证据重写，统一走下方 `finalize explainer`，不增加工具或独立 Skill。
 
 交付前从读者视角核对：能否从图和短文说出“解决什么问题、如何运作、何时不成立”；逐项对照证据，检查类比、箭头和删减是否改变事实。核对目标屏宽下的表头和主图可读性，过密时缩短标签或分组、分步呈现，不把关键解释只留在放大操作后。来源只有链接、没有 `@code` 时，官方检查通过不保证目标文件存在；须回查实际引用版本中的文件及行号。记录实际运行的检查；没有真人试读时不声称已证明新手理解效果。
 

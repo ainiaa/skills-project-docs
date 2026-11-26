@@ -1,28 +1,37 @@
 ---
 name: project-docs
-description: Entry point for the Project Docs skill collection. Use when users name project-docs, install or upgrade the collection, coordinate work from business problems to release, or combine PRDs, interactive HTML prototypes, project overviews, API documentation, and technical diagrams.
+description: Entry point for the Project Docs skill collection. Use when users name project-docs, install or upgrade the collection, coordinate work from business problems to release, or combine product discovery, PRDs, interactive HTML prototypes, engineering workflows, project overviews, API documentation, and technical diagrams.
 ---
 
 # Project Docs
 
-Choose a documentation workflow for your project, from business requirements and clickable prototypes to source-backed onboarding guides, API documentation, and technical diagrams. Use this entry point to combine skills or install and update the collection.
+Choose a product and engineering workflow for your project, from business requirements and clickable prototypes to source-backed onboarding guides, API documentation, and technical diagrams. Use this entry point to combine skills or install and update the collection.
 
-[中文文档 / Chinese documentation](.bundle/README.zh-CN.md)
+[中文文档 / Chinese documentation](https://github.com/ainiaa/skills-project-docs/blob/main/README.zh-CN.md)
 
 若当前 Skill 目录下存在 `.bundle` 且其 `../../` 不是本集合的 Git 检出，先读取 `.bundle/skills/project-docs/GUIDE.md` 并以该目录为 Skill 真实目录；其中的共享脚本、资料和其他 Skill 均来自同一快照。通过 `npx skills update <已安装的本集合 Skill 名称>` 更新此类安装，按实际作用域加 `-g` 或 `-p`；不运行快照内依赖 Git 检出的更新命令。
+
+跨阶段任务开始当前阶段前，读取[阶段执行检查点](.bundle/skills/project-docs-lifecycle/references/quality-and-trace.md#执行检查点)，让所选能力按当前阶段实际走读并回传问题回答、版本、正文引用、缺口及复验；接回一份文件或一次结构通过不能视为阶段内容已审。独立API/图/项目说明仍按各自产物契约，不强制补全生命周期记录。 详细检查的来源、适用性和验证映射按该节逐项落实，新任务机器验收使用checkpoint并冻结--target；项目检查绑定冻结输入，必要独立复核/旅程要求随原verification执行，见该节。
 
 根据任务目标、范围和交付物选择本集合的专用能力，再按读者组织结果。先解析当前 Skill 的真实目录；下表链接均相对该目录。读取选中能力的入口说明后，遵循其取证、生成和验证要求。
 
 文档、图与交接资料按[读者与用途约定](.bundle/references/audience.md)组织：先选任务，再分别判断业务/技术知识与阅读目的；不把专家、普通读者或 HTML 格式等同某种固定写法。安装、升级与诊断无需读者分类。
 
-用户要求更新本集合及依赖时，运行 `bash <真实Skill目录>/../../install.sh --update --host <宿主>`；根据当前实际宿主选 `codex`、`claude`、`zcode`、`dsh`、`gemini`、`grok`、`pi` 或 `opencode`，用户明确要求全部宿主时才用 `all`。只同步依赖时使用 `--update-deps`，仅更新 Skill 时加 `--no-engines`；诊断和卸载也使用同一个 `--host`。不要省略宿主参数后误用默认的 Codex、Claude Code 两端。五个子 Skill 随仓库更新，绘图 CLI 以集合锁定版本为最低基线，保留相同或更高稳定版本，无法识别版本时停止；显式 CLI 覆盖由外部管理。更新保护本地改动，不自动切分支或重置；失败时报告具体阶段，不宣称全部更新成功。普通文档生成不先联网升级，也不升级用户的其他全局 Skill。
+## 安装与更新
 
-安装及依赖同步会补齐 Product 必要的 `brainstorming`、`grilling`、`domain-modeling`，已有有效安装直接复用，不覆盖、不自动升级。`--no-engines` 仍检查并补齐必要 Skill；`--doctor` 只读检查，卸载保留第三方 Skill。可选前端、UI/UX、PDLC 等不默认安装，按任务需要及明确授权处理。
+- 通过 `npx skills add` 安装时，使用 `npx skills update <已安装的本集合 Skill 名称>`，全局加 `-g`，项目内加 `-p`。更新后刷新宿主的 Skill 发现。
+- 通过 `npx github:ainiaa/skills-project-docs` 安装时，按原作用域、宿主及依赖选项重跑原安装命令。
+- 通过 Git 检出软链接安装时，运行 `bash <真实Skill目录>/../../install.sh --update --host <宿主>`。根据当前实际宿主选 `codex`、`claude`、`zcode`、`dsh`、`gemini`、`grok`、`pi` 或 `opencode`，用户明确要求全部宿主时才用 `all`。只同步依赖时使用 `--update-deps`，只跳过引擎同步时加 `--no-engines`。诊断和卸载使用同一个 `--host`。六个子 Skill 随仓库更新。绘图 CLI 保留相同或更高稳定版本，无法识别版本时停止，显式 CLI 覆盖由外部管理。更新保护本地改动，失败时报告具体阶段。
+
+源码检出的安装及依赖同步会补齐 Product 必需的 `brainstorming`、`grilling`、`domain-modeling`，已有有效安装直接复用。`--doctor` 只读检查，卸载保留第三方 Skill。可选前端、UI/UX、PDLC 等按任务需要及明确授权处理。普通文档生成不自动联网升级。
+
+## 选择专业能力
 
 | 用户需要 | 读取的能力 | 交付物 |
 |---|---|---|
-| 从业务痛点到需求、设计研发、验收上线与效果跟踪，或已有需求跨阶段接续 | [project-docs-lifecycle](.bundle/skills/project-docs-lifecycle/GUIDE.md) | 同一身份的阶段交接、版本化追踪、实际工作及证据 |
-| 业务需求梳理、PRD、产品评审，或可点击 HTML 界面原型 | [project-docs-product](.bundle/skills/project-docs-product/GUIDE.md) | 可追溯 PRD、按需交互 HTML 原型及评审记录 |
+| 从业务痛点到设计研发、工程专项/质量/发布准备、验收上线与效果跟踪，或已有需求接续 | [project-docs-lifecycle](.bundle/skills/project-docs-lifecycle/GUIDE.md) | 同一身份的阶段交接、版本化追踪、实际工作及证据 |
+| 项目接入/初始化、技术与数据库方案、Mock/迁移、测试策略、质量/安全/性能、版本与部署准备 | [project-docs-engineering](.bundle/skills/project-docs-engineering/GUIDE.md) | 工程专项方案、实际验证与交接依据 |
+| 产品发现与投入决定、研究综合、需求排序、PRD、产品评审，或可点击 HTML 界面原型 | [project-docs-product](.bundle/skills/project-docs-product/GUIDE.md) | 有来源的发现结论、可追溯 PRD、按需交互 HTML 原型及评审记录 |
 | Spring MVC、Feign 或 FastAPI 接口文档 | [project-docs-api](.bundle/skills/project-docs-api/GUIDE.md) | API Markdown、Postman Collection、cURL 示例 |
 | 架构图、流程图、泳道图、时序图、ERD，或处理 Mermaid、PlantUML、draw.io、Archify 图源 | [project-docs-diagram](.bundle/skills/project-docs-diagram/GUIDE.md) | 可编辑图源、按需导出文件及验证回执 |
 | 项目介绍、功能说明、架构总览文档或开发者上手手册 | [project-docs-overview](.bundle/skills/project-docs-overview/GUIDE.md) | 按对应模板生成、带来源的 Markdown；按需交付 explainer 交互 HTML |

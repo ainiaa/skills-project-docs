@@ -10,6 +10,7 @@
 | `branches[]` | 唯一 `id`；`route` 为 development/guidance/permission/configuration/data；非空 `required` 产物 ID 列表。各分支独立；分批发布分别建分支，跨分支依赖可引用 |
 | `artifacts[]` | 唯一 `id`、`kind`、`stage`（L0–L10）、`branch`、正整数 `version`、`owner`、`source`、`status`、`depends_on[]` 和 `evidence[]`。正式 PRD/代码/构建/测试等用 kind 说明，不复制权威内容 |
 | 依赖 | `{id, version}` 精确绑定记录内产物；不存在、循环为结构错误。版本变化为待复核，传播到其下游；不影响无依赖分支。已完成节点依赖未完成节点也待复核 |
+| 业务关系 | 可选 `artifacts[].relations`：extends/supersedes/resolves/conflicts_with/relates_to 的 `{id,version}` 数组；depends_on 仍仅使用原字段。语义、CLI、索引及重放见[协调资料](coordination.md#关系与影响)；缺省空关系兼容旧v1，变更提升源版本且保留历史 |
 | 证据 | `kind` planned/reported/executed/confirmed；`source` 受控引用；`actor` 执行/确认者；带时区 `at`；`result` passed/failed/blocked/skipped/unknown；`subject={id,version}`。可加 `validity`（非 current 为待复核）、`expires_at`（带时区到期时间）、`environment`、`build`、`scope`。已声明的构建/环境/范围须与 executed/confirmed 证据相同，显式过期或对象/版本不符为待复核 |
 | `assertions[]` | `text`、`classification`（fact/business_feedback/hypothesis/technical_unknown）、`source`、`owner`、`confirmation`（unconfirmed/confirmed/conflicted）。已确认另需 `confirmed_by`、带时区 `at`、`applies_to` 版本/范围引用；分类不等同真实性校验 |
 | `next_actions[]` | `action`、`owner`、`depends_on`、`expected_result`；可补已知期限。无依赖用 `none`，不是自动执行队列 |
@@ -20,9 +21,9 @@
 
 ## 安全更新与恢复
 
-先读取当前记录版本，将修改写到独立候选文件，保持 project/subject 身份且 `revision` 加一；产物内容、来源、依赖、构建或适用范围等变化时自身 `version` 增加；状态、证据、负责人和阻断/恢复说明是观察信息，仅提升记录 `revision`，不虚构新产物版本。旧证据 subject 保持原对象版本，新对象版本需要新的实际执行或确认依据；不能改写旧证据或下游旧依赖凑通过。用 `--expected-revision` 与 `--candidate` 更新。工具先解析记录文件的真实路径（通过文件软链接更新时保留链接），在真实文件同目录独占 `.lock` 下重读版本、验证候选和身份，保存仅当前用户可读写、不可覆盖的 `.rev-N.json` 历史快照，临时文件刷盘后原子替换；冲突或坏输入不覆盖当前文件。允许保存合法的未完成/待复核视图，不冒充审批通过。既有产物和分支不得直接删除；取消或不适用需保留对象及理由，避免隐藏未完成范围。
+先读取当前记录版本，将修改写到独立候选文件，保持 project/subject 身份且 `revision` 加一；产物内容、来源、依赖、构建或适用范围等变化时自身 `version` 增加；状态、证据、负责人和阻断/恢复说明是观察信息，仅提升记录 `revision`，不虚构新产物版本。旧证据 subject 保持原对象版本，新对象版本需要新的实际执行或确认依据；不能改写旧证据或下游旧依赖凑通过。用 `--expected-revision` 与 `--candidate` 更新。工具先解析记录文件的真实路径（通过文件软链接更新时保留链接），在真实文件同目录独占 `.lock` 下重读版本、验证候选和身份，将完整旧记录写入同目录、仅当前用户可读写的临时文件并刷盘，再用排他硬链接发布不可覆盖的 `.rev-N.json` 历史快照；不会先创建可见空历史再写内容。候选临时文件刷盘后原子替换；冲突或坏输入不覆盖当前文件。允许保存合法的未完成/待复核视图，不冒充审批通过。既有产物和分支不得直接删除；取消或不适用需保留对象及理由，避免隐藏未完成范围。
 
-锁失败保留他人锁，先查是否有活跃写者；异常退出遗留锁只在确认无写者后人工移除。不提供跨主机/网络文件系统、多用户原子审计或权限隔离，也不防其他程序绕过锁直接写文件。初次记录在已确认位置由单写者建立；后续写入统一使用工具，历史快照含同等敏感引用，按项目权限和保存策略管理。
+锁失败保留他人锁。POSIX先取得原有flock单写锁，再仅回收本工具已知guard内容的遗留.lock；活跃写者或未知/软链接guard均拒绝，未知锁须核实归属后人工处理。历史发布前中断仅留未登记的临时文件，当前记录可重试；发布后保留完整历史，不覆盖坏的或他人历史。不提供跨主机/网络文件系统、多用户原子审计或权限隔离，也不防其他程序绕过锁直接写文件。初次记录在已确认位置由单写者建立；后续写入统一使用工具，历史快照含同等敏感引用，按项目权限和保存策略管理。
 
 同一产物版本的 evidence 仅可追加，已有条目不能删减、改结果或改来源等字段。追加 passed 不会清除既有失败；解决失败后用新产物版本及真实复测依据承接，更新实际受影响的下游依赖，旧版本及失败留在不可覆盖的历史快照中。新版本可不携带旧版本证据，但不能将原观察改绑：同一产物下 kind/source/actor/at 相同视为同一次观察，其内容和 subject 不可改写。新的执行或确认须引用其实际来源和时间；本地比较不能证明来源真实性，不是签名或外部审计系统。
 
@@ -35,3 +36,9 @@ planned/unknown 表示尚待执行的计划，单独存在不证明完成，也�
 CLI 只检查时不写文件；退出 1 表示结构无效或存在待复核，退出 0 仅表示本地一致（分支仍可能 incomplete）。更新成功另含 `updated=true`，即使因待复核退出 1，也表示候选已保存；拒绝更新时不返回此标记。报告同时含 `valid`、`errors`、`needs_review`、`branches` 和 `verification=local_consistency_only`。恢复还必须回到权威来源核实当前版本、访问权及冲突，不能仅靠 revision 猜测外部状态。
 
 记录未知、失败和来源冲突，不保存密钥、整份财务资料或超出交接权限的内容。新增能力可以扩展元数据；不支持的 schema_version 停止处理，旧模型迁移须另行做差异和兼容验证。
+
+共享记录校验（含关系规则）由lifecycle_record.py单源维护，旧单文件CLI不依赖关系CLI模块，也不因导入关系辅助模块的陈旧pyc绕过当前源校验。关系CLI继续复用该校验与写入；两种CLI的模块调用和直接脚本调用均保留。此项不构成所有Python调用者对任意篡改字节码的通用认证。
+
+非依赖关系（extends/supersedes/resolves/conflicts_with/relates_to）的目标版本漂移，只使关系存储源的绑定待复核，不作为上游证据失败传播给消费者；真正的源版本/依赖版本变化和失败证据仍沿depends_on传播。避免将上下文关系变为隐式依赖。
+
+内容版本、同版本证据保留及历史观察不可改写的比较统一按JSON值与类型精确执行；扩展元数据中的数值1、1.0和布尔true不能借Python相等语义互换。对象键顺序不构成内容变化，数组顺序仍保留原语义。合法字段重排可接续；内容类型真实变化须提升产物版本，已有同一次观察仍不得改写。

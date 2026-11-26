@@ -14,6 +14,20 @@ CLI = ROOT / "bin/project-docs.js"
 
 
 class ProjectDocsNpxTests(unittest.TestCase):
+    def test_engineering_conflict_is_checked_before_installing_other_entries(self):
+        target = self.root / '.agents/skills/project-docs-engineering'
+        target.mkdir(parents=True)
+        (target / 'SKILL.md').write_text('user engineering skill')
+        result = self.run_cli('--agent', 'codex')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual((target / 'SKILL.md').read_text(), 'user engineering skill')
+        self.assertFalse((self.root / 'calls').exists())
+
+    def test_engineering_is_installed_with_the_collection(self):
+        result = self.run_cli('--agent', 'codex')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue((self.root / '.agents/skills/project-docs-engineering/SKILL.md').is_file())
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
@@ -29,7 +43,7 @@ if os.environ.get("FAIL") == "1": sys.exit(7)
 agent = args[args.index("-a") + 1]
 root = pathlib.Path.home() if "-g" in args else pathlib.Path.cwd()
 target = root / (".agents/skills" if agent == "codex" else ".claude/skills")
-names = ["project-docs", "project-docs-api", "project-docs-diagram", "project-docs-lifecycle", "project-docs-overview", "project-docs-product"] if args[args.index("add") + 1].startswith("/") else [args[args.index("--skill") + 1]]
+names = ["project-docs", "project-docs-api", "project-docs-diagram", "project-docs-lifecycle", "project-docs-overview", "project-docs-product", "project-docs-engineering"] if args[args.index("add") + 1].startswith("/") else [args[args.index("--skill") + 1]]
 if os.environ.get("WAIT_PROJECT") and names[0] == "project-docs":
     pathlib.Path(os.environ["WAIT_PROJECT"]).write_text("started")
     time.sleep(30)
