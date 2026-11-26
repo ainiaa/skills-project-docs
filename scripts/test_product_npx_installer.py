@@ -36,8 +36,14 @@ class ProjectDocsNpxTests(unittest.TestCase):
         self.bin.mkdir()
         fake = self.bin / "npx"
         fake.write_text('''#!/usr/bin/env python3
-import json, os, pathlib, sys, shutil, time
+import json, os, pathlib, sys, shutil, time, signal, subprocess
 args = sys.argv[1:]
+def damage_lock(lock):
+    if os.environ.get("DAMAGE_LOCK") == "truncated": lock.write_text('{"skills":')
+    if os.environ.get("DAMAGE_LOCK") == "deleted": lock.unlink(missing_ok=True)
+    if os.environ.get("DAMAGE_LOCK") == "symlink":
+        lock.unlink()
+        lock.symlink_to(os.environ["LOCK_TARGET"])
 with open(os.environ["CALLS"], "a") as f: f.write(" ".join(args) + "\\n")
 if os.environ.get("FAIL") == "1": sys.exit(7)
 agent = args[args.index("-a") + 1]
@@ -45,7 +51,8 @@ root = pathlib.Path.home() if "-g" in args else pathlib.Path.cwd()
 target = root / (".agents/skills" if agent == "codex" else ".claude/skills")
 names = ["project-docs", "project-docs-api", "project-docs-diagram", "project-docs-lifecycle", "project-docs-overview", "project-docs-product", "project-docs-engineering"] if args[args.index("add") + 1].startswith("/") else [args[args.index("--skill") + 1]]
 if os.environ.get("WAIT_PROJECT") and names[0] == "project-docs":
-    pathlib.Path(os.environ["WAIT_PROJECT"]).write_text("started")
+    if os.environ.get("IGNORE_TERM"): signal.signal(signal.SIGTERM, signal.SIG_IGN)
+    pathlib.Path(os.environ["WAIT_PROJECT"]).write_text(str(os.getpid()))
     time.sleep(30)
 for name in names:
     skill = target / name
@@ -57,16 +64,25 @@ for name in names:
     if name.startswith("project-docs"):
         source = pathlib.Path(args[args.index("add") + 1]) / "skills" / name
         shutil.copytree(source, skill, ignore=shutil.ignore_patterns("__pycache__"))
+        if name == "project-docs" and os.environ.get("SIGNAL_PARENT"):
+            subprocess.Popen([sys.executable, "-c", "import pathlib,sys,time;time.sleep(0.25);pathlib.Path(sys.argv[1]).write_text('late write')", os.environ["DESCENDANT_MARKER"]])
+            os.kill(os.getppid(), getattr(signal, os.environ["SIGNAL_PARENT"]))
+            time.sleep(0.05)
         if os.environ.get("CORRUPT_PROJECT") == name:
             (skill / ".bundle/scripts/generate_api_docs.py").unlink()
+        if name == "project-docs-engineering" and os.environ.get("DAMAGE_PROJECT_SUCCESS"):
+            lock = pathlib.Path.home() / ".agents/.skill-lock.json" if "-g" in args else pathlib.Path.cwd() / "skills-lock.json"
+            damage_lock(lock)
         if name == "project-docs" and os.environ.get("FAIL_PROJECT_AFTER_FIRST"):
             (skill / "SKILL.md").write_text("partial update")
             lock = pathlib.Path.home() / ".agents/.skill-lock.json" if "-g" in args else pathlib.Path.cwd() / "skills-lock.json"
             lock.parent.mkdir(parents=True, exist_ok=True)
             data = json.loads(lock.read_text()) if lock.exists() else {"version": 1, "skills": {}}
             data["skills"][name] = {"source": "partial"}
+            if os.environ.get("UPDATE_OTHER"): data["skills"]["other"] = {"source": "new-unrelated"}
             lock.write_text(json.dumps(data))
             if os.environ.get("DELETE_LOCK") == "1": lock.unlink()
+            damage_lock(lock)
             sys.exit(7)
         continue
     skill.mkdir(parents=True, exist_ok=True)
@@ -74,12 +90,16 @@ for name in names:
     if name == "domain-modeling" and os.environ.get("INVALID") != "1":
         for ref in ("GLOSSARY-FORMAT.md", "ADR-FORMAT.md"):
             (skill / ref).write_text("reference")
+        if os.environ.get("DAMAGE_DEPENDENCY_SUCCESS"):
+            lock = pathlib.Path.home() / ".agents/.skill-lock.json" if "-g" in args else pathlib.Path.cwd() / "skills-lock.json"
+            damage_lock(lock)
     if name == "domain-modeling" and os.environ.get("INVALID") == "1":
         lock = pathlib.Path.home() / ".agents/.skill-lock.json" if "-g" in args else pathlib.Path.cwd() / "skills-lock.json"
         lock.parent.mkdir(parents=True, exist_ok=True)
         data = json.loads(lock.read_text()) if lock.exists() else {"version": 1, "skills": {}}
         data["skills"][name] = {"source": "invalid"}
         lock.write_text(json.dumps(data))
+        damage_lock(lock)
     if name == "brainstorming" and os.environ.get("SYMLINK_MARKER"):
         (skill / ".project-docs-managed.json").symlink_to(os.environ["SYMLINK_MARKER"])
 ''')
@@ -190,6 +210,53 @@ for name in names:
                 os.killpg(process.pid, signal.SIGKILL)
                 process.wait()
 
+    @unittest.skipUnless(os.name == 'posix', 'POSIX parent-only signals and process-group cancellation')
+    def test_parent_only_cancellation_restores_transaction_and_stops_descendants(self):
+        import time
+        self.assertEqual(self.run_cli().returncode, 0)
+        skill = self.root / '.agents/skills/project-docs/SKILL.md'
+        original_inode = skill.stat().st_ino
+        lock = self.root / 'skills-lock.json'
+        original = json.dumps({'version': 1, 'skills': {'project-docs': {'source': 'old'},
+                                                        'other': {'source': 'keep'}}}, indent=2) + '\n'
+        lock.write_text(original)
+        descendant = self.root / 'descendant-write'
+        for name in ('SIGTERM', 'SIGINT'):
+            with self.subTest(signal=name):
+                before = len((self.root / 'calls').read_text().splitlines())
+                result = self.run_cli('--with-deps', env={**self.env, 'SIGNAL_PARENT': name,
+                                                        'DESCENDANT_MARKER': str(descendant)})
+                self.assertEqual(result.returncode, 128 + getattr(signal, name), result.stderr)
+                self.assertEqual(skill.stat().st_ino, original_inode)
+                self.assertEqual(lock.read_text(), original)
+                self.assertEqual(len((self.root / 'calls').read_text().splitlines()), before + 1)
+                self.assertFalse((self.root / '.agents/skills/brainstorming').exists())
+                time.sleep(0.35)
+                self.assertFalse(descendant.exists())
+                self.assertFalse(list((self.root / '.agents/skills').glob('.project-docs-backup-*')))
+
+    @unittest.skipUnless(os.name == 'posix', 'POSIX process group timeout cleanup')
+    def test_timed_out_child_ignoring_term_is_killed_before_restoring(self):
+        self.assertEqual(self.run_cli().returncode, 0)
+        skill = self.root / '.agents/skills/project-docs/SKILL.md'
+        before = skill.stat().st_ino
+        ready = self.root / 'timeout-child'
+        preload = self.root / 'fast-deadline.cjs'
+        preload.write_text('const timer=setTimeout;global.setTimeout=(f,ms,...a)=>timer(f,ms===180000?500:ms,...a);\n')
+        try:
+            result = self.run_cli(env={**self.env, 'WAIT_PROJECT': str(ready), 'IGNORE_TERM': '1',
+                                       'NODE_OPTIONS': '--require=' + str(preload)})
+            self.assertTrue(ready.exists())
+            self.assertEqual(result.returncode, 1, result.stderr)
+            self.assertIn('timeout', result.stderr)
+            self.assertEqual(skill.stat().st_ino, before)
+            self.assertFalse(list((self.root / '.agents/skills').glob('.project-docs-backup-*')))
+            self.assertFalse((self.root / '.agents/.project-docs-install.lock').exists())
+        finally:
+            if ready.exists():
+                try: os.killpg(int(ready.read_text()), signal.SIGKILL)
+                except ProcessLookupError: pass
+
     def test_concurrent_installation_is_rejected_before_changes(self):
         import time
         self.assertEqual(self.run_cli().returncode, 0)
@@ -238,6 +305,93 @@ for name in names:
         self.assertNotEqual(result.returncode, 0)
         self.assertTrue(lock.exists())
         self.assertEqual(json.loads(lock.read_text()), original)
+
+    def test_damaged_project_record_restores_original_without_following_symlinks(self):
+        for agent, global_args in (("codex", ()), ("claude-code", ("--global",))):
+            options = ("--agent", agent, *global_args)
+            self.assertEqual(self.run_cli(*options).returncode, 0)
+            lock = self.root / (".agents/.skill-lock.json" if global_args else "skills-lock.json")
+            lock.parent.mkdir(parents=True, exist_ok=True)
+            original = b'{"version":1,"skills":{"project-docs":{"source":"before"},"other":{"source":"keep"}}}\n'
+            outside = self.root / 'outside-lock'
+            outside.write_bytes(b'private unrelated bytes')
+            skills = self.root / ('.agents/skills' if agent == 'codex' else '.claude/skills')
+            for damage in ('truncated', 'symlink'):
+                with self.subTest(agent=agent, damage=damage):
+                    lock.write_bytes(original)
+                    before = (skills / 'project-docs/SKILL.md').stat().st_ino
+                    result = self.run_cli(*options, env={**self.env, 'FAIL_PROJECT_AFTER_FIRST': '1',
+                                                        'DAMAGE_LOCK': damage, 'LOCK_TARGET': str(outside)})
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertFalse(lock.is_symlink())
+                    self.assertEqual(lock.read_bytes(), original)
+                    self.assertEqual(outside.read_bytes(), b'private unrelated bytes')
+                    self.assertEqual((skills / 'project-docs/SKILL.md').stat().st_ino, before)
+                    self.assertIn('备份', result.stderr)
+                    self.assertEqual(self.run_cli(*options).returncode, 0)
+
+    def test_absent_lock_is_restored_as_absent_after_malformed_first_install(self):
+        result = self.run_cli(env={**self.env, 'FAIL_PROJECT_AFTER_FIRST': '1', 'DAMAGE_LOCK': 'truncated'})
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse((self.root / 'skills-lock.json').exists())
+        self.assertFalse((self.root / '.agents/skills/project-docs').exists())
+        self.assertEqual(self.run_cli().returncode, 0)
+
+    def test_successful_child_with_invalid_or_deleted_record_cannot_commit(self):
+        self.assertEqual(self.run_cli('--with-deps').returncode, 0)
+        lock = self.root / 'skills-lock.json'
+        original = b'{"version":1,"skills":{"project-docs":{"source":"old"},"other":{"source":"keep"}}}\n'
+        outside = self.root / 'outside-record'
+        outside.write_text('untouched')
+        for scope in ('project', 'dependency'):
+            for damage in ('truncated', 'symlink', 'deleted'):
+                with self.subTest(scope=scope, damage=damage):
+                    if lock.is_symlink(): lock.unlink()
+                    lock.write_bytes(original)
+                    name = 'project-docs' if scope == 'project' else 'domain-modeling'
+                    before = (self.root / '.agents/skills' / name / 'SKILL.md').stat().st_ino
+                    flag = 'DAMAGE_PROJECT_SUCCESS' if scope == 'project' else 'DAMAGE_DEPENDENCY_SUCCESS'
+                    result = self.run_cli(*(['--with-deps'] if scope == 'dependency' else []),
+                                          env={**self.env, flag: '1', 'DAMAGE_LOCK': damage,
+                                               'LOCK_TARGET': str(outside)})
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertFalse(lock.is_symlink())
+                    self.assertEqual(lock.read_bytes(), original)
+                    self.assertEqual(outside.read_text(), 'untouched')
+                    self.assertEqual((self.root / '.agents/skills' / name / 'SKILL.md').stat().st_ino, before)
+
+    def test_valid_record_rollback_keeps_unrelated_new_entries(self):
+        self.assertEqual(self.run_cli().returncode, 0)
+        lock = self.root / 'skills-lock.json'
+        lock.write_text(json.dumps({'version': 1, 'skills': {'project-docs': {'source': 'old'},
+                                                           'other': {'source': 'before'}}}))
+        result = self.run_cli(env={**self.env, 'FAIL_PROJECT_AFTER_FIRST': '1', 'UPDATE_OTHER': '1'})
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(json.loads(lock.read_text())['skills'],
+                         {'project-docs': {'source': 'old'}, 'other': {'source': 'new-unrelated'}})
+
+    def test_dependency_restore_failure_keeps_disk_lock_snapshot_for_manual_recovery(self):
+        self.assertEqual(self.run_cli('--with-deps').returncode, 0)
+        lock = self.root / 'skills-lock.json'
+        original = b'{"version":1,"skills":{"domain-modeling":{"source":"old"},"other":{"source":"keep"}}}\n'
+        lock.write_bytes(original)
+        preload = self.root / 'restore-fault.cjs'
+        preload.write_text('const fs=require("node:fs");\n'
+                          'const write=fs.writeFileSync,rename=fs.renameSync;\n'
+                          'fs.writeFileSync=function(p,...a){if(p===process.env.LOCK_FAULT_PATH)throw new Error("restore-write-fault");return write.call(this,p,...a);};\n'
+                          'fs.renameSync=function(p,q){if(q===process.env.LOCK_FAULT_PATH)throw new Error("restore-write-fault");return rename.call(this,p,q);};\n')
+        result = self.run_cli('--with-deps', env={**self.env, 'INVALID': '1', 'DAMAGE_LOCK': 'truncated',
+                                                'LOCK_FAULT_PATH': str(lock.resolve()), 'NODE_OPTIONS': '--require=' + str(preload)})
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('恢复失败', result.stderr)
+        backups = list((self.root / '.agents/skills').glob('.project-docs-backup-*'))
+        self.assertEqual(len(backups), 1)
+        snapshot = backups[0] / 'skill-lock.before.json'
+        self.assertEqual(snapshot.read_bytes(), original)
+        self.assertTrue((self.root / '.agents/skills/domain-modeling/ADR-FORMAT.md').is_file())
+        shutil.copyfile(snapshot, lock)
+        self.assertEqual(self.run_cli('--with-deps').returncode, 0)
+        self.assertEqual(snapshot.read_bytes(), original)
 
     def test_non_bytecode_in_cache_is_protected(self):
         self.assertEqual(self.run_cli().returncode, 0)

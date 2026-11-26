@@ -5,16 +5,27 @@ const fs = require("node:fs");
 const path = require("node:path");
 const os = require("node:os");
 const crypto = require("node:crypto");
-const { spawnSync } = require("node:child_process");
+const { spawn, spawnSync } = require("node:child_process");
 
 const source = path.resolve(__dirname, "..");
 const dependencies = [["brainstorming", "obra/superpowers"], ["grilling", "mattpocock/skills"], ["domain-modeling", "mattpocock/skills"]];
 const projectSkills = ["project-docs", "project-docs-api", "project-docs-diagram", "project-docs-lifecycle", "project-docs-overview", "project-docs-product", "project-docs-engineering"];
 const marker = ".project-docs-managed.json";
 
-// Keep the parent alive long enough to restore backups when the child is interrupted.
-process.on("SIGINT", () => { process.exitCode = 130; });
-process.on("SIGTERM", () => { process.exitCode = 143; });
+let interrupted;
+let cancelChild;
+for (const [signal, code] of [["SIGINT", 130], ["SIGTERM", 143]]) {
+  process.on(signal, () => {
+    interrupted = signal;
+    process.exitCode = code;
+    cancelChild?.(signal);
+  });
+}
+
+async function cancellationCheckpoint() {
+  await new Promise(resolve => setImmediate(resolve));
+  if (interrupted) throw new Error(`安装已中断: ${interrupted}`);
+}
 
 function fingerprint(directory) {
   const hash = crypto.createHash("sha256");
@@ -38,7 +49,7 @@ function fingerprint(directory) {
   return hash.digest("hex");
 }
 
-function main(args) {
+async function main(args) {
   let agent = "codex", global = false, withDeps = false;
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -110,10 +121,41 @@ function main(args) {
     }
   }
   function install(repo, name) {
+    if (interrupted) throw new Error(`安装已中断: ${interrupted}`);
     const options = ["--yes", "skills@latest", "add", repo, "--skill", name, "-a", agent, "--copy", "-y"];
     if (global) options.push("-g");
-    const result = spawnSync("npx", options, { stdio: "inherit", timeout: 180000 });
-    if (result.error || result.status !== 0) throw new Error(`安装失败: ${repo} (${result.error?.message || result.status})`);
+    return new Promise((resolve, reject) => {
+      const child = spawn("npx", options, { stdio: "inherit", detached: process.platform !== "win32" });
+      let forced, timedOut = false, finished = false;
+      function signalChild(signal) {
+        if (!child.pid) return;
+        try {
+          if (process.platform === "win32") child.kill(signal);
+          else process.kill(-child.pid, signal);
+        } catch (error) {
+          if (error.code !== "ESRCH") throw error;
+        }
+      }
+      function stop(signal) {
+        signalChild(signal);
+        forced ||= setTimeout(() => signalChild("SIGKILL"), 1000);
+      }
+      cancelChild = stop;
+      const deadline = setTimeout(() => { timedOut = true; stop("SIGTERM"); }, 180000);
+      function finish(error, status, signal) {
+        if (finished) return;
+        finished = true;
+        clearTimeout(deadline);
+        clearTimeout(forced);
+        cancelChild = undefined;
+        if (error || interrupted || timedOut || status !== 0) {
+          signalChild("SIGKILL");
+          reject(new Error(`安装失败: ${repo} (${error?.message || interrupted || (timedOut ? "timeout" : signal || status)})`));
+        } else resolve();
+      }
+      child.once("error", error => finish(error));
+      child.once("close", (status, signal) => finish(null, status, signal));
+    });
   }
   const lockPath = global ? path.join(home, ".agents/.skill-lock.json") : path.join(process.cwd(), "skills-lock.json");
   function readLock() {
@@ -124,24 +166,47 @@ function main(args) {
     if (!lock || typeof lock !== "object" || !lock.skills || typeof lock.skills !== "object" || Array.isArray(lock.skills)) throw new Error(`无效的 Skill 安装记录: ${lockPath}`);
     return lock;
   }
-  function restoreLock(before, names) {
-    const after = readLock();
+  function snapshotLock(backup, before) {
+    if (before) fs.copyFileSync(lockPath, path.join(backup, "skill-lock.before.json"));
+    else fs.writeFileSync(path.join(backup, "skill-lock.absent"), "absent\n", { mode: 0o600 });
+  }
+  function verifyInstalledLock(before) {
+    if (!readLock() && before) throw new Error(`安装后丢失原有 Skill 安装记录: ${lockPath}`);
+  }
+  function writeLock(contents, mode = 0o600) {
+    const temporary = `${lockPath}.project-docs-${crypto.randomUUID()}`;
+    fs.mkdirSync(path.dirname(lockPath), { recursive: true });
+    try {
+      fs.writeFileSync(temporary, contents, { flag: "wx", mode });
+      fs.renameSync(temporary, lockPath);
+    } finally {
+      fs.rmSync(temporary, { force: true });
+    }
+  }
+  function restoreLock(before, names, backup) {
+    const snapshot = path.join(backup, "skill-lock.before.json");
+    let after;
+    try { after = readLock(); } catch {
+      // Keep an unreadable entry for inspection; never write through a replacement symlink.
+      fs.renameSync(lockPath, path.join(backup, "skill-lock.failed"));
+      if (before) writeLock(fs.readFileSync(snapshot), fs.statSync(snapshot).mode & 0o777);
+      return true;
+    }
     if (!after) {
-      if (before) {
-        fs.mkdirSync(path.dirname(lockPath), { recursive: true });
-        fs.writeFileSync(lockPath, JSON.stringify(before, null, 2) + "\n");
-      }
-      return;
+      if (before) writeLock(fs.readFileSync(snapshot), fs.statSync(snapshot).mode & 0o777);
+      return false;
     }
     for (const name of names) {
       if (before && Object.hasOwn(before.skills, name)) after.skills[name] = before.skills[name];
       else delete after.skills[name];
     }
-    fs.writeFileSync(lockPath, JSON.stringify(after, null, 2) + "\n");
+    writeLock(JSON.stringify(after, null, 2) + "\n", fs.statSync(lockPath).mode & 0o777);
+    return false;
   }
   const projectLock = readLock();
   fs.mkdirSync(skillRoot, { recursive: true });
   const projectBackup = fs.mkdtempSync(path.join(skillRoot, ".project-docs-backup-"));
+  snapshotLock(projectBackup, projectLock);
   const moved = [];
   let projectInstallStarted = false;
   try {
@@ -153,7 +218,8 @@ function main(args) {
       }
     }
     projectInstallStarted = true;
-    install(source, "*");
+    await install(source, "*");
+    verifyInstalledLock(projectLock);
     for (const name of projectSkills) {
       const directory = path.join(skillRoot, name);
       const installed = fs.lstatSync(directory, { throwIfNoEntry: false });
@@ -164,12 +230,14 @@ function main(args) {
       if (installedFingerprint !== fingerprint(path.join(source, "skills", name))) throw new Error(`项目 Skill 安装不完整或内容不一致: ${directory}`);
       fs.writeFileSync(path.join(directory, marker), JSON.stringify({ source: "project-docs", fingerprint: installedFingerprint }) + "\n");
     }
+    await cancellationCheckpoint();
   } catch (error) {
     try {
       if (projectInstallStarted) for (const name of projectSkills) fs.rmSync(path.join(skillRoot, name), { recursive: true, force: true });
       for (const name of moved) fs.renameSync(path.join(projectBackup, name), path.join(skillRoot, name));
-      if (projectInstallStarted) restoreLock(projectLock, projectSkills);
-      fs.rmSync(projectBackup, { recursive: true, force: true });
+      const quarantined = projectInstallStarted && restoreLock(projectLock, projectSkills, projectBackup);
+      if (quarantined) error = new Error(`${error.message}; 异常安装记录备份: ${projectBackup}`);
+      else fs.rmSync(projectBackup, { recursive: true, force: true });
     } catch (restoreError) {
       throw new Error(`${error.message}; 恢复失败: ${restoreError.message}; 原项目 Skill 备份: ${projectBackup}`);
     }
@@ -181,11 +249,13 @@ function main(args) {
     const dependencyLock = readLock();
     fs.mkdirSync(skillRoot, { recursive: true });
     const backup = fs.mkdtempSync(path.join(skillRoot, ".project-docs-backup-"));
+    snapshotLock(backup, dependencyLock);
     const previous = path.join(backup, "previous");
     const hadPrevious = !!fs.lstatSync(directory, { throwIfNoEntry: false });
     if (hadPrevious) fs.renameSync(directory, previous);
     try {
-      install(repo, name);
+      await install(repo, name);
+      verifyInstalledLock(dependencyLock);
       const installed = fs.lstatSync(directory, { throwIfNoEntry: false });
       if (!installed?.isDirectory() || installed.isSymbolicLink()) throw new Error(`不安全的依赖安装目录: ${directory}`);
       if (!fs.existsSync(path.join(directory, "SKILL.md"))) throw new Error(`安装后缺少 ${directory}/SKILL.md`);
@@ -194,17 +264,18 @@ function main(args) {
       const metadata = fs.lstatSync(path.join(directory, marker), { throwIfNoEntry: false });
       if (metadata && (!metadata.isFile() || metadata.isSymbolicLink())) throw new Error(`不安全的依赖元数据: ${directory}`);
       fs.writeFileSync(path.join(directory, marker), JSON.stringify({ source: repo, fingerprint: fingerprint(directory) }) + "\n");
+      await cancellationCheckpoint();
     } catch (error) {
       try {
         fs.rmSync(directory, { recursive: true, force: true });
         if (hadPrevious) fs.renameSync(previous, directory);
-        restoreLock(dependencyLock, [name]);
+        const quarantined = restoreLock(dependencyLock, [name], backup);
+        if (quarantined) error = new Error(`${error.message}; 异常安装记录备份: ${backup}`);
+        else fs.rmSync(backup, { recursive: true, force: true });
       } catch (restoreError) {
-        throw new Error(`${error.message}; 恢复失败: ${restoreError.message}; 原依赖备份: ${previous}`);
+        throw new Error(`${error.message}; 恢复失败: ${restoreError.message}; 原依赖及安装记录备份: ${backup}`);
       }
       throw error;
-    } finally {
-      if (!fs.lstatSync(previous, { throwIfNoEntry: false })) fs.rmSync(backup, { recursive: true, force: true });
     }
     fs.rmSync(backup, { recursive: true, force: true });
   }
@@ -213,4 +284,4 @@ function main(args) {
   }
 }
 
-try { main(process.argv.slice(2)); } catch (error) { console.error(error.message); process.exitCode = 1; }
+main(process.argv.slice(2)).catch(error => { console.error(error.message); process.exitCode ||= 1; });
