@@ -7,7 +7,7 @@ description: Create technical diagrams from repository evidence or a system desc
 
 Create architecture, workflow, sequence, state, and data diagrams from repository evidence or a system description. Deliver editable sources and validated exports using Mermaid, PlantUML, draw.io, or Archify, while distinguishing implemented behavior from proposed designs.
 
-[中文文档 / Chinese documentation](../../README.zh-CN.md)
+[中文文档 / Chinese documentation](https://github.com/ainiaa/skills-project-docs/blob/main/README.zh-CN.md)
 
 若当前 Skill 目录下存在 `.bundle` 且其 `../../` 不是本集合的 Git 检出，先读取 `.bundle/skills/project-docs-diagram/GUIDE.md` 并以该目录为 Skill 真实目录；其中的共享脚本、资料和其他 Skill 均来自同一快照。通过 `npx skills update <已安装的本集合 Skill 名称>` 更新此类安装，按实际作用域加 `-g` 或 `-p`；不运行快照内依赖 Git 检出的更新命令。
 
@@ -15,7 +15,7 @@ Create architecture, workflow, sequence, state, and data diagrams from repositor
 
 Produce auditable diagrams from repository evidence. A short request such as “根据代码生成架构图” is sufficient; infer scope, view, engine, and export without requiring a reference image or a detailed prompt. The agent interprets architecture and business meaning; scripts validate source anchors and supported diagram semantics. Keep generated files outside the analyzed repository unless the user asks to commit them. Read [the diagram standard](../../docs/DIAGRAM_STANDARD.md) when selecting a profile. The draw.io landscape theme and GitHub template decision are documented in [the template research](../../docs/ARCHITECTURE_TEMPLATE_RESEARCH.md).
 
-Archify `explainer` 是独立的一页文档模式；用户要求项目说明页面时读取 [project-docs-overview](../project-docs-overview/GUIDE.md)，不将它作为 typed JSON 图型传入本 Skill 的原生脚本。
+Archify `explainer` 是独立的一页文档模式。用户要求项目说明页面时按[Overview 指南](https://github.com/ainiaa/skills-project-docs/blob/main/skills/project-docs-overview/SKILL.md)处理，优先读取当前快照附带的指南，或使用宿主已安装的 `project-docs-overview`。原生图脚本处理 typed JSON 图源。
 
 ## Workflow
 

@@ -15,6 +15,80 @@ API_SKILL = REPOSITORY / "skills" / "project-docs-api"
 
 
 class InstallTests(unittest.TestCase):
+    def test_six_entry_checkout_upgrade_adds_engineering_and_preserves_user_state(self):
+        skills = self.codex_home / 'skills'
+        skills.mkdir(parents=True)
+        names = ('project-docs', 'project-docs-api', 'project-docs-diagram',
+                 'project-docs-overview', 'project-docs-product', 'project-docs-lifecycle')
+        for name in names:
+            (skills / name).symlink_to(REPOSITORY / 'skills' / name)
+        saved_links = {name: os.readlink(skills / name) for name in names}
+        user = skills / 'user-skill'
+        user.mkdir()
+        (user / 'SKILL.md').write_text('user-owned')
+        legacy = self.root / 'project/docs/.pdlc-state/state.json'
+        legacy.parent.mkdir(parents=True)
+        legacy.write_bytes(b'{"old":"preserve"}\n')
+        for _ in range(2):
+            result = self.run_installer()
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertEqual(saved_links, {name: os.readlink(skills / name) for name in names})
+            self.assertEqual((skills / 'project-docs-engineering').resolve(),
+                             REPOSITORY / 'skills/project-docs-engineering')
+            self.assertEqual(legacy.read_bytes(), b'{"old":"preserve"}\n')
+            self.assertEqual((user / 'SKILL.md').read_text(), 'user-owned')
+        self.assertEqual(self.run_installer('--doctor').returncode, 0)
+
+    def test_six_entry_upgrade_conflict_preserves_every_existing_link(self):
+        skills = self.codex_home / 'skills'
+        skills.mkdir(parents=True)
+        names = ('project-docs', 'project-docs-api', 'project-docs-diagram',
+                 'project-docs-overview', 'project-docs-product', 'project-docs-lifecycle')
+        for name in names:
+            (skills / name).symlink_to(REPOSITORY / 'skills' / name)
+        engineering = skills / 'project-docs-engineering'
+        engineering.mkdir()
+        (engineering / 'keep.txt').write_text('foreign')
+        before = {name: os.readlink(skills / name) for name in names}
+        result = self.run_installer()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(before, {name: os.readlink(skills / name) for name in names})
+        self.assertEqual((engineering / 'keep.txt').read_text(), 'foreign')
+
+    def test_missing_or_empty_engineering_method_prevents_partial_install(self):
+        collection = self.linked_collection()
+        shutil.copytree(REPOSITORY / 'scripts', collection / 'scripts')
+        for target in (self.codex_home / 'skills').iterdir():
+            target.unlink()
+        method = collection / 'skills/project-docs-engineering/references/design.md'
+        original = method.read_bytes()
+        for missing in (True, False):
+            with self.subTest(missing=missing):
+                if missing:
+                    method.unlink()
+                else:
+                    method.write_bytes(b'')
+                result = subprocess.run(['bash', str(collection / 'install.sh'), '--host', 'codex', '--no-engines'],
+                                        env=self.environment, capture_output=True, text=True)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(str(method), result.stderr)
+                self.assertFalse(any((self.codex_home / 'skills').iterdir()))
+                method.write_bytes(original)
+
+    def test_engineering_installs_and_uninstalls_without_third_party_pdlc(self):
+        target = self.codex_home / 'skills/project-docs-engineering'
+        result = self.run_installer()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue(target.is_symlink())
+        self.assertEqual(target.resolve(), REPOSITORY / 'skills/project-docs-engineering')
+        for resource in ('SKILL.md', 'references/project.md', 'references/design.md',
+                         'references/quality.md', 'references/release.md'):
+            self.assertTrue((target / resource).is_file(), resource)
+        self.assertFalse(any(self.codex_home.rglob('pdlc-*')))
+        self.assertEqual(self.run_installer('--doctor').returncode, 0)
+        self.assertEqual(self.run_installer('--uninstall').returncode, 0)
+        self.assertFalse(target.exists())
+
     def test_missing_packaged_entry_resource_is_rejected_by_install_and_doctor(self):
         collection = self.linked_collection()
         shutil.copytree(REPOSITORY / "scripts", collection / "scripts")
@@ -26,7 +100,7 @@ class InstallTests(unittest.TestCase):
         doctor = subprocess.run([*argv, "--doctor"], env=self.environment, capture_output=True, text=True)
         self.assertNotEqual(doctor.returncode, 0, doctor.stdout + doctor.stderr)
         self.assertIn(str(missing), doctor.stderr, doctor.stdout + doctor.stderr)
-        for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product", "project-docs-lifecycle"):
+        for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product", "project-docs-lifecycle", "project-docs-engineering"):
             (self.codex_home / "skills" / name).unlink()
         install = subprocess.run(argv, env=self.environment, capture_output=True, text=True)
         self.assertNotEqual(install.returncode, 0, install.stdout + install.stderr)
@@ -119,7 +193,7 @@ class InstallTests(unittest.TestCase):
         installed = subprocess.run(argv, env=self.environment, capture_output=True, text=True)
         self.assertEqual(installed.returncode, 0, installed.stderr)
         self.assertEqual(subprocess.run([*argv, "--doctor"], env=self.environment, capture_output=True).returncode, 0)
-        for relative in ("scripts/lifecycle_record.py", "scripts/lifecycle_quality.py", "scripts/lifecycle_test_runner.py",
+        for relative in ("scripts/lifecycle_record.py", "scripts/lifecycle_relations.py", "scripts/lifecycle_quality.py", "scripts/lifecycle_test_runner.py",
                          "skills/project-docs-lifecycle/references/quality-and-trace.md",
                          "skills/project-docs-lifecycle/references/lifecycle.md",
                          "skills/project-docs-lifecycle/references/record-contract.md",
@@ -413,7 +487,7 @@ class InstallTests(unittest.TestCase):
         for target in legacy:
             self.assertFalse(target.is_symlink(), target)
         for home in (self.codex_home, self.claude_home):
-            for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product", "project-docs-lifecycle"):
+            for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product", "project-docs-lifecycle", "project-docs-engineering"):
                 installed = home / "skills" / name
                 self.assertEqual(installed.resolve(), REPOSITORY / "skills" / name)
                 self.assertIn(f"name: {name}\n", (installed / "SKILL.md").read_text())
@@ -664,7 +738,7 @@ class InstallTests(unittest.TestCase):
         self.assertFalse(self.target.exists())
 
     def test_new_hosts_install_update_doctor_and_uninstall_in_isolation(self):
-        names = ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product", "project-docs-lifecycle")
+        names = ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product", "project-docs-lifecycle", "project-docs-engineering")
         for host, directory in self.host_directories().items():
             if host in ("codex", "claude"):
                 continue
@@ -701,7 +775,7 @@ class InstallTests(unittest.TestCase):
             result = self.run_installer(action, "--host", "all", "--no-engines", isolated=False)
             self.assertEqual(result.returncode, 0, result.stderr)
             for directory in self.host_directories().values():
-                for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product", "project-docs-lifecycle"):
+                for name in ("project-docs", "project-docs-api", "project-docs-diagram", "project-docs-overview", "project-docs-product", "project-docs-lifecycle", "project-docs-engineering"):
                     self.assertEqual((directory / name).resolve(), REPOSITORY / "skills" / name)
             self.assertFalse(any(target.is_symlink() for target in legacy))
         result = self.run_installer("--uninstall", "--host", "all", isolated=False)

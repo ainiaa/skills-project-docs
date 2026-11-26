@@ -6,7 +6,7 @@ Use this path for a diagram type outside [typed IR v2](diagram-view-ir.md). Choo
 
 The new upstream `explainer` page mode has a separate Markdown authoring contract; it is not a diagram JSON type accepted by this native diagram channel.
 For a one-page project explanation, route to
-[Project Docs Overview](../../project-docs-overview/references/explainer.md),
+[Project Docs Overview](https://github.com/ainiaa/skills-project-docs/blob/main/skills/project-docs-overview/references/explainer.md),
 which uses official `finalize explainer` on `.archify.md` drafts.
 
 All ten typed modes are accepted: `architecture`, `workflow`, `sequence`, `dataflow`, `lifecycle`, `erd`, `tree`, `class`, `timeline`, and `waterfall`. Set `schema_version: 1`, the exact `diagram_type`, `meta.title`, and a portable relative `meta.output` ending in `.html`. Use the corresponding installed official schema and examples; schema and relationship validation remain the official CLI's responsibility. This path does not add an IR v2 converter or imply exchange-format conformance.
@@ -66,6 +66,20 @@ python3 scripts/render_native_diagram.py \
 ```
 
 `--source-repo` and `--evidence` are a pair. The validator checks the engine, manifest shape, declared type, material item coverage, source path containment, one based line, and exact source quote before writing output. `EXTRACTED` statements must occur literally on cited source lines; use `INFERRED` for translated names or architectural interpretations. Version 2 reports `claimCoverage: complete` only when every inventoried item is claimed and no PlantUML include remains untracked. Standard-library, remote, or out-of-directory includes report `partial` with `untrackedIncludes`; inspect their effective content or use self-contained syntax before claiming complete coverage. Version 1 reports `not_checked`. This inventory cannot prove an inferred arrow or all facts sharing one native line. Invalid diagram-type and evidence-manifest scalar fields fail validation before output is written. A failed Archify delivery removes any partial HTML; a viewer-export failure may retain the already validated JSON/HTML and reports the failed export separately. The official engine checks syntax/rendering; the agent checks semantics and the exported image. For a diagram unrelated to source code, omit both source flags and say that code evidence was not checked.
+
+## Publication to an output directory
+
+Use a dedicated output directory for one diagram. After validation and rendering, the renderer stages the complete result, including any unrelated files already in that directory. A concurrent renderer targeting the same directory receives a publication error and can retry. Both the editable source and its exports switch at the same point. An interruption leaves the previous complete directory before the switch or the new complete directory after it.
+
+If an edit is detected before the switch, publication stops with the original files in place. If a change to the old directory is detected across the switch, the command reports a publication failure and gives the original directory in `recoveryBackup`. The destination contains the complete new output. Recover the concurrent edits from that backup before removing it. Interrupted processes can also leave temporary `native-delivery-*` or `native-publish-*` directories. Check the process has exited and preserve needed files before cleanup.
+
+The native renderer records the relative paths and hashes of copied PlantUML includes in `.native-includes.json`. A later PlantUML publication removes an obsolete include only if the previous inventory lists it and its bytes still match. Older exports without an inventory retain their include files. Package the paths listed in the latest successful `artifacts` receipt.
+
+In the published editable sources, absolute paths and symlink aliases to included files within the source directory become relative paths. Block selectors and evidence line numbers are preserved. Move the editable diagram and its included files together to render from another directory.
+
+PlantUML uses fixed top-level names for the main diagram, its exports, the evidence file and the include index. Put local includes under distinct paths. A conflicting top-level path, including a case variant, fails before the renderer runs.
+
+Choose a new output directory when the platform or filesystem lacks atomic directory exchange or when other tools are editing the same directory. Readers that open multiple files across a publication can compare the output directory identity before and after reading and retry if it changed.
 
 ## draw.io source quality
 

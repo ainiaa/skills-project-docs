@@ -1,0 +1,1015 @@
+{
+  "upstream": "https://github.com/kanfu-panda/pdlc-skills",
+  "commit": "ef05bf20f9dc82fa5b90b9df7f11fb7d63d1d3fb",
+  "license": "MIT",
+  "copyright": "Copyright (c) 2026 LEO",
+  "entry_count": 38,
+  "entries": [
+    {
+      "path": "skills/pdlc-add-app/SKILL.md",
+      "name": "pdlc-add-app",
+      "description": "在已有项目里加一个前端应用（先探测布局，跟随现有目录与技术栈）；新项目一次性初始化用 /pdlc-bootstrap",
+      "stage": "engineering",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Engineering",
+      "integration": "方法迁入",
+      "owned_reference": "../skills/project-docs-engineering/references/project.md",
+      "limit": "识别现有布局后新增应用；真实构建/框架接线随项目验证",
+      "sha256": "ed5e8f55284e57299428dc30c2d02447d30da4e800c96778c055b8391594d63c",
+      "frontmatter": "name: pdlc-add-app\ndescription: 在已有项目里加一个前端应用（先探测布局，跟随现有目录与技术栈）；新项目一次性初始化用 /pdlc-bootstrap\nargument-hint: \"<应用名>\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 3\nstage: engineering\nproduces:\n  # 跟随项目既有布局（正文「先探测项目布局」）；空项目才默认 frontend/<端>/\n  - <应用目录 · 项目既有布局>/<app-name>/**\nrequires: []\nnext_step: null\nterminal_state: null",
+      "resources": [],
+      "collaborators": [
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-add-service/SKILL.md",
+      "name": "pdlc-add-service",
+      "description": "在已有项目里加一个后端服务（先探测布局，跟随现有目录与技术栈）；新项目一次性初始化用 /pdlc-bootstrap",
+      "stage": "engineering",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Engineering",
+      "integration": "方法迁入",
+      "owned_reference": "../skills/project-docs-engineering/references/project.md",
+      "limit": "沿用现有服务分层与父构建；无固定Java/Go等多栈生成器",
+      "sha256": "00c567538efa36c5526b0c9119760635735dbea983a20aa41cc175ca00ce8279",
+      "frontmatter": "name: pdlc-add-service\ndescription: 在已有项目里加一个后端服务（先探测布局，跟随现有目录与技术栈）；新项目一次性初始化用 /pdlc-bootstrap\nargument-hint: \"<服务名>\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 3\nstage: engineering\nproduces:\n  # 跟随项目既有布局（正文「先探测项目布局」）；空项目才默认 backend/services/<service-name>/\n  - <服务目录 · 项目既有布局>/<service-name>/**\nrequires: []\nnext_step: null\nterminal_state: null",
+      "resources": [],
+      "collaborators": [
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-adopt/SKILL.md",
+      "name": "pdlc-adopt",
+      "description": "已有代码、还没有 PDLC 文档的老项目接入——只读扫描后逆向生成基线文档并做健康检查，不改代码；空目录新项目用 /pdlc-bootstrap",
+      "stage": "lifecycle",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Engineering",
+      "integration": "已有能力+方法迁入",
+      "owned_reference": "../skills/project-docs-engineering/references/project.md",
+      "limit": "scan只读；init生成实现基线，不能冒充已确认PRD",
+      "sha256": "817d6f83530400ab60e75d0cb5eba44a7c95023cc7e4a63b2d0c71c16574c687",
+      "frontmatter": "name: pdlc-adopt\ndescription: 已有代码、还没有 PDLC 文档的老项目接入——只读扫描后逆向生成基线文档并做健康检查，不改代码；空目录新项目用 /pdlc-bootstrap\nargument-hint: \"[项目目录]\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 3\nstage: lifecycle\nproduces:\n  - docs/**\nrequires: []\nnext_step: null\nterminal_state: null",
+      "resources": [
+        "skills/pdlc-adopt/assets/adopt-report-template.md",
+        "skills/pdlc-adopt/assets/api-design-template.md",
+        "skills/pdlc-adopt/assets/db-design-template.md"
+      ],
+      "collaborators": [
+        "Converge",
+        "Overview",
+        "API",
+        "Diagram"
+      ]
+    },
+    {
+      "path": "skills/pdlc-api-mock/SKILL.md",
+      "name": "pdlc-api-mock",
+      "description": "按 API 设计文档生成 Mock 数据与 Mock 服务配置，供前端联调",
+      "stage": "engineering",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Engineering",
+      "integration": "方法迁入",
+      "owned_reference": "../skills/project-docs-engineering/references/design.md",
+      "limit": "正常/空/边界/分页/错误样例；使用现有Mock机制，无通用Mock运行器",
+      "sha256": "bb1f808ff7458ab4a39304d1cb862bb586c4549aa9641e347a7ca6c97fed6229",
+      "frontmatter": "name: pdlc-api-mock\ndescription: 按 API 设计文档生成 Mock 数据与 Mock 服务配置，供前端联调\nargument-hint: \"<接口路径 | OpenAPI 文件>\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 3\nstage: engineering\nproduces: []\nrequires: []\nnext_step: null\nterminal_state: null",
+      "resources": [],
+      "collaborators": [
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-arch/SKILL.md",
+      "name": "pdlc-arch",
+      "description": "架构分析（生成/更新 docs/ARCHITECTURE.md 系统架构总览 · surface 型）",
+      "stage": "design",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Overview",
+      "integration": "复用",
+      "owned_reference": "../skills/project-docs-overview/SKILL.md",
+      "limit": "源代码架构总览和技术图；方案与已实现分开",
+      "sha256": "587abf42de696263f4ebb3d80de620b05bad7838816e81c0942dcaa777b0e93f",
+      "frontmatter": "name: pdlc-arch\ndescription: 架构分析（生成/更新 docs/ARCHITECTURE.md 系统架构总览 · surface 型）\nargument-hint: \"<项目 | 模块范围>\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 3\nstage: design\nartifact_type: surface\nproduces:\n  - docs/ARCHITECTURE.md\nrequires: []\nnext_step: null\nterminal_state: null",
+      "resources": [
+        "skills/pdlc-arch/assets/architecture-overview-template.md"
+      ],
+      "collaborators": [
+        "Diagram"
+      ]
+    },
+    {
+      "path": "skills/pdlc-bootstrap/SKILL.md",
+      "name": "pdlc-bootstrap",
+      "description": "空目录从一句话描述初始化新项目（服务 / 应用拆分、技术栈、目录骨架与 PDLC 文档目录）；已有代码的项目用 /pdlc-adopt",
+      "stage": "lifecycle",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Engineering",
+      "integration": "方法迁入",
+      "owned_reference": "../skills/project-docs-engineering/references/project.md",
+      "limit": "空项目最小方案和骨架；未选型不自动装依赖",
+      "sha256": "c0702e94d02b873df839874cde20f611c2ea375ac200864763f3706ae9ed3513",
+      "frontmatter": "name: pdlc-bootstrap\ndescription: 空目录从一句话描述初始化新项目（服务 / 应用拆分、技术栈、目录骨架与 PDLC 文档目录）；已有代码的项目用 /pdlc-adopt\nargument-hint: \"[项目目录]\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 3\nstage: lifecycle\nproduces: []\nrequires: []\nnext_step: null\nterminal_state: null",
+      "resources": [
+        "skills/pdlc-bootstrap/assets/api-design-template.md",
+        "skills/pdlc-bootstrap/assets/arch-design-template.md",
+        "skills/pdlc-bootstrap/assets/architecture-overview-template.md",
+        "skills/pdlc-bootstrap/assets/db-design-template.md",
+        "skills/pdlc-bootstrap/assets/glossary-template.md",
+        "skills/pdlc-bootstrap/assets/prd-template.md"
+      ],
+      "collaborators": [
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-changelog/SKILL.md",
+      "name": "pdlc-changelog",
+      "description": "未发版时按 git 记录手动刷新 CHANGELOG 的 [未发布] 段；正式发版由 /pdlc-ship 一并处理",
+      "stage": "engineering",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Engineering",
+      "integration": "方法迁入",
+      "owned_reference": "../skills/project-docs-engineering/references/release.md",
+      "limit": "Git证据→未发布变更；不把草稿设计计作发布",
+      "sha256": "4cdf5c328a476e939679d588cdf83bbd2e9d403ea1f084af09a723182a63dab2",
+      "frontmatter": "name: pdlc-changelog\ndescription: 未发版时按 git 记录手动刷新 CHANGELOG 的 [未发布] 段；正式发版由 /pdlc-ship 一并处理\nargument-hint: \"[版本号]\"\nallowed-tools: Read, Write, Edit, Bash\nlayer: 3\nstage: engineering\nproduces:\n  - CHANGELOG.md\nrequires: []\nnext_step: null\nterminal_state: null",
+      "resources": [
+        "skills/pdlc-changelog/assets/changelog-template.md"
+      ],
+      "collaborators": [
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-code-gen/SKILL.md",
+      "name": "pdlc-code-gen",
+      "description": "在已有服务 / 应用里按设计文档生成模块代码骨架（分层、接口、模型）；加新服务用 /pdlc-add-service",
+      "stage": "engineering",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Engineering",
+      "integration": "方法迁入",
+      "owned_reference": "../skills/project-docs-engineering/references/project.md",
+      "limit": "已有单元内测试先行补模块；无独立多语言模板生成器",
+      "sha256": "3af94dced67ff05d94ba7c61d0feee1fb8abfc004654236f2790f6830cc6f206",
+      "frontmatter": "name: pdlc-code-gen\ndescription: 在已有服务 / 应用里按设计文档生成模块代码骨架（分层、接口、模型）；加新服务用 /pdlc-add-service\nargument-hint: \"<模板类型 | 目标目录>\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 3\nstage: engineering\nproduces: []\nrequires: []\nnext_step: null\nterminal_state: null",
+      "resources": [],
+      "collaborators": [
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-db-design/SKILL.md",
+      "name": "pdlc-db-design",
+      "description": "按 PRD 设计数据库表结构、索引与 ER 图，产出 docs/02_design/database/ 设计文档；生成迁移脚本用 /pdlc-db-migrate",
+      "stage": "design",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Engineering",
+      "integration": "方法迁入",
+      "owned_reference": "../skills/project-docs-engineering/references/design.md",
+      "limit": "ER/约束/查询索引/迁移评审；沿项目约定",
+      "sha256": "4f8357af24e955a8cf989d4521724c4ae5f4095d7e832a39d867f42cc74fd74f",
+      "frontmatter": "name: pdlc-db-design\ndescription: 按 PRD 设计数据库表结构、索引与 ER 图，产出 docs/02_design/database/ 设计文档；生成迁移脚本用 /pdlc-db-migrate\nargument-hint: \"<功能ID | 数据模型描述>\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 3\nstage: design\nproduces:\n  - docs/02_design/database/**\nrequires: []\nnext_step: null\nterminal_state: null",
+      "resources": [],
+      "collaborators": [
+        "Converge",
+        "Overview",
+        "API",
+        "Diagram"
+      ]
+    },
+    {
+      "path": "skills/pdlc-db-migrate/SKILL.md",
+      "name": "pdlc-db-migrate",
+      "description": "按数据库设计生成与管理迁移脚本（先沿用项目已有的迁移工具），不直接连库执行 SQL",
+      "stage": "engineering",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Engineering",
+      "integration": "方法迁入",
+      "owned_reference": "../skills/project-docs-engineering/references/design.md",
+      "limit": "generate/diff/status/up/down工作方法；不连库、不虚报已执行，无通用迁移CLI",
+      "sha256": "d6da0ce3c4b19be655b50ed1c890a54708a7e1c0c21d86104899caa6f5aa3d2e",
+      "frontmatter": "name: pdlc-db-migrate\ndescription: 按数据库设计生成与管理迁移脚本（先沿用项目已有的迁移工具），不直接连库执行 SQL\nargument-hint: \"<迁移描述 | 版本号>\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 3\nstage: engineering\nproduces:\n  - backend/migrations/**\nrequires: []\nnext_step: null\nterminal_state: null",
+      "resources": [
+        "skills/pdlc-db-migrate/assets/db-migrate-template.md"
+      ],
+      "collaborators": [
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-deploy/SKILL.md",
+      "name": "pdlc-deploy",
+      "description": "按已评审的功能或发布版本写部署手册（docs/05_deployment/guides/），不执行真实部署；要发布版本先用 /pdlc-ship",
+      "stage": "deploy",
+      "layer": "2",
+      "next_step": "null",
+      "owner": "Engineering",
+      "integration": "方法迁入",
+      "owned_reference": "../skills/project-docs-engineering/references/release.md",
+      "limit": "部署手册、冒烟/回退条件；无自动部署执行器",
+      "sha256": "c3a11bd00a213fdc44ebe54b290f7d6abffa355f88533d7c9f6bac3cc988f411",
+      "frontmatter": "name: pdlc-deploy\ndescription: 按已评审的功能或发布版本写部署手册（docs/05_deployment/guides/），不执行真实部署；要发布版本先用 /pdlc-ship\nargument-hint: \"<v<版本> | 功能ID | 服务名 | 应用名>\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 2\nstage: deploy\nproduces:\n  - docs/05_deployment/**\nrequires: []\nnext_step: null\nterminal_state: deploy_done",
+      "resources": [
+        "skills/pdlc-deploy/assets/deploy-doc-template.md",
+        "skills/pdlc-deploy/scripts/pdlc-advance.sh",
+        "skills/pdlc-deploy/scripts/pdlc-checks.sh",
+        "skills/pdlc-deploy/scripts/pdlc-state-lint.sh"
+      ],
+      "collaborators": [
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-design/SKILL.md",
+      "name": "pdlc-design",
+      "description": "创建技术设计文档（自动生成 + 自检 + handoff）",
+      "stage": "design",
+      "layer": "2",
+      "next_step": "pdlc-tdd",
+      "owner": "Engineering",
+      "integration": "方法迁入",
+      "owned_reference": "../skills/project-docs-engineering/references/design.md",
+      "limit": "按FR/AC做方案比较与设计评审；不写PDLC阶段状态",
+      "sha256": "b0dc25ca574f278728f8a951aac33c4c55c49c71df68a92ee5f0963aa0e2ffa2",
+      "frontmatter": "name: pdlc-design\ndescription: 创建技术设计文档（自动生成 + 自检 + handoff）\nargument-hint: \"<功能ID | 功能描述> [--autonomous]\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 2\nstage: design\nproduces:\n  - docs/02_design/<subsystem>/<feature-id>-design.md\nrequires:\n  - docs/01_requirements/prd/\nnext_step: pdlc-tdd\nterminal_state: design_done",
+      "resources": [
+        "skills/pdlc-design/assets/api-design-template.md",
+        "skills/pdlc-design/scripts/pdlc-advance.sh",
+        "skills/pdlc-design/scripts/pdlc-checks.sh",
+        "skills/pdlc-design/scripts/pdlc-state-lint.sh"
+      ],
+      "collaborators": [
+        "Converge",
+        "Overview",
+        "API",
+        "Diagram"
+      ]
+    },
+    {
+      "path": "skills/pdlc-e2e/SKILL.md",
+      "name": "pdlc-e2e",
+      "description": "端到端测试（生成或执行 E2E 用例）",
+      "stage": "e2e",
+      "layer": "2",
+      "next_step": "pdlc-review",
+      "owner": "Engineering",
+      "integration": "已有能力+方法迁入",
+      "owned_reference": "../skills/project-docs-engineering/references/quality.md",
+      "limit": "生成/执行由项目runner完成；非支持格式保留原证据，无通用结果解析器",
+      "sha256": "d1f369111a79429df8776cb17ccdf1b3013f3dff9f72a6fb93a18adfd16dba16",
+      "frontmatter": "name: pdlc-e2e\ndescription: 端到端测试（生成或执行 E2E 用例）\nargument-hint: \"<功能ID | 业务流程描述>\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 2\nstage: e2e\nproduces:\n  - docs/04_testing/e2e-tests/<feature-id>-<feature-name>-e2e.md\n  # E2E 测试代码跟随项目既有的 E2E 目录（正文「测试放哪」）\n  - <E2E 测试代码 · 项目既有布局>\nrequires: []\nnext_step: pdlc-review\nterminal_state: e2e_done",
+      "resources": [
+        "skills/pdlc-e2e/scripts/pdlc-advance.sh",
+        "skills/pdlc-e2e/scripts/pdlc-checks.sh",
+        "skills/pdlc-e2e/scripts/pdlc-state-lint.sh"
+      ],
+      "collaborators": [
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-feature/SKILL.md",
+      "name": "pdlc-feature",
+      "description": "全自动 PDLC 新功能开发（串联 PRD→设计→TDD→实现→评审→发布）",
+      "stage": "feature",
+      "layer": "1",
+      "next_step": "pdlc-ship",
+      "owner": "Lifecycle",
+      "integration": "原生复用",
+      "owned_reference": "../skills/project-docs-lifecycle/references/lifecycle.md",
+      "limit": "PRD→显式native接管→计划/TDD/实现/评审；发布另依授权",
+      "sha256": "2ec32bca6b8f5f2d628c96a7e70bb80e3df9bf94d5c6379fd04d98e0be999e51",
+      "frontmatter": "name: pdlc-feature\ndescription: 全自动 PDLC 新功能开发（串联 PRD→设计→TDD→实现→评审→发布）\nargument-hint: \"<功能描述 | 已有 PRD 路径> [--lite] [--autonomous]\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, Agent\nlayer: 1\nstage: feature\n# 串联的阶段：逐阶段写状态机（adapters/sync_skills.py 据此生成正文里的 pdlc:meta）\nphases: requirements design tdd impl review\nproduces:\n  - docs/01_requirements/prd/<feature-id>-<feature-name>-prd.md\n  - docs/02_design/**\n  # 跟随项目既有布局，不限定固定目录\n  - <实现与测试代码 · 项目既有布局>\nrequires: []\nnext_step: pdlc-ship\nterminal_state: feature_done",
+      "resources": [
+        "skills/pdlc-feature/assets/api-design-template.md",
+        "skills/pdlc-feature/assets/arch-design-template.md",
+        "skills/pdlc-feature/assets/db-design-template.md",
+        "skills/pdlc-feature/assets/prd-template.md",
+        "skills/pdlc-feature/scripts/pdlc-advance.sh",
+        "skills/pdlc-feature/scripts/pdlc-checks.sh",
+        "skills/pdlc-feature/scripts/pdlc-state-lint.sh"
+      ],
+      "collaborators": [
+        "Product",
+        "Engineering",
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-fix/SKILL.md",
+      "name": "pdlc-fix",
+      "description": "全自动 Bug 修复（定位→复现→修复→测试→文档）",
+      "stage": "fix",
+      "layer": "1",
+      "next_step": "pdlc-review",
+      "owner": "Converge",
+      "integration": "原生复用",
+      "owned_reference": "engineering-ownership.md",
+      "limit": "复现/红灯/根因修复/回归/文档；不创建PDLC缺陷状态",
+      "sha256": "e3840b3fd243d6d4f2444da305fbb58ba2907932214d2ac051447c82dfac925b",
+      "frontmatter": "name: pdlc-fix\ndescription: 全自动 Bug 修复（定位→复现→修复→测试→文档）\nargument-hint: \"<Bug 描述>\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 1\nstage: fix\nproduces:\n  - docs/04_testing/defects/<defect-id>-defect.md\nrequires: []\nnext_step: pdlc-review\nterminal_state: fix_done",
+      "resources": [
+        "skills/pdlc-fix/scripts/pdlc-advance.sh",
+        "skills/pdlc-fix/scripts/pdlc-checks.sh",
+        "skills/pdlc-fix/scripts/pdlc-state-lint.sh"
+      ],
+      "collaborators": []
+    },
+    {
+      "path": "skills/pdlc-i18n/SKILL.md",
+      "name": "pdlc-i18n",
+      "description": "国际化——抽取硬编码文案为 key、生成多语言资源文件并替换引用",
+      "stage": "engineering",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Engineering",
+      "integration": "方法迁入",
+      "owned_reference": "../skills/project-docs-engineering/references/design.md",
+      "limit": "抽文案/key/locale/回退和占位符测试；翻译需语言审校",
+      "sha256": "d22bd7911e3af95848e9084ab1e80ccad3d96abec8fa87a51b9dfb1f34ff904c",
+      "frontmatter": "name: pdlc-i18n\ndescription: 国际化——抽取硬编码文案为 key、生成多语言资源文件并替换引用\nargument-hint: \"<目标语言 | 模块名>\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 3\nstage: engineering\nproduces: []\nrequires: []\nnext_step: null\nterminal_state: null",
+      "resources": [],
+      "collaborators": [
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-implement/SKILL.md",
+      "name": "pdlc-implement",
+      "description": "按设计文档和已有测试用例实现代码（带前置守卫、自检、handoff）",
+      "stage": "impl",
+      "layer": "2",
+      "next_step": "pdlc-review",
+      "owner": "Converge",
+      "integration": "原生复用",
+      "owned_reference": "engineering-ownership.md",
+      "limit": "设计和测试输入→实现→验证/复核；单一工程控制器",
+      "sha256": "0db51c89905e245acf403ebf85d772ef145a3b32fd8c15196bafb06eb6d69d2f",
+      "frontmatter": "name: pdlc-implement\ndescription: 按设计文档和已有测试用例实现代码（带前置守卫、自检、handoff）\nargument-hint: \"<功能描述或功能ID>\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 2\nstage: impl\nproduces:\n  # 跟随项目既有源码布局，不限定固定目录\n  - <实现代码 · 项目既有布局>\nrequires:\n  # 只依赖设计文档；测试的位置由 test-location.md 的规则动态定位，不硬编码路径\n  - docs/02_design/\nnext_step: pdlc-review\nterminal_state: impl_done\nrecommended_model: sonnet\nrecommended_effort: medium",
+      "resources": [
+        "skills/pdlc-implement/scripts/pdlc-advance.sh",
+        "skills/pdlc-implement/scripts/pdlc-checks.sh",
+        "skills/pdlc-implement/scripts/pdlc-state-lint.sh"
+      ],
+      "collaborators": []
+    },
+    {
+      "path": "skills/pdlc-lint/SKILL.md",
+      "name": "pdlc-lint",
+      "description": "跑项目 lint 并自动修复（check / fix），或为项目配置 lint 规则（setup）",
+      "stage": "quality",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Engineering",
+      "integration": "方法迁入",
+      "owned_reference": "../skills/project-docs-engineering/references/quality.md",
+      "limit": "check/fix/setup沿用现有配置，无新的lint框架",
+      "sha256": "a9060c020fe55b304e21dd951fd1372007bc42da7c6d64dbc022f862548cd43f",
+      "frontmatter": "name: pdlc-lint\ndescription: 跑项目 lint 并自动修复（check / fix），或为项目配置 lint 规则（setup）\nargument-hint: \"[目录 | 文件]\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 3\nstage: quality\nproduces: []\nrequires: []\nnext_step: null\nterminal_state: null",
+      "resources": [],
+      "collaborators": [
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-loop-next/SKILL.md",
+      "name": "pdlc-loop-next",
+      "description": "打印循环下一步应执行的命令（机器可读，供 loop 驱动）",
+      "stage": "ops",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Converge",
+      "integration": "原生替代",
+      "owned_reference": "engineering-ownership.md",
+      "limit": "使用现有next/任务证据决定下一动作；不提供PDLC token协议别名",
+      "sha256": "29694a9b71884c8e36c1e469a6d97168535059fff516b7060621bc72095567ef",
+      "frontmatter": "name: pdlc-loop-next\ndescription: 打印循环下一步应执行的命令（机器可读，供 loop 驱动）\nargument-hint: \"<功能ID>\"\nallowed-tools: Read, Glob, Bash\nlayer: 3\nstage: ops\nproduces: []\nrequires:\n  - docs/.pdlc-state/\nnext_step: null\nterminal_state: null",
+      "resources": [
+        "skills/pdlc-loop-next/scripts/pdlc-loop.sh"
+      ],
+      "collaborators": []
+    },
+    {
+      "path": "skills/pdlc-loop-run/SKILL.md",
+      "name": "pdlc-loop-run",
+      "description": "收敛循环引擎——自动推进 tdd → implement → review，直到评审通过、待发布（next_step 为 pdlc-ship）或阻塞；发布永远由人做",
+      "stage": "ops",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Converge",
+      "integration": "原生替代",
+      "owned_reference": "engineering-ownership.md",
+      "limit": "有界任务/批次续作；无PDLC外层loop，宿主自动派发须实测",
+      "sha256": "4bd9da22340c8a0c5679ae3bd69121ec2a341e2b883d0bf6523473c4a9a330b2",
+      "frontmatter": "name: pdlc-loop-run\ndescription: 收敛循环引擎——自动推进 tdd → implement → review，直到评审通过、待发布（next_step 为 pdlc-ship）或阻塞；发布永远由人做\nargument-hint: \"<功能ID> [--max-steps N]\"\nallowed-tools: Read, Glob, Bash, Task\nlayer: 3\nstage: ops\nproduces: []\nrequires:\n  - docs/.pdlc-state/\nnext_step: null\nterminal_state: null\n# 只对 Claude Code 有用：通用安装器 npx skills 见到 internal 默认不列出、不安装\nmetadata:\n  internal: true",
+      "resources": [
+        "skills/pdlc-loop-run/scripts/pdlc-loop.sh"
+      ],
+      "collaborators": []
+    },
+    {
+      "path": "skills/pdlc-onboard/SKILL.md",
+      "name": "pdlc-onboard",
+      "description": "为新加入的开发者生成项目上手文档（docs/03_development/onboard-guide.md）；老项目首次接入 PDLC 用 /pdlc-adopt",
+      "stage": "lifecycle",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Overview",
+      "integration": "复用",
+      "owned_reference": "../skills/project-docs-overview/SKILL.md",
+      "limit": "环境、规范、核心流程、文档索引、已验命令",
+      "sha256": "1312cd0328ec1a2fefd13d2ee2b1c578de8b2e79270475ee5653e0c220e164be",
+      "frontmatter": "name: pdlc-onboard\ndescription: 为新加入的开发者生成项目上手文档（docs/03_development/onboard-guide.md）；老项目首次接入 PDLC 用 /pdlc-adopt\nargument-hint: \"[项目目录 | 模块]\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 3\nstage: lifecycle\nproduces:\n  - docs/03_development/onboard-guide.md\nrequires: []\nnext_step: null\nterminal_state: null",
+      "resources": [],
+      "collaborators": []
+    },
+    {
+      "path": "skills/pdlc-perf/SKILL.md",
+      "name": "pdlc-perf",
+      "description": "性能优化——先测基线，再逐项改、同一命令复测，报告写优化前后的实测数字；测不了就只出分析",
+      "stage": "quality",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Engineering",
+      "integration": "方法迁入",
+      "owned_reference": "../skills/project-docs-engineering/references/quality.md",
+      "limit": "基线至少3次中位数→逐项改→同环境复测；无测量只分析",
+      "sha256": "c3f6bf1e59fffdfe47f24b7ab89de9614cf7cf387ce31a4ec20f4d0ad6c71c25",
+      "frontmatter": "name: pdlc-perf\ndescription: 性能优化——先测基线，再逐项改、同一命令复测，报告写优化前后的实测数字；测不了就只出分析\nargument-hint: \"<功能ID | 优化目标>\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 3\nstage: quality\nproduces:\n  - docs/04_testing/perf/<feature-id>-report.md\nrequires: []\nnext_step: null\nterminal_state: null",
+      "resources": [],
+      "collaborators": [
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-prd/SKILL.md",
+      "name": "pdlc-prd",
+      "description": "创建 PRD 文档（自动化生成 + 自检 + handoff）",
+      "stage": "requirements",
+      "layer": "2",
+      "next_step": "pdlc-design",
+      "owner": "Product",
+      "integration": "复用",
+      "owned_reference": "../skills/project-docs-product/references/workflow.md",
+      "limit": "正式PRD、FR/AC、原型、来源/版本/真实确认，不重写第二份PRD",
+      "sha256": "b65c5d145d72c7e90d725f8f5f54c11138134771807463ed660cf2c4cb69d229",
+      "frontmatter": "name: pdlc-prd\ndescription: 创建 PRD 文档（自动化生成 + 自检 + handoff）\nargument-hint: \"<功能描述 | 已有需求文档路径> [--autonomous]\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 2\nstage: requirements\nproduces:\n  - docs/01_requirements/prd/<feature-id>-<feature-name>-prd.md\nrequires: []\nnext_step: pdlc-design\nterminal_state: prd_done",
+      "resources": [
+        "skills/pdlc-prd/assets/prd-template.md",
+        "skills/pdlc-prd/scripts/pdlc-advance.sh",
+        "skills/pdlc-prd/scripts/pdlc-checks.sh",
+        "skills/pdlc-prd/scripts/pdlc-state-lint.sh"
+      ],
+      "collaborators": []
+    },
+    {
+      "path": "skills/pdlc-quality/SKILL.md",
+      "name": "pdlc-quality",
+      "description": "质量闸门——跑真实 check、对照质量目标、出可核对报告，由人签字放行",
+      "stage": "quality",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Engineering",
+      "integration": "已有能力+方法迁入",
+      "owned_reference": "../skills/project-docs-engineering/references/quality.md",
+      "limit": "真实检查/阈值/流→test/PRD对账/报告；不代签放行，不复制quality专用CLI",
+      "sha256": "105a8b4c6e69f0b946b3eda73cebf656559719f32fa791ffd6d129c71d9118d3",
+      "frontmatter": "name: pdlc-quality\ndescription: 质量闸门——跑真实 check、对照质量目标、出可核对报告，由人签字放行\nargument-hint: \"[--init] [--autonomous]\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 3\nstage: quality\nartifact_type: ledger\nproduces:\n  # 主产物（ledger 型，一次一份可看趋势）；.md 是真源，.html 是同数据的可视化视图\n  - docs/07_reviews/quality/<YYYY-MM-DD>.md\n  - docs/07_reviews/quality/<YYYY-MM-DD>.html\n  # 仅 --init 时创建（surface 型，就地编辑不累积）\n  - docs/00_standards/quality-targets.yml\n  - docs/00_standards/e2e-flow-map.yml\nrequires:\n  - docs/00_standards/test-commands.yml\nnext_step: null\nterminal_state: null\nrecommended_model: sonnet\nrecommended_effort: medium",
+      "resources": [
+        "skills/pdlc-quality/assets/quality-report-template.html",
+        "skills/pdlc-quality/assets/quality-report-template.md",
+        "skills/pdlc-quality/assets/quality-targets-template.yml",
+        "skills/pdlc-quality/scripts/pdlc-checks.sh"
+      ],
+      "collaborators": [
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-refactor/SKILL.md",
+      "name": "pdlc-refactor",
+      "description": "代码重构（保持外部行为不变，改善内部结构）",
+      "stage": "refactor",
+      "layer": "2",
+      "next_step": "pdlc-review",
+      "owner": "Converge",
+      "integration": "原生复用",
+      "owned_reference": "engineering-ownership.md",
+      "limit": "行为保持的测试与代码变更；native refactor契约",
+      "sha256": "987f436bf558dc950200ac01bbd0b61fee16d5456be7134b2abd0f1a1faa57ea",
+      "frontmatter": "name: pdlc-refactor\ndescription: 代码重构（保持外部行为不变，改善内部结构）\nargument-hint: \"<重构目标 | 文件路径>\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 2\nstage: refactor\nproduces: []\nrequires: []\nnext_step: pdlc-review\nterminal_state: refactor_done",
+      "resources": [
+        "skills/pdlc-refactor/scripts/pdlc-advance.sh",
+        "skills/pdlc-refactor/scripts/pdlc-checks.sh",
+        "skills/pdlc-refactor/scripts/pdlc-state-lint.sh"
+      ],
+      "collaborators": []
+    },
+    {
+      "path": "skills/pdlc-relate/SKILL.md",
+      "name": "pdlc-relate",
+      "description": "管理 feature 关系链（set/query/impact/orphans/rebuild/validate）",
+      "stage": "ops",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Lifecycle",
+      "integration": "方法迁入",
+      "owned_reference": "../skills/project-docs-lifecycle/references/coordination.md",
+      "limit": "六类关系set/query/impact/orphans/validate已实现；直接读取Lifecycle记录，写入复用CAS，依赖专属传播；不兼容旧PDLC状态协议",
+      "sha256": "7bf2aefacd1143488c6801e1996ef22b021e75ecd3e3a3a79a3c5452405a28e9",
+      "frontmatter": "name: pdlc-relate\ndescription: 管理 feature 关系链（set/query/impact/orphans/rebuild/validate）\nargument-hint: \"<set|query|impact|orphans|rebuild|validate> [args]\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 3\nstage: ops\nproduces:\n  - docs/.pdlc-state/_relations.json\n  - docs/.pdlc-state/_graph.md\nrequires: []\nnext_step: null\nterminal_state: null",
+      "resources": [
+        "skills/pdlc-relate/scripts/pdlc-state-lint.sh"
+      ],
+      "collaborators": [
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-retro/SKILL.md",
+      "name": "pdlc-retro",
+      "description": "迭代复盘——读状态机历史出趋势报告",
+      "stage": "retro",
+      "layer": "2",
+      "next_step": "null",
+      "owner": "Lifecycle",
+      "integration": "方法迁入",
+      "owned_reference": "../skills/project-docs-lifecycle/references/coordination.md",
+      "limit": "真实交付/质量/耗时/阻断趋势；无数据无统计，不复制PDLC历史读取器",
+      "sha256": "dc1b2c284189e521cc80083fd5f1289b89807027b438e88d1a0da621de68c070",
+      "frontmatter": "name: pdlc-retro\ndescription: 迭代复盘——读状态机历史出趋势报告\nargument-hint: \"[--range 7d|30d|all] [--feature <feature-id>]\"\nallowed-tools: Read, Glob, Bash\nlayer: 2\nstage: retro\nproduces:\n  - docs/07_reviews/retro/<YYYY-MM>-retro.md\nrequires:\n  - docs/.pdlc-state/\nnext_step: null\nterminal_state: retro_done",
+      "resources": [
+        "skills/pdlc-retro/scripts/pdlc-loop.sh",
+        "skills/pdlc-retro/scripts/pdlc-state-lint.sh"
+      ],
+      "collaborators": [
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-review/SKILL.md",
+      "name": "pdlc-review",
+      "description": "代码评审（对照设计、自动修复、跑 check、判定能否发布）或文档评审（PRD / 设计 / 测试计划，不写状态机）",
+      "stage": "review",
+      "layer": "2",
+      "next_step": "pdlc-ship",
+      "owner": "Converge",
+      "integration": "原生复用",
+      "owned_reference": "engineering-ownership.md",
+      "limit": "文档评审与代码评审分流；同会话实现沿原Converge，不开第二控制器",
+      "sha256": "b7bc421b4d0aebd49d2c1dddea8d108ec0d38263e99976aeeafe8c38e91182fb",
+      "frontmatter": "name: pdlc-review\ndescription: 代码评审（对照设计、自动修复、跑 check、判定能否发布）或文档评审（PRD / 设计 / 测试计划，不写状态机）\nargument-hint: \"<功能ID | PR 描述>\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 2\nstage: review\nproduces:\n  - docs/07_reviews/**\nrequires: []\nnext_step: pdlc-ship\nterminal_state: review_done\nrecommended_model: sonnet\nrecommended_effort: medium",
+      "resources": [
+        "skills/pdlc-review/assets/api-design-template.md",
+        "skills/pdlc-review/assets/arch-design-template.md",
+        "skills/pdlc-review/assets/db-design-template.md",
+        "skills/pdlc-review/assets/deploy-doc-template.md",
+        "skills/pdlc-review/assets/prd-template.md",
+        "skills/pdlc-review/assets/test-plan-template.md",
+        "skills/pdlc-review/scripts/pdlc-advance.sh",
+        "skills/pdlc-review/scripts/pdlc-checks.sh",
+        "skills/pdlc-review/scripts/pdlc-state-lint.sh"
+      ],
+      "collaborators": [
+        "Product",
+        "Engineering"
+      ],
+      "modes": [
+        {
+          "mode": "code",
+          "owner": "Converge",
+          "owned_reference": "engineering-ownership.md"
+        },
+        {
+          "mode": "product-document",
+          "owner": "Product",
+          "owned_reference": "../skills/project-docs-product/references/workflow.md"
+        },
+        {
+          "mode": "engineering-document",
+          "owner": "Engineering",
+          "owned_reference": "../skills/project-docs-engineering/references/design.md"
+        }
+      ]
+    },
+    {
+      "path": "skills/pdlc-security/SKILL.md",
+      "name": "pdlc-security",
+      "description": "安全审计——先跑依赖漏洞与密钥扫描工具并记录退出码，再人工审阅鉴权、注入、敏感数据等",
+      "stage": "quality",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Engineering",
+      "integration": "方法迁入",
+      "owned_reference": "../skills/project-docs-engineering/references/quality.md",
+      "limit": "先真实依赖/密钥扫描再审权限/注入等；无扫描器则未测量",
+      "sha256": "08f507d9ebdee65e1d3c20e7fe67545b4336b9551aa44717d7ccd51382c15f24",
+      "frontmatter": "name: pdlc-security\ndescription: 安全审计——先跑依赖漏洞与密钥扫描工具并记录退出码，再人工审阅鉴权、注入、敏感数据等\nargument-hint: \"<模块 | 服务名>\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 3\nstage: quality\nproduces:\n  - docs/04_testing/security/<feature-id>-audit.md\nrequires: []\nnext_step: null\nterminal_state: null",
+      "resources": [],
+      "collaborators": [
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-settings/SKILL.md",
+      "name": "pdlc-settings",
+      "description": "交互式配置 PDLC：状态栏 statusline 的启用/停用/展示项，以及项目级护栏 hooks 的开关",
+      "stage": "ops",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Host",
+      "integration": "宿主替代",
+      "owned_reference": "engineering-ownership.md",
+      "limit": "Claude statusline启停/展示和项目hooks不移植；没有自有等价设置CLI",
+      "sha256": "089f12d2aa8becf5c4230ddecc6e715b2f28138c8c53163ad94c11285faa3ea2",
+      "frontmatter": "name: pdlc-settings\ndescription: 交互式配置 PDLC：状态栏 statusline 的启用/停用/展示项，以及项目级护栏 hooks 的开关\nargument-hint: \"[statusline | status | hooks [on|off|status]]\"\nallowed-tools: Read, Edit, Write, Bash, Glob\nlayer: 3\nstage: ops\nproduces: []\nrequires: []\nnext_step: null\nterminal_state: null\n# 只对 Claude Code 有用：通用安装器 npx skills 见到 internal 默认不列出、不安装\nmetadata:\n  internal: true",
+      "resources": [
+        "skills/pdlc-settings/assets/pdlc-hooks-template.yml",
+        "skills/pdlc-settings/scripts/pdlc-advance.sh"
+      ],
+      "collaborators": [
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-ship/SKILL.md",
+      "name": "pdlc-ship",
+      "description": "发布工作流（收评审通过的功能 → 跑测试 → bump VERSION → 更 CHANGELOG → tag）",
+      "stage": "ship",
+      "layer": "2",
+      "next_step": "pdlc-deploy",
+      "owner": "Engineering",
+      "integration": "方法迁入",
+      "owned_reference": "../skills/project-docs-engineering/references/release.md",
+      "limit": "测试门、版本、CHANGELOG、发布说明与tag-after-merge策略；提交/tag/推送/CI另依授权",
+      "sha256": "d8695d221cc730c427428d722859e2c58e3c9054b420c2918c4fb95bc5d70333",
+      "frontmatter": "name: pdlc-ship\ndescription: 发布工作流（收评审通过的功能 → 跑测试 → bump VERSION → 更 CHANGELOG → tag）\nargument-hint: \"[--version <x.y.z>] [--skip-tests (仅 hotfix)] | --tag-after-merge [v<x.y.z>]\"\nallowed-tools: Read, Write, Edit, Bash, Glob, Grep\nlayer: 2\nstage: ship\nproduces:\n  - VERSION\n  - CHANGELOG.md\n  - docs/05_deployment/releases/v<version>-release-notes.md\n  - .git/refs/tags/v<version>\nrequires:\n  - docs/.pdlc-state/\nnext_step: pdlc-deploy\nterminal_state: ship_done",
+      "resources": [
+        "skills/pdlc-ship/assets/release-notes-template.md",
+        "skills/pdlc-ship/scripts/pdlc-advance.sh",
+        "skills/pdlc-ship/scripts/pdlc-checks.sh",
+        "skills/pdlc-ship/scripts/pdlc-state-lint.sh"
+      ],
+      "collaborators": [
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-standard/SKILL.md",
+      "name": "pdlc-standard",
+      "description": "管理 00_standards 规范型 surface 产物（add/edit/archive/index）",
+      "stage": "engineering",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Engineering",
+      "integration": "方法迁入",
+      "owned_reference": "../skills/project-docs-engineering/references/project.md",
+      "limit": "规范add/edit/archive/index就地维护，不创建feature历史",
+      "sha256": "7a8c217b09120ddba85abf5df91a37de38d6c4ef85ab536629e3336053c57dac",
+      "frontmatter": "name: pdlc-standard\ndescription: 管理 00_standards 规范型 surface 产物（add/edit/archive/index）\nargument-hint: \"<add|edit|archive|index> [args]\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 3\nstage: engineering\nartifact_type: surface\nproduces:\n  - docs/00_standards/**\nrequires: []\nnext_step: null\nterminal_state: null",
+      "resources": [],
+      "collaborators": [
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-status/SKILL.md",
+      "name": "pdlc-status",
+      "description": "查看项目 PDLC 状态总览（读 docs/.pdlc-state/ 输出进度）",
+      "stage": "ops",
+      "layer": "1",
+      "next_step": "null",
+      "owner": "Lifecycle",
+      "integration": "原生复用",
+      "owned_reference": "../skills/project-docs-lifecycle/references/coordination.md",
+      "limit": "阶段/任务/证据状态视图；不将PDLC已发布状态迁入自有记录",
+      "sha256": "2ad96861922515c133defc9be847e00ec17c0c3f43acc475d1b29ae4ae10ceae",
+      "frontmatter": "name: pdlc-status\ndescription: 查看项目 PDLC 状态总览（读 docs/.pdlc-state/ 输出进度）\nargument-hint: \"[feature-id | --all]\"\nallowed-tools: Read, Glob, Bash\nlayer: 1\nstage: ops\nproduces: []\nrequires: []\nnext_step: null\nterminal_state: null",
+      "resources": [
+        "skills/pdlc-status/scripts/pdlc-loop.sh",
+        "skills/pdlc-status/scripts/pdlc-state-lint.sh"
+      ],
+      "collaborators": [
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-task/SKILL.md",
+      "name": "pdlc-task",
+      "description": "阶段内任务跟踪（创建/更新任务列表，附在工作流上）",
+      "stage": "task",
+      "layer": "2",
+      "next_step": "null",
+      "owner": "Converge",
+      "integration": "原生复用",
+      "owned_reference": "engineering-ownership.md",
+      "limit": "plan/list/start/done/blocked/reopen沿现有计划工单，无重复任务库",
+      "sha256": "53eb6d780a9f6d001262fae6b3225f142ff8fb64a39bde1add112f6b3253ff1f",
+      "frontmatter": "name: pdlc-task\ndescription: 阶段内任务跟踪（创建/更新任务列表，附在工作流上）\nargument-hint: \"<功能ID | 任务描述>\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 2\nstage: task\nproduces:\n  - docs/06_tasks/<feature-id>-tasks.md\nrequires: []\nnext_step: null\nterminal_state: null",
+      "resources": [],
+      "collaborators": []
+    },
+    {
+      "path": "skills/pdlc-tdd/SKILL.md",
+      "name": "pdlc-tdd",
+      "description": "TDD 测试先行（按设计文档生成失败的测试用例）",
+      "stage": "tdd",
+      "layer": "2",
+      "next_step": "pdlc-implement",
+      "owner": "Converge",
+      "integration": "原生复用",
+      "owned_reference": "engineering-ownership.md",
+      "limit": "真实红灯与绿灯、断言及必要回归；环境失败不算行为红灯",
+      "sha256": "22648f57407d626ec1921b6f7c7ce8236edc78dc53576c523bc16ac699253519",
+      "frontmatter": "name: pdlc-tdd\ndescription: TDD 测试先行（按设计文档生成失败的测试用例）\nargument-hint: \"<功能ID | 功能描述>\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 2\nstage: tdd\nproduces:\n  # 跟随项目既有测试布局，不限定固定目录（定位规则见 templates/prompts/test-location.md）\n  - <测试代码 · 项目既有布局>\n  - docs/04_testing/unit-tests/**\nrequires:\n  - docs/02_design/\nnext_step: pdlc-implement\nterminal_state: tdd_done\nrecommended_model: sonnet\nrecommended_effort: medium",
+      "resources": [
+        "skills/pdlc-tdd/assets/test-plan-template.md",
+        "skills/pdlc-tdd/scripts/pdlc-advance.sh",
+        "skills/pdlc-tdd/scripts/pdlc-checks.sh",
+        "skills/pdlc-tdd/scripts/pdlc-state-lint.sh"
+      ],
+      "collaborators": [
+        "Engineering"
+      ]
+    },
+    {
+      "path": "skills/pdlc-test-setup/SKILL.md",
+      "name": "pdlc-test-setup",
+      "description": "立测试地基（探测技术栈 → 验证并生成 test-commands.yml → 脚手架测试目录 → 接本地钩子）",
+      "stage": "engineering",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Engineering",
+      "integration": "方法迁入",
+      "owned_reference": "../skills/project-docs-engineering/references/quality.md",
+      "limit": "探测/验证/refresh真实命令，保留阈值；不自动接hooks/改CI",
+      "sha256": "906cea017f9d1f663f446ac97343ae5a1bcd6b6d08042d87b27d90c0a3f71118",
+      "frontmatter": "name: pdlc-test-setup\ndescription: 立测试地基（探测技术栈 → 验证并生成 test-commands.yml → 脚手架测试目录 → 接本地钩子）\nargument-hint: \"[项目目录] [--refresh] [--autonomous]\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 3\nstage: engineering\nartifact_type: surface\nproduces:\n  - docs/00_standards/test-commands.yml\nrequires: []\nnext_step: null\nterminal_state: null\nrecommended_model: sonnet\nrecommended_effort: medium",
+      "resources": [
+        "skills/pdlc-test-setup/assets/test-commands-template.yml",
+        "skills/pdlc-test-setup/scripts/pdlc-checks.sh"
+      ],
+      "collaborators": [
+        "Converge"
+      ]
+    },
+    {
+      "path": "skills/pdlc-ui-design/SKILL.md",
+      "name": "pdlc-ui-design",
+      "description": "按 PRD 出 UI/UX 设计文档（页面线框、交互流程、四种状态）；要配色 / 字体 / 设计系统用 /pdlc-ui-design-pro",
+      "stage": "design",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Product",
+      "integration": "已有能力+方法迁入",
+      "owned_reference": "../skills/project-docs-product/references/ui-design.md",
+      "limit": "页面/交互与正常/加载/空/错误状态，可点击原型按需",
+      "sha256": "fed5e701c3e9f3260ca63f59546408b13e7d4635b8c5796f75ece4fe70cfd965",
+      "frontmatter": "name: pdlc-ui-design\ndescription: 按 PRD 出 UI/UX 设计文档（页面线框、交互流程、四种状态）；要配色 / 字体 / 设计系统用 /pdlc-ui-design-pro\nargument-hint: \"<功能描述 | 页面名>\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 3\nstage: design\nproduces:\n  - docs/02_design/ui-ux/**\nrequires: []\nnext_step: null\nterminal_state: null",
+      "resources": [],
+      "collaborators": [
+        "Engineering"
+      ]
+    },
+    {
+      "path": "skills/pdlc-ui-design-pro/SKILL.md",
+      "name": "pdlc-ui-design-pro",
+      "description": "在 /pdlc-ui-design 基础上加视觉设计系统（配色、字体、组件规范），依赖 ui-ux-pro-max，缺失时降级为基础设计",
+      "stage": "design",
+      "layer": "3",
+      "next_step": "null",
+      "owner": "Product",
+      "integration": "方法迁入",
+      "owned_reference": "../skills/project-docs-product/references/ui-design.md",
+      "limit": "视觉系统/响应式/无障碍；缺外部设计Skill采用基础流程，不默认安装",
+      "sha256": "1a66eb1be2d43b274f8e34d77f12fa62328d607af1589af88f854f8b3ad45397",
+      "frontmatter": "name: pdlc-ui-design-pro\ndescription: 在 /pdlc-ui-design 基础上加视觉设计系统（配色、字体、组件规范），依赖 ui-ux-pro-max，缺失时降级为基础设计\nargument-hint: \"<功能描述 | 设计目标>\"\nallowed-tools: Read, Write, Edit, Glob, Grep, Bash\nlayer: 3\nstage: design\nproduces:\n  - docs/02_design/ui-ux/**\nrequires: []\nnext_step: null\nterminal_state: null",
+      "resources": [],
+      "collaborators": [
+        "Engineering"
+      ]
+    }
+  ],
+  "shared_components": [
+    {
+      "path": "bin/pdlc-advance.sh",
+      "sha256": "c5f3f8f4ef87592e15c305386cd8c9bb6e695e11a5c092aceccc036c0c6b1651"
+    },
+    {
+      "path": "bin/pdlc-checks.sh",
+      "sha256": "3cb67663210bf35d2bcf31efa275d522ac4cd7df73032dfda225f9f9483bfac0"
+    },
+    {
+      "path": "bin/pdlc-guard.sh",
+      "sha256": "d4461d08af1fd8d87cdf1fd41a4d431e0e1f7073713b13a8f2e7590862fa6a14"
+    },
+    {
+      "path": "bin/pdlc-loop.sh",
+      "sha256": "d0fe224b63cbc1ee1d86168adaf93dc488bee24208e70c1f4ec14b27a5d8127c"
+    },
+    {
+      "path": "bin/pdlc-state-lint.sh",
+      "sha256": "ecd6da861d0721ef8819cba308a98f4d2cb3370c235127a31ca5748ba9f50542"
+    },
+    {
+      "path": "bin/pdlc-statusline.sh",
+      "sha256": "f484c35b0a79a75de05bc5924a5a1465647960fce67cf2b992ec0fe70af10e40"
+    },
+    {
+      "path": "adapters/README.md",
+      "sha256": "0e6678919e6806f4d994f2eca304aa692f9e43792423fc79e4abb70da89d20c6"
+    },
+    {
+      "path": "adapters/__pycache__/build_agent_skills.cpython-314.pyc",
+      "sha256": "4c01d16ce7f67bf992b63cb88d204a11df4418437063649035583f4b1a298f2d"
+    },
+    {
+      "path": "adapters/__pycache__/sync_skills.cpython-314.pyc",
+      "sha256": "ef49dc24a8c2b394d6c5304063d269c5e804342fa11b5b49a1d4a8721d7849f3"
+    },
+    {
+      "path": "adapters/build_agent_skills.py",
+      "sha256": "f3d4939370c53d4a4ad3eba05141839e6267761837884aab6c61b2c9ecbe8de1"
+    },
+    {
+      "path": "adapters/build_codex.py",
+      "sha256": "78e9391364b65366ec93c1cdf54dd76e68e571dc6dc7c214fa80561b58c890c6"
+    },
+    {
+      "path": "adapters/codex-loop-run.sh",
+      "sha256": "10fab23890b70d3398c7f831299a2cae8050060c834faa3a15fe9a39f2de0644"
+    },
+    {
+      "path": "adapters/sync_skills.py",
+      "sha256": "6877b361ff67fc95afedda4a0e4323dba1a65c6a92d0035bf0179c7e70cc7063"
+    },
+    {
+      "path": "references/templates/adopt-report-template.md",
+      "sha256": "1c891cee6a4db455b6cc20bf396afa26c7b0eaef27297356d45d0d4c2c1b595b"
+    },
+    {
+      "path": "references/templates/api-design-template.md",
+      "sha256": "c7cb794e902997f568e976fd5d25b0422e3673d0705c287bbe546d98ffea0c3d"
+    },
+    {
+      "path": "references/templates/arch-design-template.md",
+      "sha256": "53dfd846ed296c7dd4763c5553ab2e814d3f88a60544176f2e9f7708d15f61cc"
+    },
+    {
+      "path": "references/templates/architecture-overview-template.md",
+      "sha256": "b7626a132deaab5dbb9eec8dc5de64e00e66f4d77676e89c3fc367a8b16ac1c5"
+    },
+    {
+      "path": "references/templates/changelog-template.md",
+      "sha256": "5e6b98f44e8d21d44b44363e1344fd0eae31f04439e49f608b769671d3cd0564"
+    },
+    {
+      "path": "references/templates/db-design-template.md",
+      "sha256": "954a4a336c90582c64ced029d37e812b137d6a74a132a03736d207ac6592c6a2"
+    },
+    {
+      "path": "references/templates/db-migrate-template.md",
+      "sha256": "1c37e2317c9f59f35e96fc15532e4cbe6c20597c5af42f179d9a52a1118b20b3"
+    },
+    {
+      "path": "references/templates/deploy-doc-template.md",
+      "sha256": "93b45e3f31aea19af35588776bfdd4eb1d61f364399eed9ff251c7f92fdf1828"
+    },
+    {
+      "path": "references/templates/e2e-flow-map-template.yml",
+      "sha256": "4056c228c67ef62b505ac474e05353502841698b02e0be44bdfb57f3c596417c"
+    },
+    {
+      "path": "references/templates/glossary-template.md",
+      "sha256": "9128c84602d7bfe0b433fc7bae13d72f7125cc1f4692e6c98b3496cd665c966d"
+    },
+    {
+      "path": "references/templates/pdlc-hooks-template.yml",
+      "sha256": "a6e44256c78e8eb23e9e3b155811315b4f2aa197ab1e6b41f7082333d20cf928"
+    },
+    {
+      "path": "references/templates/pdlc-statusline.example.json",
+      "sha256": "b565377700db5df80846310bc8be76613aa0b8023cc227bf7ec40eba03ed58ef"
+    },
+    {
+      "path": "references/templates/prd-template.md",
+      "sha256": "7ea60a6acdcefb33a9a179787696c909c6856827b9f83485b8cb29c5acc7e2dc"
+    },
+    {
+      "path": "references/templates/prompts/artifact-lookup.md",
+      "sha256": "69e380e79aab3ad44a6837b0d416173f09ee41d7cd99e8fa544f81844e09792e"
+    },
+    {
+      "path": "references/templates/prompts/batch-review.md",
+      "sha256": "590974b2f0fd0390be37d996d947933128c6e1b022534caf16bd8bb07bee3fd9"
+    },
+    {
+      "path": "references/templates/prompts/check-commands.md",
+      "sha256": "86895534439fc1b0ccd4197d0c215ccddd8287d38d7e002ecf60eb7acd027db7"
+    },
+    {
+      "path": "references/templates/prompts/clarify.md",
+      "sha256": "3c496de770ba484065a2e92f2f4b14f6acac529163346132bc2c3c099354116f"
+    },
+    {
+      "path": "references/templates/prompts/defect-id.md",
+      "sha256": "7bae911a48dd81a877742a5a4b7f9cb75ebb4101379ee18c10dd731dfc939231"
+    },
+    {
+      "path": "references/templates/prompts/design-options.md",
+      "sha256": "89b2719f6f36913c0f95a901bf1996c3d2fefc92ccb5ec2f2ec3ad09d9c62810"
+    },
+    {
+      "path": "references/templates/prompts/feature-id.md",
+      "sha256": "064205a8f95fb0ba9acc6e0a803a14afd72e5ae660ddb15ee42294c96f09f6bc"
+    },
+    {
+      "path": "references/templates/prompts/handoff.md",
+      "sha256": "e827b272718fa5ebaef15d8075a1ce48279e2626163315b647d61cf6bb10950a"
+    },
+    {
+      "path": "references/templates/prompts/iron-law-tool.md",
+      "sha256": "3d89d00027bb3fe524fec2c5e980b79eaa03f32c03b453e03a4c21adfb987cb9"
+    },
+    {
+      "path": "references/templates/prompts/iron-law.md",
+      "sha256": "f473f9a2423b87c07d0c1e5520205d5a2ebb1d24bad12bfe4f9dbcea05f92d33"
+    },
+    {
+      "path": "references/templates/prompts/layout-detect.md",
+      "sha256": "04095ea4b1996c268511c52be2a6e84dffae8bb7b244875ce82170858806c71e"
+    },
+    {
+      "path": "references/templates/prompts/loop-prevention.md",
+      "sha256": "aae7972f7ffb6738907678d1df54c2183adac01076b4214842229b5f9e93f069"
+    },
+    {
+      "path": "references/templates/prompts/noninteractive.md",
+      "sha256": "681f77a5b99caf56225f27539d19aea6ebbc2e25dc1eec80cd22413db7b6ce63"
+    },
+    {
+      "path": "references/templates/prompts/output-language.md",
+      "sha256": "4542d3728b8b4bf793a9ecacd95cae21d91eba9fcbb78196d0caae26a8b19111"
+    },
+    {
+      "path": "references/templates/prompts/pdlc-trace.md",
+      "sha256": "7ca8ad26c0b247b316c1bf7f00b52e3fade0cd47aa79cf718744d4ef93db6372"
+    },
+    {
+      "path": "references/templates/prompts/relations.md",
+      "sha256": "494272bb177f5cad724c7b8bf5f91bac9f6031d0bda86cfbfee000ea982735df"
+    },
+    {
+      "path": "references/templates/prompts/self-audit.md",
+      "sha256": "6f0099e25adc13d262e46d4117408fcfde2dacc67c4f2c7d7eeebd2510e309e3"
+    },
+    {
+      "path": "references/templates/prompts/state-read.md",
+      "sha256": "73464bef8fba82a649ecacebbd5fc357107efe5912d202e9be0cda103c57fa46"
+    },
+    {
+      "path": "references/templates/prompts/state-update.md",
+      "sha256": "10ca4e70da917513624c37b3fff3aea5ed359f6d7baf3672bee8c5347050340c"
+    },
+    {
+      "path": "references/templates/prompts/test-location.md",
+      "sha256": "abde187c442b7a77c4a46d89f124f28832e46de7a846e9c101b1dc0ea4f365c8"
+    },
+    {
+      "path": "references/templates/quality-report-template.html",
+      "sha256": "e988c5901cb6bfbe6d336a1a4cc11433b32b93205f9ef5628571545ba9cd692f"
+    },
+    {
+      "path": "references/templates/quality-report-template.md",
+      "sha256": "59dd251d9d2b32ee45b85806250c52bb961f30e8e424fa73644e28a45da26ccf"
+    },
+    {
+      "path": "references/templates/quality-targets-template.yml",
+      "sha256": "d57c3c8d334cfb922588225184e8db16557104a341f10cb1f4e554f29b0b2af4"
+    },
+    {
+      "path": "references/templates/release-notes-template.md",
+      "sha256": "ed1cf9d408bbe9c8968c1e32f7c4110e97da3d0ac88f98ba9e136e59bdb41942"
+    },
+    {
+      "path": "references/templates/test-commands-template.yml",
+      "sha256": "d26b083428d9e709a047abed12270c18d5fa9cfbd224cc9f908e2ab24ecc6870"
+    },
+    {
+      "path": "references/templates/test-plan-template.md",
+      "sha256": "ae77fae221198ed06041e52bf24a1021451b2926633cc45b28d82564e5ad38ef"
+    }
+  ]
+}

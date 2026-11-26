@@ -63,8 +63,12 @@ class HandoffTests(unittest.TestCase):
     def test_cli_does_not_import_a_stale_record_validator(self):
         validator = self.root / 'validator'
         validator.mkdir()
-        for name in ('lifecycle_quality.py', 'lifecycle_test_runner.py', 'lifecycle_record.py'):
+        for name in ('lifecycle_quality.py', 'lifecycle_test_runner.py', 'lifecycle_record.py', 'lifecycle_relations.py', 'lifecycle_checklist.py'):
             shutil.copy(REPOSITORY / 'scripts' / name, validator / name)
+        from lifecycle_checklist import CATALOG
+        catalog = self.root / 'skills/project-docs-lifecycle/references/checklist-catalog.json'
+        catalog.parent.mkdir(parents=True)
+        shutil.copy(CATALOG, catalog)
         source = validator / 'lifecycle_record.py'
         actual = source.read_bytes()
         stub = b"def check_record(data): return {'valid': True, 'needs_review': []}\n#"
@@ -146,7 +150,7 @@ print(json.dumps({'identity':identity,'revision':state['revision']}))
     def test_cli_handoff_check_does_not_create_import_caches_in_frozen_directory(self):
         validator = self.root / 'validator'
         validator.mkdir()
-        for name in ('lifecycle_quality.py', 'lifecycle_test_runner.py', 'lifecycle_record.py'):
+        for name in ('lifecycle_quality.py', 'lifecycle_test_runner.py', 'lifecycle_record.py', 'lifecycle_relations.py'):
             shutil.copy(REPOSITORY / 'scripts' / name, validator / name)
         before = {path.relative_to(self.root): path.read_bytes() for path in self.root.rglob('*') if path.is_file()}
         process = subprocess.run([sys.executable, '-E', str(validator / 'lifecycle_quality.py'), 'handoff',

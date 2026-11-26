@@ -2,9 +2,14 @@
 """Validate and export an existing native diagram with its official engine."""
 
 import argparse
+import ctypes
+import errno
+import hashlib
 import json
+import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -20,6 +25,7 @@ from python_runtime import require_python
 
 EXTENSIONS = {"mermaid": ".mmd", "plantuml": ".puml", "drawio": ".drawio",
               "archify": ".archify.json"}
+INCLUDE_INDEX = Path('.native-includes.json')
 BINARIES = {"mermaid": "mmdc", "plantuml": "plantuml", "drawio": "drawio",
             "archify": "archify"}
 PROVENANCE = {"EXTRACTED", "INFERRED", "AMBIGUOUS"}
@@ -111,7 +117,7 @@ def _selected_plantuml_lines(lines, selection):
     return [(number, lines[number - 1]) for number in range(selected[0] + 1, selected[1])]
 
 
-def _plantuml_refs(source):
+def _plantuml_refs(source, rewrites=None):
     """Inventory local include contents; report includes that cannot be inspected."""
     base = source.resolve().parent
     refs = {}
@@ -142,12 +148,17 @@ def _plantuml_refs(source):
                 if directive == "includesub" and not separator:
                     untracked.append(ref)
                     continue
-                included = (path.parent / target).resolve()
+                original = path.parent / target
+                included = original.resolve()
                 if not included.is_relative_to(base) or not included.is_file():
                     untracked.append(ref)
                     continue
                 included_files.add(included)
                 relative = included.relative_to(base).as_posix()
+                if rewrites is not None and (Path(target).is_absolute() or Path(os.path.abspath(original)) != included):
+                    portable = Path(os.path.relpath(included, path.parent)).as_posix()
+                    start = len(line) - len(line.lstrip()) + match.start(2) + filename.index(target)
+                    rewrites.setdefault(path, {})[number] = (start, start + len(target), portable)
                 selected = (("sub" if directive == "includesub" else "block", fragment)
                             if separator else None)
                 scan(included, f"include:{relative}:", active, selected)
@@ -165,6 +176,17 @@ def _plantuml_refs(source):
 
 def _untracked_includes(source):
     return _plantuml_refs(source)[1]
+
+
+def _copy_plantuml(source, destination, rewrites):
+    if not rewrites:
+        shutil.copyfile(source, destination)
+        return
+    lines = source.read_bytes().decode("utf-8").splitlines(keepends=True)
+    for number, (start, end, replacement) in rewrites.items():
+        line = lines[number - 1]
+        lines[number - 1] = line[:start] + replacement + line[end:]
+    destination.write_bytes("".join(lines).encode("utf-8"))
 
 
 def _material_refs(source, engine, diagram_type):
@@ -288,6 +310,75 @@ def _validate_source_manifest(path, root, source, engine, actual_type):
     return manifest, problems
 
 
+def _file_digest(path):
+    with path.open('rb') as handle:
+        return hashlib.file_digest(handle, 'sha256').hexdigest()
+
+
+def _stale_includes(directory, current):
+    index = directory / INCLUDE_INDEX
+    if index.is_symlink() or (index.exists() and not index.is_file()):
+        raise OSError(f'invalid native include inventory: {index}')
+    if not index.exists():
+        return set()
+    try:
+        document = json.loads(index.read_text(encoding='utf-8'))
+        files = document['files']
+        if document['schemaVersion'] != 1 or not isinstance(files, dict):
+            raise ValueError('unsupported native include inventory')
+        stale = set()
+        for relative, digest in files.items():
+            name = Path(relative)
+            if (not relative or '\x00' in relative or not name.parts or name.anchor or '..' in name.parts
+                    or name.as_posix() != relative or name == INCLUDE_INDEX
+                    or not isinstance(digest, str) or not re.fullmatch('[0-9a-f]{64}', digest)):
+                raise ValueError('invalid managed include path or digest')
+            target = directory / name
+            if name not in current and target.resolve() == target and target.is_file() and _file_digest(target) == digest:
+                stale.add(name)
+        return stale | {INCLUDE_INDEX}
+    except (KeyError, TypeError, ValueError) as error:
+        raise OSError(f'invalid native include inventory: {index}') from error
+
+
+def _directory_state(root):
+    """Track writes and path changes without following links or hashing copied files."""
+    top = root.lstat()
+    entries = {}
+    pending = [root]
+    while pending:
+        for path in pending.pop().iterdir():
+            item = path.lstat()
+            entries[path.relative_to(root)] = (item.st_dev, item.st_ino, item.st_mode, item.st_size,
+                                               item.st_mtime_ns, item.st_ctime_ns)
+            if stat.S_ISDIR(item.st_mode):
+                pending.append(path)
+    # An exchange itself changes the root's ctime.
+    return (top.st_dev, top.st_ino, top.st_mode, top.st_mtime_ns), entries
+
+
+def _exchange_directories(staged, destination):
+    """Commit two populated directories with the filesystem's atomic swap."""
+    libc = ctypes.CDLL(None, use_errno=True)
+    left, right = os.fsencode(staged), os.fsencode(destination)
+    if sys.platform == 'darwin' and hasattr(libc, 'renamex_np'):
+        swap = libc.renamex_np
+        swap.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_uint]
+        result = swap(left, right, 2)  # RENAME_SWAP
+    elif sys.platform == 'linux' and hasattr(libc, 'renameat2'):
+        swap = libc.renameat2
+        swap.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_uint]
+        result = swap(-100, left, -100, right, 2)  # AT_FDCWD, RENAME_EXCHANGE
+    else:
+        raise OSError(errno.ENOTSUP, 'atomic directory swap unavailable; use a new output directory')
+    if result != 0:
+        code = ctypes.get_errno()
+        message = os.strerror(code)
+        if code in (errno.ENOTSUP, errno.ENOSYS, errno.EINVAL, errno.EXDEV):
+            message += '; atomic directory swap unavailable; use a new output directory'
+        raise OSError(code, message, destination)
+
+
 def main(argv=None):
     require_python()
     prepare_runtime()
@@ -362,89 +453,163 @@ def main(argv=None):
             return _result(False, engine, **metadata, officialCheck="not_run",
                            exportCheck="not_run", problems=quality["problems"])
 
+    destination = output
+    obsolete = {"diagram.evidence.json", *(f"diagram.{engine}.{fmt}" for fmt in EXPORT_FORMATS[engine])}
+    if engine == "archify":
+        obsolete.add("diagram.archify.html")
+
     def report(ok, artifacts=(), **extra):
-        return _result(ok, engine, artifacts, **metadata, **extra)
+        if not ok:
+            return _result(False, engine, **metadata, **extra)
+        from lifecycle_record import _record_lock
+        lock_target = destination.with_name(destination.name + ".native-publish")
+        try:
+            with _record_lock(lock_target):
+                return publish(artifacts, **extra)
+        except OSError as error:
+            return _result(False, engine, **metadata, **extra, publicationCheck="fail", problems=[str(error)])
+
+    def publish(artifacts, **extra):
+        relative_artifacts = {path.relative_to(output) for path in artifacts}
+        if INCLUDE_INDEX in relative_artifacts:
+            raise OSError(f'output uses reserved include index name: {INCLUDE_INDEX}')
+        publication = relative_artifacts.copy()
+        if include_artifacts:
+            files = {path.relative_to(output).as_posix(): _file_digest(path) for path in include_artifacts}
+            (output / INCLUDE_INDEX).write_text(
+                json.dumps({'schemaVersion': 1, 'files': files}, sort_keys=True) + "\n", encoding='utf-8')
+            publication.add(INCLUDE_INDEX)
+        if destination.resolve() != destination:
+            raise OSError("output destination changed to a symlink")
+        if not destination.exists():
+            output.replace(destination)
+        else:
+            previous = _directory_state(destination)
+            scratch = Path(tempfile.mkdtemp(prefix='native-publish-', dir=destination.parent))
+            staged = scratch / 'previous'
+            cleanup = True
+            try:
+                shutil.copytree(destination, staged, symlinks=True)
+                stale = _stale_includes(staged, relative_artifacts) if engine == "plantuml" else set()
+                managed = publication | {Path(name) for name in obsolete} | stale
+                for name in sorted(managed):
+                    target = staged / name
+                    for parent in target.parents:
+                        if parent == staged:
+                            break
+                        if parent.is_symlink():
+                            raise OSError(f"managed artifact parent contains a symlink: {destination / name}")
+                    if target.is_dir() and not target.is_symlink():
+                        raise OSError(f"managed artifact is a directory: {destination / name}")
+                    target.unlink(missing_ok=True)
+                    if name in publication:
+                        target.parent.mkdir(parents=True, exist_ok=True)
+                        (output / name).replace(target)
+                if _directory_state(destination) != previous:
+                    raise OSError("output directory files changed during publication; retry after edits finish")
+                cleanup = False
+                try:
+                    _exchange_directories(staged, destination)
+                except OSError:
+                    cleanup = True
+                    raise
+                try:
+                    if _directory_state(staged) != previous:
+                        raise OSError("output directory files changed at publication; recover edits from the preserved directory")
+                except OSError as error:
+                    return _result(False, engine, **metadata, **extra, publicationCheck="fail",
+                                   recoveryBackup=str(staged), problems=[str(error)])
+                cleanup = True
+            finally:
+                if cleanup:
+                    shutil.rmtree(scratch, ignore_errors=True)
+        final_artifacts = [destination / path.relative_to(output) for path in artifacts]
+        return _result(True, engine, final_artifacts, **metadata, **extra)
 
     executable = find_engine(engine, args.engine_cli)
     if not executable:
         parser.error(f"official {engine} CLI is unavailable: {args.engine_cli or BINARIES[engine]}")
 
-    output.mkdir(parents=True, exist_ok=True)
-    native = output / ("diagram" + EXTENSIONS[engine])
-    (output / "diagram.evidence.json").unlink(missing_ok=True)
-    for fmt in EXPORT_FORMATS[engine]:
-        (output / f"diagram.{engine}.{fmt}").unlink(missing_ok=True)
-    if engine == "archify":
-        (output / "diagram.archify.html").unlink(missing_ok=True)
-    with tempfile.NamedTemporaryFile(dir=output, delete=False) as temporary:
-        copied = Path(temporary.name)
-    try:
-        shutil.copyfile(source, copied)
-        copied.replace(native)
-    finally:
-        copied.unlink(missing_ok=True)
-    include_artifacts = []
-    if engine == "plantuml":
-        for included in _plantuml_refs(source)[2]:
-            target = output / included.relative_to(source.parent)
-            target.parent.mkdir(parents=True, exist_ok=True)
-            if included != target:
-                shutil.copyfile(included, target)
-            include_artifacts.append(target)
-    evidence_artifacts = []
-    if manifest:
-        evidence_copy = output / "diagram.evidence.json"
-        evidence_copy.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        evidence_artifacts.append(evidence_copy)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="native-delivery-", dir=destination.parent) as directory:
+        output = Path(directory) / "bundle"
+        output.mkdir()
+        native = output / ("diagram" + EXTENSIONS[engine])
+        include_artifacts = []
+        if engine == "plantuml":
+            rewrites = {}
+            _, _, includes = _plantuml_refs(source, rewrites)
+            _copy_plantuml(source, native, rewrites.get(source))
+            reserved = {name.casefold() for name in (*obsolete, native.name, INCLUDE_INDEX.name)}
+            for included in includes:
+                relative = included.relative_to(source.parent)
+                if relative.parts[0].casefold() in reserved:
+                    return report(False, officialCheck="not_run", exportCheck="not_run",
+                                  problems=[f"PlantUML include conflicts with a reserved output path: {relative.as_posix()}"])
+                target = output / relative
+                if any(parent.is_symlink() for parent in target.parents if parent != output):
+                    return report(False, officialCheck="not_run", exportCheck="not_run",
+                                  problems=["include destination contains a symlink"])
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.unlink(missing_ok=True)
+                _copy_plantuml(included, target, rewrites.get(included))
+                include_artifacts.append(target)
+        else:
+            shutil.copyfile(source, native)
+        evidence_artifacts = []
+        if manifest:
+            evidence_copy = output / "diagram.evidence.json"
+            evidence_copy.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            evidence_artifacts.append(evidence_copy)
 
-    if engine == "archify":
-        html = output / "diagram.archify.html"
-        command = [executable, "deliver", diagram_type, str(native), str(html),
-                   "--quality", args.quality, "--json"]
-        if args.repo_root:
-            command.extend(("--repo-root", str(args.repo_root.resolve())))
-        try:
-            process = subprocess.run(command, text=True, capture_output=True, timeout=180)
-            receipt = json.loads(process.stdout)
-        except (OSError, subprocess.TimeoutExpired, ValueError) as error:
-            html.unlink(missing_ok=True)
-            return report(False, evidence_artifacts, diagramType=diagram_type, officialCheck="fail",
-                           problems=[str(error)])
-        if (process.returncode or not html.is_file() or not isinstance(receipt, dict) or
-                receipt.get("ok") is not True or receipt.get("command") != "deliver"):
-            html.unlink(missing_ok=True)
-            error = receipt.get("error") if isinstance(receipt, dict) else None
-            return report(False, evidence_artifacts, diagramType=diagram_type, officialCheck="fail",
-                           problems=[process.stderr.strip() or str(error or f"Archify delivery failed (exit {process.returncode})")])
-        artifacts = [native, html, *evidence_artifacts]
-        if formats:
-            exported, error = _archify_export(executable, html, output, formats)
-            if error:
-                return report(False, artifacts, diagramType=diagram_type,
-                               officialCheck="pass", exportCheck="fail", problems=[error])
-            artifacts.extend(exported)
-        return report(True, artifacts, diagramType=diagram_type,
-                       officialCheck="pass", exportCheck="pass" if formats else "not_requested",
-                       officialReceipt=receipt)
+        if engine == "archify":
+            html = output / "diagram.archify.html"
+            command = [executable, "deliver", diagram_type, str(native), str(html),
+                       "--quality", args.quality, "--json"]
+            if args.repo_root:
+                command.extend(("--repo-root", str(args.repo_root.resolve())))
+            try:
+                process = subprocess.run(command, text=True, capture_output=True, timeout=180)
+                receipt = json.loads(process.stdout)
+            except (OSError, subprocess.TimeoutExpired, ValueError) as error:
+                html.unlink(missing_ok=True)
+                return report(False, evidence_artifacts, diagramType=diagram_type, officialCheck="fail",
+                               problems=[str(error)])
+            if (process.returncode or not html.is_file() or not isinstance(receipt, dict) or
+                    receipt.get("ok") is not True or receipt.get("command") != "deliver"):
+                html.unlink(missing_ok=True)
+                error = receipt.get("error") if isinstance(receipt, dict) else None
+                return report(False, evidence_artifacts, diagramType=diagram_type, officialCheck="fail",
+                               problems=[process.stderr.strip() or str(error or f"Archify delivery failed (exit {process.returncode})")])
+            artifacts = [native, html, *evidence_artifacts]
+            if formats:
+                exported, error = _archify_export(executable, html, output, formats)
+                if error:
+                    return report(False, artifacts, diagramType=diagram_type,
+                                   officialCheck="pass", exportCheck="fail", problems=[error])
+                artifacts.extend(exported)
+            return report(True, artifacts, diagramType=diagram_type,
+                           officialCheck="pass", exportCheck="pass" if formats else "not_requested",
+                           officialReceipt=receipt)
 
-    error = _check_diagram(engine, executable, native,
-                           output / f"diagram.{engine}.svg" if "svg" in formats else None)
-    if error:
-        return report(False, evidence_artifacts, officialCheck="fail", exportCheck="not_run", problems=[error])
-    artifacts = [native, *include_artifacts, *evidence_artifacts]
-    if "svg" in formats:
-        artifacts.append(output / f"diagram.{engine}.svg")
-    for fmt in formats:
-        if fmt == "svg":
-            continue
-        target = output / f"diagram.{engine}.{fmt}"
-        error = _render_export(engine, executable, native, target, fmt)
+        error = _check_diagram(engine, executable, native,
+                               output / f"diagram.{engine}.svg" if "svg" in formats else None)
         if error:
-            return report(False, artifacts, officialCheck="pass", exportCheck="fail",
-                           problems=[f"{fmt}: {error}"])
-        artifacts.append(target)
-    return report(True, artifacts, officialCheck="pass",
-                   exportCheck="pass" if formats else "not_requested")
+            return report(False, evidence_artifacts, officialCheck="fail", exportCheck="not_run", problems=[error])
+        artifacts = [native, *include_artifacts, *evidence_artifacts]
+        if "svg" in formats:
+            artifacts.append(output / f"diagram.{engine}.svg")
+        for fmt in formats:
+            if fmt == "svg":
+                continue
+            target = output / f"diagram.{engine}.{fmt}"
+            error = _render_export(engine, executable, native, target, fmt)
+            if error:
+                return report(False, artifacts, officialCheck="pass", exportCheck="fail",
+                               problems=[f"{fmt}: {error}"])
+            artifacts.append(target)
+        return report(True, artifacts, officialCheck="pass",
+                       exportCheck="pass" if formats else "not_requested")
 
 
 if __name__ == "__main__":

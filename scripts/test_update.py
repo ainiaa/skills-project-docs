@@ -32,7 +32,7 @@ class UpdateTests(unittest.TestCase):
         scripts = self.seed / "scripts"
         scripts.mkdir()
         for name in ("update_project_docs.py", "python_runtime.py", "product_dependencies.py", "install_product_dependencies.py", "lifecycle_record.py",
-                     "lifecycle_quality.py", "lifecycle_test_runner.py"):
+                     "lifecycle_quality.py", "lifecycle_test_runner.py", "lifecycle_relations.py"):
             source = REPOSITORY / "scripts" / name
             if source.exists():
                 shutil.copy(source, scripts / name)

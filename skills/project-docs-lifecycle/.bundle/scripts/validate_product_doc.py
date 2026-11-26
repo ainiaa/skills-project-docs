@@ -18,7 +18,7 @@ STATUSES = {"草稿", "待确认", "已确认"}
 VOID_TAGS = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"}
 
 
-def prose(content):
+def prose(content, *, omit_web_reading=False):
     """Read declarations and resources from CommonMark tokens, never rendered HTML."""
     try:
         from markdown_it import MarkdownIt
@@ -32,6 +32,7 @@ def prose(content):
     environment = {}
     tokens = parser.parse(content, environment)
     lines, resources, quotes = [], [], 0
+    web_reading, source_section = set(), False
     html = Prototype()
     for index, token in enumerate(tokens):
         if token.type == "html_block":
@@ -48,14 +49,24 @@ def prose(content):
             if previous.type == "heading_open":
                 if previous.level and re.match(rf"^{ID_PATTERN}(?:\s|$)", text):
                     raise ValueError("FR、AC、SRC、Q 标题必须位于文档顶层，不能放在引用或列表中")
-                lines.append(("\\" if previous.level else "") + "#" * int(previous.tag[1:]) + " " + text)
+                heading = ("\\" if previous.level else "") + "#" * int(previous.tag[1:]) + " " + text
+                lines.append(heading)
+                if omit_web_reading and not previous.level and previous.tag in {"h1", "h2", "h3"}:
+                    declaration = DECLARATION.fullmatch(heading)
+                    source_section = bool(declaration and declaration[2].startswith("SRC-"))
             else:
                 # Literal Markdown punctuation in a paragraph must not create declarations.
                 lines.extend(("> " if quotes else "") + ("\\" if line.startswith(("#", ">")) else "") + line
                              for line in text.splitlines())
             for child in token.children or []:
                 if child.type in {"link_open", "image"}:
-                    resources.append(child.attrGet("src" if child.type == "image" else "href"))
+                    target = child.attrGet("src" if child.type == "image" else "href")
+                    if omit_web_reading and not source_section and child.type == "link_open":
+                        url = urlsplit(target)
+                        if url.netloc and url.scheme in {"http", "https"}:
+                            web_reading.add(target)
+                            continue
+                    resources.append(target)
                 elif child.type == "html_inline":
                     html.feed(child.content)
     html.close()
@@ -64,7 +75,8 @@ def prose(content):
     resources.extend(target for target, _ in html.resources)
     for style in html.styles:
         resources.extend(stylesheet_resources(style))
-    resources.extend(reference["href"] for reference in environment.get("references", {}).values())
+    resources.extend(reference["href"] for reference in environment.get("references", {}).values()
+                     if reference["href"] not in web_reading)
     return "\n".join(lines), resources
 
 
@@ -525,11 +537,14 @@ def review_product_content(content):
                              "headings": signals})
     questions = {
         "business": ["本次变化能解决谁的什么问题，范围和效果依据是否清楚？",
-                     "关键规则、例外和职责变化是否已明确，哪些仍需业务决定？"],
+                     "关键规则、例外和职责变化是否已明确，哪些仍需业务决定？",
+                     "原始诉求如何定位到当前正文规则及FR/AC，哪些有明确撤回或排除依据？"],
         "engineering": ["现状依据、变更前后、历史及进行中对象、兼容和依赖是否可追溯？",
-                        "规则、图和原型是否一致，哪些业务阻塞项及技术设计问题尚未解决？"],
+                        "规则、图和原型是否一致，哪些业务阻塞项及技术设计问题尚未解决？",
+                        "确定失败与结果未知分别如何核实，所查对象标识、核实入口、接手角色及允许重试条件是什么？"],
         "qa": ["每条 FR 是否有可观察 AC，含边界、权限、状态及失败恢复？",
-               "历史回归范围、数据条件、跨角色完整旅程和未覆盖证据是否清楚？"],
+               "历史回归范围、数据条件、跨角色完整旅程和未覆盖证据是否清楚？",
+               "用哪组具体输入和操作顺序逐步推导预期结果，反例及异常恢复后哪些对象保持不变？"],
     }
     return {"dimensions": observations, "semanticReview": "required", "humanConfirmation": "not_proven",
             "workflow": "not_connected", "handoffReview": {"status": "not_run", "questions": questions}}

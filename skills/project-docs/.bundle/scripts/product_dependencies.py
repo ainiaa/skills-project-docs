@@ -14,7 +14,6 @@ REQUIRED = {
     "domain-modeling": ("GLOSSARY-FORMAT.md", "ADR-FORMAT.md"),
 }
 
-
 def inspect_skill(directory, name, references):
     directory = directory.resolve()
     entry = directory / "SKILL.md"

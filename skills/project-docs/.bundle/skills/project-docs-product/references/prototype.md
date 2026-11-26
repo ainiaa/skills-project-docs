@@ -54,7 +54,9 @@
 - 操作后的用户可见状态和结果可核对；相关空数据、失败、权限差异按需提供场景，重置后可重复演示。角色切换仅为模拟，不能宣称验证了服务端权限。
 - PRD 与原型冲突时标为待处理，探索变动先作为建议，经确认再同步需求。截图来自实际浏览器渲染，变更后重新生成受影响截图。
 
-先编写关键交互的可执行测试，再实现原型业务逻辑；即使上游 throwaway prototype 允许省略测试，也服从用户的 TDD 要求。真实打开成品，点击正常、边界、异常和非法场景，检查窄屏、文字溢出、焦点与反馈；实际查看截图。示例 `node --test scripts/test_product_browser.mjs` 验证集合自己的样例，不证明任意新原型已被验证。
+先编写关键交互的可执行测试，再实现原型业务逻辑；即使上游 throwaway prototype 允许省略测试，也服从用户的 TDD 要求。真实打开成品，点击正常、边界、异常和非法场景，检查窄屏、文字溢出、焦点与反馈；实际查看截图。
+
+验证示例时，在[源码仓库](https://github.com/ainiaa/skills-project-docs)根目录或 Product 独立安装包的可写 `.bundle` 副本根目录，执行 `node scripts/product_browser.mjs --directory skills/project-docs-product/assets/examples/access-request --test journey.test.mjs`。保留目录结构以便示例导入运行器。这条命令只验证示例。通过统一入口或 Lifecycle 使用 Product 时，在源码仓库复跑这份示例。
 
 在同一交付目录提供 PRD、原型、必要截图及评审记录，以相对链接关联。能打开的文件不等于已通过交互、语义或视觉验收；分别报告实际结果。只在用户授权时分享或发布。
 

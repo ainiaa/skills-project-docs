@@ -41,6 +41,6 @@
 
 确认读者能完成本次目的：新手能复述或操作，专家能核对关键条件、反例与证据，决策者能看到选择与后果。比较各读者视图时检查事实、状态及未决是否一致；涉及生成原文和正式规格时核对未被改写或另立版本。
 
-示例使用[同一份合成报名材料](../skills/project-docs-overview/assets/beginner-explainers/registration-rule.input.md)：[首次报名者说明](../skills/project-docs-overview/assets/beginner-explainers/registration-rule.archify.md)先解释确认与候补，[业务专家评审页](../skills/project-docs-overview/assets/beginner-explainers/registration-rule-expert.archify.md)先列口径和待决边界；两者的四组判断结果保持一致。这些是适配示例，不是新的正式 PRD。
+示例使用[同一份合成报名材料](https://github.com/ainiaa/skills-project-docs/blob/main/skills/project-docs-overview/assets/beginner-explainers/registration-rule.input.md)：[首次报名者说明](https://github.com/ainiaa/skills-project-docs/blob/main/skills/project-docs-overview/assets/beginner-explainers/registration-rule.archify.md)先解释确认与候补，[业务专家评审页](https://github.com/ainiaa/skills-project-docs/blob/main/skills/project-docs-overview/assets/beginner-explainers/registration-rule-expert.archify.md)先列口径和待决边界；两者的四组判断结果保持一致。这些是适配示例，不是新的正式 PRD。
 
 资源检查、固定案例和内容复核分别记录；没有独立会话测试或真实读者试读时，不声称所有读者都能稳定理解。

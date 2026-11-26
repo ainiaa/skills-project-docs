@@ -1994,5 +1994,54 @@ app.include_router(router, dependencies=[Depends(include_auth)])
         self.assertEqual([], unresolved_types(document.endpoints, document.classes(), document.schemas))
 
 
+class DateExampleTests(unittest.TestCase):
+    def test_python_query_and_nested_body_dates_are_valid_in_all_outputs(self):
+        from datetime import date
+        from urllib.parse import parse_qs, urlsplit
+        with tempfile.TemporaryDirectory() as directory:
+            Path(directory, 'app.py').write_text(textwrap.dedent("""
+                from datetime import date, datetime
+                from fastapi import FastAPI
+                from pydantic import BaseModel
+                class Event(BaseModel):
+                    day: date
+                    at: datetime
+                app = FastAPI()
+                @app.post('/events')
+                def events(day: date, event: Event): return event
+            """))
+            document = scan_python_document([Path(directory)])
+        request = render_postman(document, 'https://example.test')['item'][0]['request']
+        sample = parse_qs(urlsplit(request['url']).query)['day'][0]
+        self.assertEqual(sample, '2012-05-28')
+        self.assertEqual(date.fromisoformat(sample).isoformat(), sample)
+        body = json.loads(request['body']['raw'])
+        self.assertEqual(date.fromisoformat(body['day']).isoformat(), sample)
+        self.assertIn('T', body['at'])
+        self.assertIn('day=2012-05-28', render_curl(document, 'https://example.test'))
+        self.assertIn('"day": "2012-05-28"', render_markdown(document, ''))
+
+    def test_modern_and_legacy_renderers_distinguish_pure_dates(self):
+        from api_document_ir import TypeRef
+        from api_document_renderers import example_for_ref
+        document = ApiDocument.from_legacy('java', 'spring', [], {})
+        for name in ('date', 'LocalDate'):
+            with self.subTest(name=name):
+                self.assertEqual(example_for_ref(TypeRef(name), document), '2012-05-28')
+                self.assertEqual(example_for(name, {}), '2012-05-28')
+        for name in ('Date', 'datetime', 'LocalDateTime'):
+            with self.subTest(name=name):
+                self.assertIn('T', example_for_ref(TypeRef(name), document))
+                self.assertIn('T', example_for(name, {}))
+
+    def test_explicit_date_examples_remain_authoritative(self):
+        from api_document_renderers import example_for_field
+        for language, name in (('java', 'LocalDate'), ('python', 'date')):
+            document = ApiDocument.from_legacy(language, 'spring' if language == 'java' else 'fastapi', [], {})
+            for explicit in ('2030-01-02', 'caller-specific-format', ''):
+                with self.subTest(language=language, example=explicit):
+                    self.assertEqual(example_for_field(Field('day', name, example=explicit), document), explicit)
+
+
 if __name__ == "__main__":
     unittest.main()

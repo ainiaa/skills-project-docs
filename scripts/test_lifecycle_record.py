@@ -1,6 +1,7 @@
 """Local lifecycle consistency and single-writer update regressions."""
 import copy
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -31,6 +32,24 @@ def record():
 
 
 class RecordTests(unittest.TestCase):
+    @unittest.skipUnless(os.name=='posix','POSIX advisory lock cleanup')
+    def test_guard_cleanup_failure_does_not_leak_the_advisory_lock(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path=(Path(folder)/'record.json').resolve();current=record();path.write_text(json.dumps(current))
+            candidate=copy.deepcopy(current);candidate.update(revision=2,owner='first-owner')
+            guard=path.with_name('record.json.lock');unlink=Path.unlink;failed=False
+            def fail_once(target,*args,**kwargs):
+                nonlocal failed
+                if target==guard and not failed:
+                    failed=True;raise OSError('simulated cleanup failure')
+                return unlink(target,*args,**kwargs)
+            with patch('lifecycle_record.Path.unlink',new=fail_once):
+                with self.assertRaises(OSError):update_record(path,candidate,1)
+            self.assertEqual(json.loads(path.read_text()),candidate)
+            next_record=copy.deepcopy(candidate);next_record.update(revision=3,owner='next-owner')
+            update_record(path,next_record,2)
+            self.assertEqual(json.loads(path.read_text()),next_record)
+
     def test_equivalent_time_representations_cannot_rebind_an_observation(self):
         instants = [('2026-10-31T10:00:00+08:00', '2026-10-31T02:00:00Z'),
                     ('2026-10-31T00:00:00+08:00', '2026-10-30T16:00:00+00:00'),
@@ -477,7 +496,9 @@ class RecordTests(unittest.TestCase):
                 with self.assertRaises(PermissionError):
                     update_record(path, candidate, 1)
             self.assertEqual(path.read_bytes(), original)
-            self.assertEqual({entry.name for entry in path.parent.iterdir()}, {"record.json", "record.json.rev-1.json"})
+            expected={"record.json", "record.json.rev-1.json"}
+            if os.name=='posix':expected.add('.record.json.writer.lock')
+            self.assertEqual({entry.name for entry in path.parent.iterdir()},expected)
             update_record(path, candidate, 1)
             self.assertEqual(json.loads(path.read_text()), candidate)
 
@@ -502,6 +523,62 @@ class RecordTests(unittest.TestCase):
                                         capture_output=True, text=True)
                 self.assertNotEqual(result.returncode, 0)
                 self.assertEqual(path.read_text(), value)
+
+
+    def test_json_type_change_in_content_requires_a_new_artifact_version(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'record.json';original=record();original['artifacts'][0]['annotation']=1
+            path.write_text(json.dumps(original));before=path.read_bytes()
+            candidate=copy.deepcopy(original);candidate['revision']=2;candidate['artifacts'][0]['annotation']=True
+            with self.assertRaises(ValueError):update_record(path,candidate,1)
+            self.assertEqual(path.read_bytes(),before)
+            self.assertFalse(path.with_name('record.json.rev-1.json').exists())
+            candidate['artifacts'][0]['version']=2
+            update_record(path,candidate,1)
+            self.assertIs(json.loads(path.read_text())['artifacts'][0]['annotation'],True)
+
+    def test_json_type_change_cannot_replace_an_existing_observation(self):
+        for version in (1,2):
+            with self.subTest(version=version),tempfile.TemporaryDirectory() as directory:
+                path=Path(directory)/'record.json';original=record()
+                original['artifacts'][0]['evidence'][0]['annotation']=1
+                path.write_text(json.dumps(original));before=path.read_bytes()
+                candidate=copy.deepcopy(original);candidate['revision']=2
+                candidate['artifacts'][0]['version']=version
+                candidate['artifacts'][0]['evidence'][0]['annotation']=True
+                with self.assertRaises(ValueError):update_record(path,candidate,1)
+                self.assertEqual(path.read_bytes(),before)
+                self.assertFalse(path.with_name('record.json.rev-1.json').exists())
+
+    def test_historical_observation_json_types_cannot_be_rewritten_after_an_empty_version(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'record.json';original=record()
+            original['artifacts'][0]['evidence'][0]['annotation']=1
+            path.write_text(json.dumps(original))
+            intermediate=copy.deepcopy(original);intermediate['revision']=2
+            intermediate['artifacts'][0].update(version=2,evidence=[])
+            update_record(path,intermediate,1);before=path.read_bytes()
+            candidate=copy.deepcopy(intermediate);candidate['revision']=3
+            candidate['artifacts'][0].update(version=3,evidence=copy.deepcopy(original['artifacts'][0]['evidence']))
+            candidate['artifacts'][0]['evidence'][0]['annotation']=True
+            with self.assertRaises(ValueError):update_record(path,candidate,2)
+            self.assertEqual(path.read_bytes(),before)
+            self.assertFalse(path.with_name('record.json.rev-2.json').exists())
+
+
+    def test_json_object_key_order_does_not_invent_content_or_observation_changes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'record.json';original=record()
+            original['artifacts'][0]['annotation']={'count':1,'flag':False}
+            path.write_text(json.dumps(original));before=path.read_bytes()
+            candidate=copy.deepcopy(original);candidate['revision']=2
+            candidate['artifacts'][0]['annotation']={'flag':False,'count':1}
+            candidate['artifacts'][0]['evidence'][0]=dict(reversed(list(candidate['artifacts'][0]['evidence'][0].items())))
+            update_record(path,candidate,1)
+            current=json.loads(path.read_text())
+            self.assertEqual(current['artifacts'][0]['version'],1)
+            self.assertEqual(current['artifacts'][0]['evidence'],original['artifacts'][0]['evidence'])
+            self.assertEqual(path.with_name('record.json.rev-1.json').read_bytes(),before)
 
 
 if __name__ == "__main__":

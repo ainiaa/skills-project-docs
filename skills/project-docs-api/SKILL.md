@@ -7,7 +7,7 @@ description: Generate API documentation from Java Spring MVC, Feign, or Python F
 
 Generate Markdown API documentation, Postman collections, and cURL examples from Spring MVC controllers, Feign clients, or FastAPI routes and their request/response declarations. Document fields and constraints from source evidence, and preserve unresolved types rather than guessing.
 
-[中文文档 / Chinese documentation](.bundle/README.zh-CN.md)
+[中文文档 / Chinese documentation](https://github.com/ainiaa/skills-project-docs/blob/main/README.zh-CN.md)
 
 若当前 Skill 目录下存在 `.bundle` 且其 `../../` 不是本集合的 Git 检出，先读取 `.bundle/skills/project-docs-api/GUIDE.md` 并以该目录为 Skill 真实目录；其中的共享脚本、资料和其他 Skill 均来自同一快照。通过 `npx skills update <已安装的本集合 Skill 名称>` 更新此类安装，按实际作用域加 `-g` 或 `-p`；不运行快照内依赖 Git 检出的更新命令。
 

@@ -24,7 +24,7 @@ If this collection was previously installed for Codex with `install.sh`, run the
 bash install.sh --uninstall --host codex
 ```
 
-Install all six Skills for Codex with Node.js and npm:
+Install all seven Skills for Codex with Node.js and npm:
 
 ```bash
 npx skills add ainiaa/skills-project-docs --skill '*' -g -a codex
@@ -51,7 +51,7 @@ bash install.sh --host codex
 bash install.sh --doctor --host codex
 ```
 
-The installer links the six Skills, reuses valid required Product dependencies and installs missing renderers. It requires Python 3.11+; renderer requirements and supported host paths are documented in the [installation guide](README.zh-CN.md#安装与升级). For Claude Code, use `--host claude` in both commands. Omitting the host selects both Codex and Claude Code. Other supported hosts: ZCode, DSH, Gemini CLI, Grok Build, pi and OpenCode.
+The installer links the seven Skills, reuses valid required Product dependencies and installs missing renderers. It requires Python 3.11+; renderer requirements and supported host paths are documented in the [installation guide](README.zh-CN.md#安装与升级). For Claude Code, use `--host claude` in both commands. Omitting the host selects both Codex and Claude Code. Other supported hosts: ZCode, DSH, Gemini CLI, Grok Build, pi and OpenCode.
 
 To install only the Skills and required Product dependencies, add `--no-engines` to both commands. This skips renderer installation/checks; diagrams still need a supported renderer when used. Refresh the host's Skill discovery if needed.
 
@@ -71,18 +71,27 @@ For Claude Code, invoke `/project-docs-overview` with the same request.
 | --- | --- | --- |
 | Combine several documentation tasks | `project-docs` | Routes to the relevant Skills |
 | Understand or onboard to a project | `project-docs-overview` | Overview, feature explanation, onboarding guide; explainer HTML when requested |
-| Turn business material into requirements | `project-docs-product` | PRD, acceptance criteria and optional clickable HTML prototype |
+| Explore a product opportunity or clarify requirements | `project-docs-product` | Evidence-backed investment decision, PRD, acceptance criteria and optional clickable HTML prototype |
 | Document Java Spring MVC / Feign or Python FastAPI | `project-docs-api` | Markdown, Postman collection and cURL examples |
 | Explain technical structure or behavior | `project-docs-diagram` | Editable Mermaid, PlantUML, draw.io or Archify diagrams and validated exports |
+| Prepare engineering designs, quality checks or release plans | `project-docs-engineering` | Specialist decisions, validation strategy and release preparations |
 | Coordinate a business goal across delivery stages | `project-docs-lifecycle` | Versioned evidence, traceability and handoffs |
 
 Specify the audience and purpose: a beginner needs concepts and examples; a domain expert needs rules, boundaries and evidence; a decision maker needs tradeoffs. Reader adaptation preserves the same facts, constraints and approval boundaries. See the [shared guidance](references/audience.md).
 
 ## Trust and limits
 
+Project Docs and Converge can be used and released independently. Users can explicitly choose a handoff to Converge native-v1. Product owns the single formal PRD and product UI; Engineering owns specialist engineering methods; Lifecycle coordinates cross-stage evidence and outcomes; Converge owns engineering execution. See [responsibility boundaries](docs/engineering-ownership.md). See [engineering workflows](skills/project-docs-engineering/SKILL.md), the [38-capability PDLC inventory and remaining gaps](docs/pdlc-capability-map.md), and [third-party license notices](references/third-party-notices.md). Workflow guidance is distinct from tested project automation.
+
+For cross-stage work, see [native PRD adoption](skills/project-docs-product/references/engineering.md) and [engineering test evidence](skills/project-docs-lifecycle/references/engineering-evidence.md). Adoption explicitly binds a confirmed PRD to an existing Converge native work item. PDLC remains an optional third-party handoff and is not required. These checks do not prove business approval, deployment or product outcomes.
+
+[Explicit revisions and recovery](skills/project-docs-product/references/revision.md) freeze the main document, sibling tracking and local attachments, compare FR/AC changes, invalidate declared Lifecycle dependents and revise the same native work item. Saved requests can resume after interruption; prior successes are invalidated and failure attempts retained. Remote sources require supplied local snapshots; opaque attachments do not imply their internal links were frozen.
+
+Revision replay checks record identity and physical location. Supported legacy native states retain their original history shape. POSIX local writer locks recover after process exit while preserving unknown legacy locks; non-POSIX hard-exit recovery remains unverified.
+
 Source anchors and successful rendering do not prove that every architectural interpretation is correct. Generated documents identify assumptions and verification gaps. A prototype is simulated interaction, not a deployed service. Lifecycle records do not grant business approval or production release permission.
 
-The npx distribution includes a snapshot of the shared scripts, templates and resources in each Skill. External tools and Product dependencies are managed separately; the repository installer can set them up.
+The npx distribution includes the scripts, templates and guides needed by each independently installed Skill. Repository examples, release tests and audit archives are available in the checkout. To share one checkout across all Skills, run the repository installer, which links each Skill to that checkout. The installer can also set up external tools and Product dependencies.
 
 ## Try it and share feedback
 
@@ -124,3 +133,7 @@ The [complete Chinese guide](README.zh-CN.md) retains the detailed installation,
 </details>
 
 Current release: [v0.11.1](https://github.com/ainiaa/skills-project-docs/releases/tag/v0.11.1). See the [changelog](CHANGELOG.md), [full documentation (Chinese)](README.zh-CN.md) and [license](LICENSE).
+
+Completed tasks retain controlled completion evidence. [API preflight and explicit next iterations](skills/project-docs-product/references/iterations.md) preserve the business goal and create one new execution identity. See the [Engineering handoff example](skills/project-docs-engineering/assets/examples/iteration-handoff/README.md) for frozen design/test inputs.
+
+Suite acceptance and upgrades: [real-task and role handoff acceptance](docs/suite-acceptance.md) · [coordinated release, compatibility and rollback](docs/suite-release.md). These guides distinguish local regression from model, human and production acceptance.

@@ -10,7 +10,7 @@ import { spawnSync } from 'node:child_process';
 const require = createRequire(import.meta.url);
 const runtimeRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
-export async function launchBrowser() {
+async function browserRuntime() {
   // Reuse renderer precedence and parse simple CLI wrappers as data, never as shell code.
   const probe = spawnSync('python3', ['-c', `
 import json, os, shlex, shutil, sys
@@ -89,6 +89,10 @@ print(json.dumps({'paths': paths, 'config': config, 'browsers': [p for p in brow
   }
   if (errors.length) throw new Error(errors.join('\n'));
   const headless = /^chrome-headless-shell(?:\.exe)?$/i.test(basename(executablePath)) ? 'shell' : true;
+  return { puppeteer, executablePath, headless };
+}
+export async function launchBrowser() {
+  const { puppeteer, executablePath, headless } = await browserRuntime();
   return puppeteer.launch({ headless, executablePath, args: process.env.CI === 'true' ? ['--no-sandbox'] : [] });
 }
 async function contained(root, path) {
@@ -230,9 +234,14 @@ async function run(directory, test) {
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const args = process.argv.slice(2);
-    if (args.length !== 4 || args[0] !== '--directory' || args[2] !== '--test') throw new Error('Usage: node product_browser.mjs --directory <delivery> --test <journey.test.mjs>');
-    const report = await run(args[1], args[3]);
-    process.stdout.write(JSON.stringify(report) + '\n');
-    process.exitCode = report.result === 'pass' ? 0 : report.result === 'unverified' ? 2 : 1;
+    if (args.length === 1 && args[0] === '--doctor') {
+      const { executablePath, headless } = await browserRuntime();
+      process.stdout.write(JSON.stringify({ result: 'ready', executablePath, headless }) + '\n');
+    } else {
+      if (args.length !== 4 || args[0] !== '--directory' || args[2] !== '--test') throw new Error('Usage: node product_browser.mjs --doctor | --directory <delivery> --test <journey.test.mjs>');
+      const report = await run(args[1], args[3]);
+      process.stdout.write(JSON.stringify(report) + '\n');
+      process.exitCode = report.result === 'pass' ? 0 : report.result === 'unverified' ? 2 : 1;
+    }
   } catch (error) { process.stderr.write(error.message + '\n'); process.exitCode = 2; }
 }

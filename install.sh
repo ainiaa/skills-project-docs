@@ -20,10 +20,11 @@ OPENCODE_SKILLS_DIR="${HOME}/.config/opencode/skills"
 if [[ "${XDG_CONFIG_HOME:-}" == /* ]]; then OPENCODE_SKILLS_DIR="$XDG_CONFIG_HOME/opencode/skills"; fi
 PYTHON_BIN="${UNDERSTAND_PYTHON:-python3}"
 RENDERER_HOME="${UNDERSTAND_RENDERER_HOME:-${HOME}/.local/share/understand-skills/renderers}"
-SKILL_NAMES=(project-docs project-docs-api project-docs-diagram project-docs-overview project-docs-product project-docs-lifecycle)
+SKILL_NAMES=(project-docs project-docs-api project-docs-diagram project-docs-overview project-docs-product project-docs-lifecycle project-docs-engineering)
 SOURCES=("$SOURCE_DIR/skills/project-docs" "$SOURCE_DIR/skills/project-docs-api"
          "$SOURCE_DIR/skills/project-docs-diagram" "$SOURCE_DIR/skills/project-docs-overview"
-         "$SOURCE_DIR/skills/project-docs-product" "$SOURCE_DIR/skills/project-docs-lifecycle")
+         "$SOURCE_DIR/skills/project-docs-product" "$SOURCE_DIR/skills/project-docs-lifecycle"
+         "$SOURCE_DIR/skills/project-docs-engineering")
 OLD_NAMES=(api-savior-docs understand-api-docs understand-api-arch understand-docs understand-arch understand-project)
 OLD_SOURCES=("$SOURCE_DIR" "$SOURCE_DIR" "$SOURCE_DIR/skills/understand-api-arch"
              "$SOURCE_DIR" "$SOURCE_DIR/skills/understand-arch" "$SOURCE_DIR/skills/understand-project")
@@ -49,7 +50,7 @@ HOST: codex, claude, zcode, dsh, gemini, grok, pi, opencode, both, all.
 both (default) selects Codex and Claude Code; all selects all eight hosts.
 grok targets xAI Grok Build; pi targets the pi coding agent.
 
-Default: install the unified entry and five specialist skills for Codex and Claude Code, and install all missing
+Default: install the unified entry and six specialist skills for Codex and Claude Code, and install all missing
 Mermaid, PlantUML, draw.io, and Archify renderers. --engine installs/checks only
 the named renderer; --no-engines installs/checks only the skill links.
 Uninstall removes this checkout's skill links, never shared renderer programs.
@@ -196,6 +197,7 @@ PY
     required_resource_status=1
   fi
   for relative in scripts/lifecycle_record.py \
+                  scripts/lifecycle_relations.py \
                   scripts/lifecycle_quality.py \
                   scripts/lifecycle_test_runner.py \
                   skills/project-docs-lifecycle/references/quality-and-trace.md \

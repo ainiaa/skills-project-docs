@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import py_compile
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -113,6 +114,83 @@ class QualityTraceTests(unittest.TestCase):
                 'at': '2026-10-31T10:00:00+08:00', 'exit_code': 0,
                 'cases': [{'id': 'test_cases.Tests.test_ok', 'status': 'passed',
                            'source': reference(self.root, 'test_cases.py')}], 'source_unchanged': True}
+
+    def test_markdown_review_needs_its_own_artifact_citation_in_every_stage(self):
+        (self.root / 'other.md').write_text('Unrelated feature passed its review.')
+        for stage, identities in STAGE_CHECKS.items():
+            for verdict in ('pass', 'not_applicable'):
+                with self.subTest(stage=stage, verdict=verdict):
+                    data = copy.deepcopy(self.quality)
+                    entry = data['stages'][0]; entry['stage'] = stage
+                    for check, identity in zip(entry['checks'], identities):
+                        check.update(id=identity, verdict=verdict,
+                                     evidence=[reference(self.root, 'other.md', 'Unrelated feature passed its review.')])
+                    result = check_quality(data, self.root)
+                    self.assertTrue(result['valid'], result)
+                    self.assertFalse(result['ready'], result)
+                    self.assertEqual({gap['check'] for gap in result['gaps']}, set(identities))
+                    self.assertTrue(all(gap['artifact'] == 'prd.md' for gap in result['gaps']))
+
+    def test_supporting_sources_do_not_replace_even_an_identical_other_artifact(self):
+        (self.root / 'copy.md').write_bytes((self.root / 'prd.md').read_bytes())
+        for check in self.quality['stages'][0]['checks']:
+            check['evidence'] = [reference(self.root, 'copy.md', 'Returns the current state.')]
+        self.assertFalse(check_quality(self.quality, self.root)['ready'])
+        for check in self.quality['stages'][0]['checks']:
+            check['evidence'].append(reference(self.root, 'prd.md', 'Errors stay visible.'))
+        result = check_quality(self.quality, self.root)
+        self.assertTrue(result['ready'], result)
+        self.assertFalse(result['business_authorization'])
+
+    def test_missing_target_citation_blocks_tested_but_remains_transferable(self):
+        packet, _, quality = self.handoff()
+        (self.root / 'other.md').write_text('Different recovery rules.')
+        for entry in quality['stages']:
+            if entry['stage'] == 'L3':
+                entry['checks'][0]['evidence'] = [reference(self.root, 'other.md', 'Different recovery rules.')]
+        (self.root / 'quality.json').write_text(json.dumps(quality))
+        packet['quality'] = reference(self.root, 'quality.json')
+        packet['files'] = [reference(self.root, item['path']) for item in packet['files']]
+        packet['files'].append(reference(self.root, 'other.md'))
+        self.assertFalse(check_handoff(packet, self.root)['ready'])
+        transferred = check_handoff(packet, self.root, 'transfer')
+        self.assertTrue(transferred['ready'], transferred)
+        self.assertFalse(transferred['quality_ready'])
+        self.assertTrue(any(gap.get('check') == 'rules_exceptions' for gap in transferred['gaps']))
+
+    def test_missing_target_citation_has_nonzero_quality_cli_result(self):
+        (self.root / 'other.md').write_text('Different recovery rules.')
+        self.quality['stages'][0]['checks'][0]['evidence'] = [reference(self.root, 'other.md', 'Different recovery rules.')]
+        (self.root / 'quality.json').write_text(json.dumps(self.quality))
+        process = subprocess.run([sys.executable, str(ROOT / 'scripts/lifecycle_quality.py'), 'quality',
+                                  '--root', str(self.root), '--contract', 'quality.json', '--stage', 'L3'],
+                                 capture_output=True, text=True)
+        self.assertEqual(process.returncode, 1, process.stdout + process.stderr)
+        result = json.loads(process.stdout)
+        self.assertTrue(result['valid'], result)
+        self.assertFalse(result['ready'])
+
+    def test_markdown_alias_cannot_bypass_target_binding_and_accepts_real_target_quotes(self):
+        alias = self.root / 'artifact.json'
+        alias.symlink_to('prd.md')
+        (self.root / 'other.md').write_text('Other review.')
+        self.quality['stages'][0]['artifact'] = reference(self.root, 'artifact.json')
+        for check in self.quality['stages'][0]['checks']:
+            check['evidence'] = [reference(self.root, 'other.md', 'Other review.')]
+        self.assertFalse(check_quality(self.quality, self.root)['ready'])
+        for check in self.quality['stages'][0]['checks']:
+            check['evidence'].append(reference(self.root, 'prd.md', 'Returns the current state.'))
+        self.assertTrue(check_quality(self.quality, self.root)['ready'])
+
+    def test_non_markdown_and_legacy_gap_contracts_remain_readable(self):
+        (self.root / 'figure.png').write_bytes(b'\x89PNG\r\n')
+        self.quality['stages'][0]['artifact'] = reference(self.root, 'figure.png')
+        self.assertTrue(check_quality(self.quality, self.root)['ready'])
+        self.quality['stages'][0]['artifact'] = reference(self.root, 'prd.md')
+        self.quality['stages'][0]['checks'][0].update(verdict='gap', reason='Recovery path unresolved.', evidence=[])
+        result = check_quality(self.quality, self.root)
+        self.assertTrue(result['valid'], result)
+        self.assertFalse(result['ready'])
 
     def test_review_has_cited_answers_and_is_not_business_authorization(self):
         result = check_quality(self.quality, self.root)
@@ -256,6 +334,133 @@ class QualityTraceTests(unittest.TestCase):
         (self.root / 'prd.md').write_text('edited after handoff')
         self.assertFalse(check_handoff(packet, self.root)['ready'])
 
+    def test_tested_handoff_rejects_execution_for_a_different_requirement_document(self):
+        (self.root / 'other.md').write_text('Another requirement and acceptance.')
+        for group in ('requirements', 'acceptance'):
+            self.trace[group][0]['source'] = reference(self.root, 'other.md')
+        (self.root / 'trace.json').write_text(json.dumps(self.trace))
+        run = subprocess.run([sys.executable, '-B', str(ROOT / 'scripts/lifecycle_test_runner.py'),
+                              '--root', str(self.root), '--trace', 'trace.json',
+                              '--output', str(self.root / 'execution.json')],
+                             capture_output=True, text=True, timeout=20)
+        self.assertEqual(run.returncode, 0, run.stderr)
+        execution = json.loads((self.root / 'execution.json').read_text())
+        packet, _, _ = handoff(self.root, self.quality, self.trace, execution)
+        self.assertFalse(check_handoff(packet, self.root)['ready'])
+
+    def test_markdown_extension_requires_a_quote_from_its_own_artifact(self):
+        (self.root / 'prd.markdown').write_bytes((self.root / 'prd.md').read_bytes())
+        self.quality['stages'][0]['artifact'] = reference(self.root, 'prd.markdown')
+        self.assertFalse(check_quality(self.quality, self.root)['ready'])
+
+    def test_tested_handoff_checks_frozen_ids_and_acceptance_owner(self):
+        from product_inputs import freeze_inputs
+        from test_product_handoff import ProductHandoffTests
+        fixture = ProductHandoffTests()
+        fixture.setUp()
+        self.addCleanup(fixture.doCleanups)
+        primary = self.root / 'prd.md'
+        text = (fixture.prd.read_text() + '\n### FR-002 More details\n状态：已确认\n依据：SRC-001\n原型：否\n'
+                '确认记录：业务负责人 产品版本 v1\n#### AC-002 More details\n显示详情。\n')
+        for requirement, criterion, ready, layout in (
+                ('FR-001', 'AC-001', True, 'combined'), ('FR-999', 'AC-999', False, 'combined'),
+                ('FR-002', 'AC-001', False, 'combined'), ('FR-002', 'AC-001', False, 'formatted-version'),
+                ('FR-002', 'AC-001', False, 'nested-version'), ('FR-001', 'AC-001', True, 'nested-version'),
+                ('FR-002', 'AC-001', False, 'missing-version'),
+                ('FR-001', 'AC-001', False, 'omitted-attachment'), ('FR-001', 'AC-001', False, 'split-wrong-source'),
+                ('FR-001', 'AC-001', True, 'split'),
+                ('FR-002', 'AC-001', False, 'duplicate-version')):
+            with self.subTest(requirement=requirement, criterion=criterion, layout=layout):
+                tracking = None
+                primary.write_text(text)
+                attachment = self.root / 'support.txt'
+                if layout in ('split', 'split-wrong-source'):
+                    main, declarations = text.split('## 来源', 1)
+                    tracking = self.root / 'tracking.md'
+                    tracking.write_text('## 追踪\n> 追踪版本：v1\n[主文](prd.md)\n## 来源' + declarations)
+                    primary.write_text(main + '[追踪](tracking.md)\n')
+                    attachment.write_text('Frozen supporting material.')
+                    tracking.write_text(tracking.read_text() + '\n[附件](support.txt)\n')
+                if layout == 'formatted-version':
+                    primary.write_text(text.replace('产品版本：', '**产品版本**：', 1))
+                if layout == 'nested-version':
+                    primary.write_text(text.replace('> 产品版本', '- > 产品版本').replace('> 状态', '- > 状态'))
+                if layout == 'missing-version':
+                    primary.write_text(''.join(line for line in text.splitlines(keepends=True)
+                                               if not line.startswith('> 产品版本')))
+                if layout == 'omitted-attachment':
+                    attachment.write_text('Frozen supporting material.')
+                    primary.write_text(text + '\n[附件](support.txt)\n')
+                if layout == 'duplicate-version':
+                    primary.write_text(text + '\n> 产品版本：v1\n')
+                entry = self.quality['stages'][0]
+                entry['artifact'] = reference(self.root, primary.name)
+                for item in entry['checks']:
+                    item['evidence'] = [reference(self.root, primary.name, '产品版本')]
+                trace = copy.deepcopy(self.trace)
+                source = reference(self.root, tracking.name if layout == 'split' else primary.name)
+                trace['requirements'][0].update(id=requirement, source=source)
+                trace['acceptance'][0].update(id=criterion, source=source,
+                                              requirements=[{'id': requirement, 'version': 1}])
+                trace['tests'][0]['covers'] = [{'id': criterion, 'version': 1}]
+                (self.root / 'trace.json').write_text(json.dumps(trace))
+                receipt = self.root / 'execution.json'
+                receipt.unlink(missing_ok=True)
+                run = subprocess.run([sys.executable, '-B', str(ROOT / 'scripts/lifecycle_test_runner.py'),
+                                      '--root', str(self.root), '--trace', 'trace.json', '--output', str(receipt)],
+                                     capture_output=True, text=True, timeout=20)
+                self.assertEqual(run.returncode, 0, run.stderr or run.stdout)
+                packet, _, _ = handoff(self.root, self.quality, trace, json.loads(receipt.read_text()))
+                if layout == 'omitted-attachment':
+                    packet['files'] = [item for item in packet['files'] if item['path'] != attachment.name]
+                self.assertEqual(check_handoff(packet, self.root)['ready'], ready and layout != 'split')
+                if layout in ('duplicate-version', 'missing-version'):
+                    continue
+                snapshot = freeze_inputs(primary, tracking=tracking)
+                result = check_handoff(packet, self.root, project_inputs=snapshot,
+                                       expected_inputs=snapshot['fingerprint'])
+                self.assertEqual(result['ready'], ready, result)
+                if not ready:
+                    result = check_handoff(packet, self.root, 'transfer', project_inputs=snapshot,
+                                           expected_inputs=snapshot['fingerprint'])
+                    self.assertFalse(result['ready'], result)
+                if layout == 'split':
+                    (self.root / 'inputs.json').write_text(json.dumps(snapshot))
+                    (self.root / 'handoff.json').write_text(json.dumps(packet))
+                    command = [sys.executable, '-B', str(ROOT / 'scripts/lifecycle_quality.py'), 'handoff',
+                               '--root', str(self.root), '--contract', 'handoff.json', '--inputs', 'inputs.json',
+                               '--expected-inputs']
+                    run = subprocess.run([*command, snapshot['fingerprint']], capture_output=True, text=True, timeout=20)
+                    self.assertEqual(run.returncode, 0, run.stderr or run.stdout)
+                    run = subprocess.run([*command, '0' * 64], capture_output=True, text=True, timeout=20)
+                    self.assertNotEqual(run.returncode, 0)
+                    self.assertIn('expected fingerprint', run.stdout)
+                    with tempfile.TemporaryDirectory() as directory:
+                        received = Path(directory) / 'received'
+                        shutil.copytree(self.root, received)
+                        self.assertTrue(check_handoff(packet, received, project_inputs=snapshot,
+                                                      expected_inputs=snapshot['fingerprint'])['ready'])
+                        archived = primary.with_suffix('.archived')
+                        primary.rename(archived)
+                        try:
+                            command[command.index(str(self.root))] = str(received)
+                            run = subprocess.run([*command, snapshot['fingerprint']], capture_output=True,
+                                                 text=True, timeout=20)
+                            self.assertEqual(run.returncode, 0, run.stderr or run.stdout)
+                            run = subprocess.run([*command, snapshot['fingerprint'], '--purpose', 'transfer'],
+                                                 capture_output=True, text=True, timeout=20)
+                            self.assertEqual(run.returncode, 0, run.stderr or run.stdout)
+                        finally:
+                            archived.rename(primary)
+                        (received / attachment.name).write_text('Edited after handoff.')
+                        changed = copy.deepcopy(packet)
+                        changed['files'] = [reference(received, attachment.name) if item['path'] == attachment.name
+                                            else item for item in changed['files']]
+                        result = check_handoff(changed, received, project_inputs=snapshot,
+                                               expected_inputs=snapshot['fingerprint'])
+                        self.assertFalse(result['ready'], result)
+                        self.assertIn('frozen product inputs', str(result['errors']))
+
     def test_handoff_requires_linked_L6_execution_with_matching_context(self):
         from lifecycle_record import check_record
         packet, original, _ = self.handoff()
@@ -338,6 +543,59 @@ class QualityTraceTests(unittest.TestCase):
         self.assertFalse(check_handoff(packet, self.root)['ready'])
         packet['trace'] = reference(self.root, 'trace.json')
         self.assertFalse(check_handoff(packet, self.root, 'transfer')['ready'])
+
+    def test_manual_draft_transfer_requires_local_attachment_closure(self):
+        primary = self.root / 'prd.md'
+        primary.write_text('# 手工交接草稿\n> 产品版本：v1\n> 状态：草稿\n'
+                           '[佐证](support.md) [外部原文](https://example.invalid/facts)\n')
+        (self.root / 'support.md').write_text('附件中继续引用[图片](image.bin)和[主文](prd.md)。\n')
+        image = self.root / 'image.bin'
+        image.write_bytes(b'linked evidence')
+        entry = self.quality['stages'][0]
+        entry['artifact'] = reference(self.root, primary.name)
+        for item in entry['checks']:
+            item['evidence'] = [reference(self.root, primary.name, '手工交接草稿')]
+        packet, _, _ = self.handoff()
+        packet.pop('trace')
+        packet.pop('execution')
+        accepted = check_handoff(packet, self.root, 'transfer')
+        self.assertTrue(accepted['ready'], accepted)
+        self.assertIsNone(accepted['tests_ready'])
+        packet['files'] = [ref for ref in packet['files'] if ref['path'] != image.name]
+        omitted = check_handoff(packet, self.root, 'transfer')
+        self.assertFalse(omitted['ready'], omitted)
+        self.assertIn(image.name, str(omitted['errors']))
+        image.unlink()
+        missing = check_handoff(packet, self.root, 'transfer')
+        self.assertFalse(missing['ready'], missing)
+        self.assertIn(image.name, str(missing['errors']))
+
+    def test_legacy_handoff_with_trace_checks_local_attachment_inventory(self):
+        primary = self.root / 'prd.md'
+        primary.write_text(primary.read_text() + '\n[资料](support.md)\n')
+        attachment = self.root / 'support.md'
+        attachment.write_text('Supporting material.')
+        prd = reference(self.root, 'prd.md')
+        self.quality['stages'][0]['artifact'] = prd
+        for item in self.quality['stages'][0]['checks']:
+            item['evidence'] = [reference(self.root, 'prd.md', 'Returns the current state.')]
+        for group in ('requirements', 'acceptance'):
+            self.trace[group][0]['source'] = prd
+        packet, _, _ = self.handoff()
+        incomplete = copy.deepcopy(packet)
+        incomplete['files'] = [ref for ref in incomplete['files'] if ref['path'] != attachment.name]
+        for purpose in ('tested', 'transfer'):
+            with self.subTest(purpose=purpose):
+                complete = check_handoff(packet, self.root, purpose)
+                self.assertTrue(complete['ready'], complete)
+                self.assertTrue(complete['tests_ready'], complete)
+                omitted = check_handoff(incomplete, self.root, purpose)
+                self.assertFalse(omitted['ready'], omitted)
+                self.assertIn(attachment.name, str(omitted['errors']))
+        attachment.unlink()
+        result = check_handoff(incomplete, self.root)
+        self.assertFalse(result['ready'], result)
+        self.assertIn(attachment.name, str(result['errors']))
 
     def test_failed_test_can_transfer_for_repair_but_cannot_advance(self):
         packet, state, quality = self.handoff()
@@ -524,15 +782,28 @@ class QualityTraceTests(unittest.TestCase):
         receipt['cases'].append(copy.deepcopy(receipt['cases'][0]))
         self.assertFalse(check_trace(self.trace, receipt, self.root)['ready'])
 
-    def test_collector_identity_includes_its_shared_validation_code(self):
+    def test_collector_identity_binds_runner_and_trace_validator_only(self):
         receipt = self.execution()
         tool = self.root / 'lifecycle_quality.py'
         tool.write_bytes((ROOT / 'scripts/lifecycle_quality.py').read_bytes())
-        (self.root / 'lifecycle_test_runner.py').write_bytes((ROOT / 'scripts/lifecycle_test_runner.py').read_bytes())
-        with patch('lifecycle_quality.__file__', str(tool)):
+        runner = self.root / 'lifecycle_test_runner.py'
+        runner.write_bytes((ROOT / 'scripts/lifecycle_test_runner.py').read_bytes())
+        helper = self.root / 'lifecycle_checklist.py'
+        helper.write_bytes((ROOT / 'scripts/lifecycle_checklist.py').read_bytes())
+        inputs = self.root / 'product_inputs.py'
+        inputs.write_bytes((ROOT / 'scripts/product_inputs.py').read_bytes())
+        from lifecycle_checklist import CATALOG
+        catalog = self.root / 'catalog.json'; catalog.write_bytes(CATALOG.read_bytes())
+        with patch('lifecycle_quality.__file__', str(tool)), patch('lifecycle_checklist.CATALOG', catalog):
             self.assertTrue(check_trace(self.trace, receipt, self.root)['ready'])
-            tool.write_bytes(tool.read_bytes() + b'\n# changed validation code\n')
-            self.assertFalse(check_trace(self.trace, receipt, self.root)['ready'])
+            for changed in (tool, runner):
+                original = changed.read_bytes()
+                changed.write_bytes(original + b'\n')
+                self.assertFalse(check_trace(self.trace, receipt, self.root)['ready'])
+                changed.write_bytes(original)
+            for unrelated in (helper, inputs, catalog):
+                unrelated.write_bytes(unrelated.read_bytes() + b'\n')
+                self.assertTrue(check_trace(self.trace, receipt, self.root)['ready'])
 
     def test_in_scope_requirement_cannot_hide_behind_optional_acceptance(self):
         self.trace['requirements'].append(dict(self.trace['requirements'][0], id='FR-optional'))
