@@ -237,6 +237,61 @@ class NativeDiagramTest(unittest.TestCase):
 
     @unittest.skipUnless(os.environ.get("PLANTUML_OFFICIAL_CLI") or shutil.which("plantuml"),
                          "official PlantUML CLI is unavailable")
+    def test_plantuml_bundle_rerenders_after_moving_without_sender_files(self):
+        for absolute in (True, False):
+            with self.subTest(absolute=absolute):
+                sender = self.root / f"sender-{absolute}"
+                parts = sender / "parts"
+                parts.mkdir(parents=True)
+                source = sender / "flow.puml"
+                library = parts / "blocks.puml"
+                nested = sender / "detail.puml"
+                nested.write_text("class Dependency\n", encoding="utf-8")
+                library.write_text(
+                    f"@startuml\n  !include {nested}\n@enduml\n"
+                    "@startuml\nclass OtherBlock\n@enduml\n", encoding="utf-8")
+                if absolute:
+                    include = str(library)
+                else:
+                    (sender / "alias.puml").symlink_to(library)
+                    include = "alias.puml"
+                original = f"@startuml\n  !include {include}!0\nclass Main\nMain --> Dependency\n@enduml\n"
+                source.write_text(original, encoding="utf-8")
+                self.output = self.root / f"published-{absolute}"
+                first = self.render("plantuml", source, "--export", "svg")
+                self.assertEqual(first.returncode, 0, first.stdout + first.stderr)
+                self.assertEqual(source.read_text(), original)
+                moved = self.output.rename(self.root / f"received-{absolute}")
+                sender.rename(self.root / f"archived-{absolute}")
+                self.output = self.root / f"rerendered-{absolute}"
+                second = self.render("plantuml", moved / "diagram.puml", "--export", "svg")
+                self.assertEqual(second.returncode, 0, second.stdout + second.stderr)
+                self.assertIn("!include parts/blocks.puml!0", (moved / "diagram.puml").read_text())
+                self.assertIn("!include ../detail.puml", (moved / "parts/blocks.puml").read_text())
+                svg = (self.output / "diagram.plantuml.svg").read_text()
+                self.assertIn("Dependency", svg)
+                self.assertNotIn("OtherBlock", svg)
+
+    @unittest.skipUnless(os.environ.get("PLANTUML_OFFICIAL_CLI") or shutil.which("plantuml"),
+                         "official PlantUML CLI is unavailable")
+    def test_plantuml_reexport_removes_only_unedited_owned_includes(self):
+        source = self.root / 'flow.puml'
+        (self.root / 'links.puml').write_text('Asset --> Ledger\n')
+        (self.root / 'notes.puml').write_text('class Notes\n')
+        source.write_text('@startuml\n!include links.puml\n!include notes.puml\nclass Asset\n@enduml\n')
+        first = self.render('plantuml', source, '--export', 'svg')
+        self.assertEqual(first.returncode, 0, first.stdout + first.stderr)
+        (self.output / 'notes.puml').write_text("' User notes.\n")
+        (self.output / 'manual.puml').write_text("' Unrelated file.\n")
+        source.write_text('@startuml\nclass Asset\n@enduml\n')
+        second = self.render('plantuml', source, '--export', 'svg')
+        self.assertEqual(second.returncode, 0, second.stdout + second.stderr)
+        self.assertFalse((self.output / 'links.puml').exists())
+        self.assertEqual((self.output / 'notes.puml').read_text(), "' User notes.\n")
+        self.assertEqual((self.output / 'manual.puml').read_text(), "' Unrelated file.\n")
+
+    @unittest.skipUnless(os.environ.get("PLANTUML_OFFICIAL_CLI") or shutil.which("plantuml"),
+                         "official PlantUML CLI is unavailable")
     def test_official_plantuml_library_include_reports_partial_coverage(self):
         _, source_root, manifest = self.source_backed()
         source = self.root / "view.puml"
@@ -458,7 +513,7 @@ class NativeDiagramTest(unittest.TestCase):
 
     @unittest.skipUnless(os.environ.get("MERMAID_OFFICIAL_CLI") or shutil.which("mmdc"),
                          "official Mermaid CLI unavailable")
-    def test_invalid_native_source_fails_without_stale_export(self):
+    def test_invalid_native_source_keeps_previous_export_unclaimed(self):
         source = self.root / "broken.mmd"
         source.write_text("this is not Mermaid syntax\n", encoding="utf-8")
         self.output.mkdir()
@@ -467,7 +522,324 @@ class NativeDiagramTest(unittest.TestCase):
         executable = os.environ.get("MERMAID_OFFICIAL_CLI") or shutil.which("mmdc")
         result = self.render("mermaid", source, "--engine-cli", executable, "--export", "png")
         self.assertNotEqual(result.returncode, 0)
-        self.assertFalse(stale.exists())
+        self.assertEqual(stale.read_bytes(), b"old")
+        self.assertEqual(json.loads(result.stdout)["artifacts"], [])
+
+
+class NativeDeliveryTransactionTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name).resolve()
+        self.output = self.root / 'out'
+        self.output.mkdir()
+        self.old = {'diagram.mmd': b'flowchart LR\n Old --> Good\n',
+                    'diagram.mermaid.svg': b'old SVG', 'diagram.mermaid.png': b'old PNG',
+                    'diagram.evidence.json': b'{"old": true}', 'notes.txt': b'keep me'}
+        for name, data in self.old.items():
+            (self.output / name).write_bytes(data)
+        self.source = self.root / 'new.mmd'
+        self.source.write_text('flowchart LR\n New --> Good\n')
+        self.cli = self.root / 'renderer'
+        self.cli.write_text('#!' + sys.executable + '\n' +
+            "import pathlib,sys\n" +
+            "source=pathlib.Path(sys.argv[sys.argv.index('-i')+1])\n" +
+            "target=pathlib.Path(sys.argv[sys.argv.index('-o')+1])\n" +
+            "if 'FAIL' in source.read_text() or target.suffix=='.png': sys.exit(2)\n" +
+            "target.write_text('<svg xmlns=\"http://www.w3.org/2000/svg\"/>')\n")
+        self.cli.chmod(0o755)
+
+    def run_cli(self, *exports):
+        argv = [sys.executable, str(SCRIPT), '--engine', 'mermaid', '--input', str(self.source),
+                '--output', str(self.output), '--engine-cli', str(self.cli)]
+        for fmt in exports:
+            argv += ['--export', fmt]
+        result = subprocess.run(argv, text=True, capture_output=True)
+        return result, json.loads(result.stdout)
+
+    def assert_old_bundle(self):
+        self.assertEqual({p.name: p.read_bytes() for p in self.output.iterdir()}, self.old)
+
+    def test_engine_failure_preserves_previous_bundle(self):
+        self.source.write_text('FAIL')
+        result, report = self.run_cli('svg')
+        self.assertEqual(result.returncode, 1)
+        self.assertFalse(report['valid'])
+        self.assertEqual(report['artifacts'], [])
+        self.assert_old_bundle()
+
+    def test_late_export_failure_preserves_previous_bundle(self):
+        result, report = self.run_cli('svg', 'png')
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(report['exportCheck'], 'fail')
+        self.assertEqual(report['artifacts'], [])
+        self.assert_old_bundle()
+
+    def test_first_failed_delivery_does_not_publish_partial_directory(self):
+        shutil.rmtree(self.output)
+        self.source.write_text('FAIL')
+        result, report = self.run_cli('svg')
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(report['artifacts'], [])
+        self.assertFalse(self.output.exists())
+
+    def test_success_replaces_only_managed_artifacts_and_returns_final_paths(self):
+        result, report = self.run_cli('svg')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual((self.output / 'diagram.mmd').read_text(), self.source.read_text())
+        self.assertFalse((self.output / 'diagram.evidence.json').exists())
+        self.assertFalse((self.output / 'diagram.mermaid.png').exists())
+        self.assertEqual((self.output / 'notes.txt').read_bytes(), b'keep me')
+        self.assertEqual(set(report['artifacts']),
+                         {str(self.output / 'diagram.mmd'), str(self.output / 'diagram.mermaid.svg')})
+        self.assertTrue(all(Path(path).is_file() for path in report['artifacts']))
+
+    def test_publication_failure_restores_previous_bundle(self):
+        import contextlib
+        import io
+        from unittest.mock import patch
+        import render_native_diagram as renderer
+        replace = Path.replace
+        def fail_publish(path, target):
+            if path.parent.name == 'bundle' and Path(target).name == 'diagram.mermaid.svg':
+                raise OSError('simulated publish failure')
+            return replace(path, target)
+        stdout = io.StringIO()
+        with patch.object(Path, 'replace', fail_publish), contextlib.redirect_stdout(stdout):
+            code = renderer.main(['--engine', 'mermaid', '--input', str(self.source),
+                                  '--output', str(self.output), '--engine-cli', str(self.cli), '--export', 'svg'])
+        self.assertEqual(code, 1)
+        self.assertFalse(json.loads(stdout.getvalue())['valid'])
+        self.assert_old_bundle()
+
+    def test_publication_preserves_files_added_or_edited_during_rendering(self):
+        self.cli.write_text(self.cli.read_text() +
+                            f'\npathlib.Path({str(self.output / "notes.txt")!r}).write_text("edited")\n'
+                            f'pathlib.Path({str(self.output / "new.txt")!r}).write_text("new")\n')
+        result, report = self.run_cli('svg')
+        self.assertEqual(result.returncode, 0, result.stderr or report)
+        self.assertEqual((self.output / 'notes.txt').read_text(), 'edited')
+        self.assertEqual((self.output / 'new.txt').read_text(), 'new')
+
+    def test_plantuml_rejects_includes_overlapping_delivery_paths_before_rendering(self):
+        import contextlib
+        import io
+        from unittest.mock import patch
+        import render_native_diagram as renderer
+
+        for name in ('diagram.puml', 'Diagram.PUML', 'diagram.puml/local.puml',
+                     'diagram.plantuml.svg', 'diagram.evidence.json', '.native-includes.json'):
+            with self.subTest(name=name), tempfile.TemporaryDirectory(dir=self.root) as directory:
+                source = Path(directory) / 'main.puml'
+                dependency = source.parent / name
+                dependency.parent.mkdir(parents=True, exist_ok=True)
+                dependency.write_text('class Dependency\n')
+                source.write_text(f'@startuml\n!include {name}\nclass Main\n@enduml\n')
+                stdout = io.StringIO()
+                with patch.object(renderer, '_check_diagram', return_value=None) as render, \
+                     contextlib.redirect_stdout(stdout):
+                    code = renderer.main(['--engine', 'plantuml', '--input', str(source),
+                                          '--output', str(self.output), '--engine-cli', str(self.cli)])
+                render.assert_not_called()
+                self.assertEqual(code, 1)
+                report = json.loads(stdout.getvalue())
+                self.assertEqual(report['officialCheck'], 'not_run')
+                self.assertIn(name, str(report['problems']))
+                self.assert_old_bundle()
+
+    def test_other_engine_keeps_plantuml_source_and_its_includes(self):
+        import contextlib
+        import io
+        from unittest.mock import patch
+        import render_native_diagram as renderer
+
+        source = self.root / 'source.puml'
+        source.write_text('@startuml\n!include links.puml\nclass Asset\n@enduml\n')
+        (self.root / 'links.puml').write_text('Asset --> Ledger\n')
+        with patch.object(renderer, 'find_engine', return_value=str(self.cli)), \
+             patch.object(renderer, '_check_diagram', return_value=None), contextlib.redirect_stdout(io.StringIO()):
+            for engine, native in (('plantuml', source), ('mermaid', self.source)):
+                self.assertEqual(renderer.main(['--engine', engine, '--input', str(native),
+                                                '--output', str(self.output)]), 0)
+        self.assertIn('!include links.puml', (self.output / 'diagram.puml').read_text())
+        self.assertTrue((self.output / 'links.puml').is_file())
+
+    def test_publication_detects_outside_edits_and_preserves_their_bytes(self):
+        import contextlib
+        import io
+        from unittest.mock import patch
+        import render_native_diagram as renderer
+
+        def edit_live_directory():
+            (self.output / 'notes.txt').write_text('Concurrent edit')
+            (self.output / 'new-note.txt').write_text('Concurrent addition')
+
+        replace = Path.replace
+        def edit_during_staging(path, target):
+            result = replace(path, target)
+            if path.parent.name == 'bundle' and Path(target).name == 'diagram.mermaid.svg':
+                edit_live_directory()
+            return result
+
+        exchange = renderer._exchange_directories
+        def edit_at_exchange(staged, destination):
+            edit_live_directory()
+            exchange(staged, destination)
+
+        command = ['--engine', 'mermaid', '--input', str(self.source), '--output', str(self.output),
+                   '--engine-cli', str(self.cli), '--export', 'svg']
+        for during_staging, intervention in (
+                (True, patch.object(Path, 'replace', edit_during_staging)),
+                (False, patch.object(renderer, '_exchange_directories', edit_at_exchange))):
+            with self.subTest(during_staging=during_staging):
+                report = io.StringIO()
+                with intervention, contextlib.redirect_stdout(report):
+                    self.assertEqual(renderer.main(command), 1, report.getvalue())
+                failure = json.loads(report.getvalue())
+                self.assertEqual(failure['publicationCheck'], 'fail')
+                if during_staging:
+                    preserved = self.output
+                    self.assertEqual((self.output / 'diagram.mmd').read_bytes(), self.old['diagram.mmd'])
+                else:
+                    preserved = Path(failure['recoveryBackup'])
+                    self.assertEqual((self.output / 'diagram.mmd').read_bytes(), self.source.read_bytes())
+                self.assertEqual((preserved / 'notes.txt').read_text(), 'Concurrent edit')
+                self.assertEqual((preserved / 'new-note.txt').read_text(), 'Concurrent addition')
+                if during_staging:
+                    (self.output / 'notes.txt').write_bytes(self.old['notes.txt'])
+                    (self.output / 'new-note.txt').unlink()
+
+    def test_competing_publication_cannot_mix_source_and_svg(self):
+        import contextlib
+        import io
+        import threading
+        from unittest.mock import patch
+        import render_native_diagram as renderer
+        second = self.root / 'second.mmd'
+        second.write_text('flowchart LR\n Second --> Good\n')
+        self.cli.write_text(self.cli.read_text().replace(
+            '/>\')', '><text>\'+source.read_text().split()[2]+\'</text></svg>\')'))
+        pause, resume = threading.Event(), threading.Event()
+        replace = Path.replace
+        errors = []
+        results = {}
+
+        def interleave(path, target):
+            if threading.current_thread().name == 'first-publisher' and (
+                    path.parent.name == 'bundle' and Path(target).name == 'diagram.mmd'):
+                pause.set()
+                if not resume.wait(10):
+                    raise OSError('fixture publication timed out')
+            return replace(path, target)
+
+        def publish(source, key):
+            try:
+                results[key] = renderer.main(['--engine', 'mermaid', '--input', str(source),
+                    '--output', str(self.output), '--engine-cli', str(self.cli), '--export', 'svg'])
+            except Exception as error:
+                errors.append(error)
+
+        with patch.object(Path, 'replace', interleave), contextlib.redirect_stdout(io.StringIO()):
+            first = threading.Thread(name='first-publisher', target=publish, args=(self.source, 'first'))
+            first.start()
+            try:
+                self.assertTrue(pause.wait(10), errors)
+                publish(second, 'second')
+            finally:
+                resume.set()
+                first.join(10)
+        self.assertFalse(errors)
+        self.assertEqual(results, {'first': 0, 'second': 1})
+        self.assertEqual((self.output / 'diagram.mmd').read_text(), self.source.read_text())
+        self.assertIn('<text>New</text>', (self.output / 'diagram.mermaid.svg').read_text())
+        with contextlib.redirect_stdout(io.StringIO()):
+            publish(second, 'retry')
+        self.assertEqual(results['retry'], 0)
+        self.assertIn('<text>Second</text>', (self.output / 'diagram.mermaid.svg').read_text())
+
+    @unittest.skipUnless(os.name == 'posix', 'requires POSIX process termination')
+    def test_reader_and_terminated_writer_see_complete_old_generation_before_switch(self):
+        barrier = self.root / 'staged'
+        launcher = self.root / 'publisher.py'
+        launcher.write_text(
+            'import sys, time\nfrom pathlib import Path\n'
+            f'sys.path.insert(0, {str(SCRIPT.resolve().parent)!r})\n'
+            'from render_native_diagram import main\n'
+            'replace = Path.replace\n'
+            'def pause_after_svg(path, target):\n'
+            '    result = replace(path, target)\n'
+            '    if path.parent.name == "bundle" and Path(target).name == "diagram.mermaid.svg":\n'
+            f'        Path({str(barrier)!r}).touch()\n'
+            '        time.sleep(30)\n'
+            '    return result\n'
+            'Path.replace = pause_after_svg\n'
+            'raise SystemExit(main(sys.argv[1:]))\n')
+        with subprocess.Popen([sys.executable, '-B', str(launcher), '--engine', 'mermaid',
+                               '--input', str(self.source), '--output', str(self.output),
+                               '--engine-cli', str(self.cli), '--export', 'svg'],
+                              stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as process:
+            import time
+            try:
+                deadline = time.monotonic() + 10
+                while not barrier.exists() and process.poll() is None and time.monotonic() < deadline:
+                    time.sleep(0.02)
+                self.assertTrue(barrier.exists(), 'publisher never reached the SVG staging barrier')
+                visible = {path.name: path.read_bytes() for path in self.output.iterdir()}
+            finally:
+                if process.poll() is None:
+                    process.terminate()
+                process.communicate(timeout=10)
+        self.assertEqual(visible, self.old)
+        self.assert_old_bundle()
+        result, report = self.run_cli('svg')
+        self.assertEqual(result.returncode, 0, result.stderr or report)
+        self.assertEqual((self.output / 'diagram.mmd').read_bytes(), self.source.read_bytes())
+
+    def test_timeout_preserves_previous_bundle(self):
+        import contextlib
+        import io
+        from unittest.mock import patch
+        import render_native_diagram as renderer
+        stdout = io.StringIO()
+        with patch('subprocess.run', side_effect=subprocess.TimeoutExpired('renderer', 120)), \
+                contextlib.redirect_stdout(stdout):
+            code = renderer.main(['--engine', 'mermaid', '--input', str(self.source),
+                                  '--output', str(self.output), '--engine-cli', str(self.cli)])
+        self.assertEqual(code, 1)
+        self.assertEqual(json.loads(stdout.getvalue())['artifacts'], [])
+        self.assert_old_bundle()
+
+    def test_archify_delivery_and_export_failures_preserve_previous_bundle(self):
+        import contextlib
+        import io
+        from unittest.mock import patch
+        import render_native_diagram as renderer
+        source = self.root / 'workflow.json'
+        source.write_text('{"diagram_type":"workflow"}')
+        def deliver(argv, **kwargs):
+            Path(argv[4]).write_text('<html>new</html>')
+            return subprocess.CompletedProcess(argv, 0, '{"ok":true,"command":"deliver"}', '')
+        for result, exports in ((subprocess.CompletedProcess([], 2, '{}', 'failed'), []), (deliver, ['--export', 'png'])):
+            stdout = io.StringIO()
+            kwargs = {'side_effect': result} if callable(result) else {'return_value': result}
+            with self.subTest(exports=exports), patch('subprocess.run', **kwargs), \
+                    patch.object(renderer, '_archify_export', return_value=([], 'export failed')), \
+                    contextlib.redirect_stdout(stdout):
+                code = renderer.main(['--engine', 'archify', '--input', str(source),
+                                      '--output', str(self.output), '--engine-cli', str(self.cli), *exports])
+            self.assertEqual(code, 1)
+            self.assertEqual(json.loads(stdout.getvalue())['artifacts'], [])
+            self.assert_old_bundle()
+
+    def test_input_inside_output_and_unrelated_symlink_survive_success(self):
+        self.source = self.output / 'diagram.mmd'
+        (self.output / 'notes-link').symlink_to('notes.txt')
+        result, report = self.run_cli('svg')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue(report['valid'])
+        self.assertEqual(self.source.read_bytes(), self.old['diagram.mmd'])
+        self.assertTrue((self.output / 'notes-link').is_symlink())
+        self.assertEqual((self.output / 'notes-link').read_bytes(), b'keep me')
 
 
 if __name__ == "__main__":

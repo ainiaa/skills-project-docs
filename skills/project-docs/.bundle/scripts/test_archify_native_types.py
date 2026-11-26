@@ -333,7 +333,7 @@ class ArchifyNativeTypesTest(unittest.TestCase):
                     self.assertIn(str(artifact), receipt["artifacts"])
 
     @unittest.skipUnless(OFFICIAL_REQUESTED or (EXAMPLES and EXAMPLES.is_dir()), "official Archify CLI/examples unavailable")
-    def test_official_new_types_reject_invalid_semantics_and_remove_stale_exports(self):
+    def test_official_new_types_reject_invalid_semantics_and_keep_previous_exports(self):
         self.assertTrue(EXAMPLES and EXAMPLES.is_dir(), "official Archify examples are required for explicit acceptance")
         for kind, filename in OFFICIAL_EXAMPLES.items():
             with self.subTest(kind=kind):
@@ -360,8 +360,9 @@ class ArchifyNativeTypesTest(unittest.TestCase):
                 self.assertFalse(receipt["valid"])
                 self.assertEqual(receipt["officialCheck"], "fail")
                 self.assertTrue(receipt["problems"])
-                self.assertFalse((output / "diagram.archify.html").exists())
-                self.assertFalse((output / "diagram.archify.png").exists())
+                self.assertEqual((output / "diagram.archify.html").read_text(), "stale")
+                self.assertEqual((output / "diagram.archify.png").read_text(), "stale")
+                self.assertEqual(receipt["artifacts"], [])
 
 
 if __name__ == "__main__":
