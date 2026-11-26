@@ -40,7 +40,9 @@ def example_for(type_name: str, classes: Dict[str, List[Field]], seen: Optional[
         return False
     if raw in {"byte", "Byte", "short", "Short", "int", "Integer", "long", "Long", "float", "Float", "double", "Double", "BigDecimal"}:
         return 1
-    if raw in {"Date", "LocalDate", "LocalDateTime"}:
+    if raw in {"date", "LocalDate"}:
+        return "2012-05-28"
+    if raw in {"Date", "LocalDateTime", "datetime"}:
         return "2012-05-28T13:14:00.520+0000"
     if raw in SCALAR_TYPES or raw == "void":
         return "HelloWorld" if raw != "void" else None
@@ -235,7 +237,9 @@ def example_for_ref(value: TypeRef, document: ApiDocument, seen: Optional[set] =
         return False
     if raw in {"byte", "Byte", "short", "Short", "int", "Integer", "long", "Long", "float", "Float", "double", "Double", "BigDecimal"}:
         return 0 if document.language == "java" else 1
-    if raw in {"Date", "LocalDate", "LocalDateTime", "date", "datetime"}:
+    if raw in {"date", "LocalDate"}:
+        return "2012-05-28"
+    if raw in {"Date", "LocalDateTime", "datetime"}:
         return "2012-05-28T13:14:00.520+0000"
     if raw in SCALAR_TYPES | {"str", "bytes", "UUID", "void", "None", "NoneType"}:
         if raw in {"void", "None", "NoneType"}:
