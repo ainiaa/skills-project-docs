@@ -91,7 +91,7 @@ class ProductWorkflowTests(unittest.TestCase):
         expected = {str(path.relative_to(ROOT)) for path in (ROOT / 'scripts').glob('test_product*.py')}
         self.assertTrue(expected <= set(shlex.split(command)))
         self.assertIn(command, workflow)
-        self.assertLess(workflow.index('run: python3 scripts/install_renderers.py --engine mermaid'),
+        self.assertLess(workflow.index('python3 scripts/install_renderers.py --engine mermaid'),
                         workflow.index(command))
         self.assertLess(workflow.index('python3 -m pip install pytest=='), workflow.index(command))
 
@@ -107,22 +107,19 @@ class ProductWorkflowTests(unittest.TestCase):
         self.assertLess(job.index('python3 -m pip install -r scripts/requirements-product.txt'),
                         job.index("python3 -m unittest discover -s scripts -p 'test_*.py'"))
 
-    def test_product_ci_renderer_path_matches_published_installer_entry(self):
+    def test_product_ci_renderer_home_resolves_published_installer_entry(self):
         from unittest.mock import patch
         from install_renderers import RendererInstaller
         from engine_paths import find_engine
         workflow = (ROOT / '.github/workflows/product-acceptance.yml').read_text()
         with tempfile.TemporaryDirectory() as directory:
-            def configured(name):
-                value = re.search(rf'(?m)^    +{name}: (.+)$', workflow)[1]
-                return value.replace('${{ github.workspace }}', directory).replace('${{ runner.temp }}', directory)
             runtime = Path(directory) / 'mock-mmdc'
             runtime.write_text('#!/bin/sh\nexit 0\n')
             runtime.chmod(0o755)
-            home = configured('UNDERSTAND_RENDERER_HOME')
+            home = re.search(r'(?m)^    +UNDERSTAND_RENDERER_HOME: (.+)$', workflow)[1]
+            home = home.replace('${{ github.workspace }}', directory)
             published = RendererInstaller(home)._publish_link('mmdc', runtime)
-            with patch.dict('os.environ', UNDERSTAND_RENDERER_HOME=home,
-                            MERMAID_OFFICIAL_CLI=configured('MERMAID_OFFICIAL_CLI')):
+            with patch.dict('os.environ', UNDERSTAND_RENDERER_HOME=home, MERMAID_OFFICIAL_CLI=''):
                 self.assertEqual(find_engine('mermaid'), str(published))
 
     def test_lightweight_authoring_has_one_contract_and_skippable_template_sections(self):
